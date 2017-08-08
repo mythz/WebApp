@@ -1,0 +1,12 @@
+#back {
+    position:absolute;
+    top:8px;
+    left:8px;
+}
+#back:hover {
+    text-decoration: none;
+}
+caption {
+    caption-side: top;
+    text-align: center;
+}

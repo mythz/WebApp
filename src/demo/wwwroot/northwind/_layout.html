@@ -1,0 +1,30 @@
+<html>
+
+<head>
+    <title>{{ title | otherwise('Northwind dynamic data demo') }}</title>
+    <link rel="stylesheet" href="../assets/css/bootstrap.css">
+    <link rel="stylesheet" href="../assets/css/default.css">
+    <style>
+        body {
+            padding: 40px;
+        }
+        #title {
+            margin: 30px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 id="title">{{ title | otherwise('') }}</h2>
+
+    {{ page }}
+
+    <script src="../assets/js/jquery-3.2.1.min.js"></script>
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/js/default.js"></script>
+
+    {{ scripts | otherwise("") }}
+
+</body>
+
+</html>

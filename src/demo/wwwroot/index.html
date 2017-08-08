@@ -1,0 +1,67 @@
+<html>
+<head>
+    <title>Rockstars</title>
+</head>
+<style>
+body {
+    background: #f1f1f1;
+    color: #444;
+    font-family: "Open Sans", Helvetica, Arial, sans-serif;
+    padding: 40px;
+}
+h2 {
+    font-size: 36px;
+    font-weight: normal;
+    letter-spacing: .1em;
+}
+a { 
+    text-decoration: none;
+    color: #4283b9;
+}
+#visual-sitemap a.dead:hover {
+    background: rgba(141, 110, 99,.5);
+}
+#visual-sitemap a.alive:hover {
+    background: rgba(200,255,200,.5);
+}
+#visual-sitemap a {
+    display: block;
+    float: left;
+    margin: 0 50px 50px 0;
+    padding: 20px;
+    line-height: 0;
+    box-shadow: 0 3px 8px rgba(100, 100, 100, 0.3);
+    background: rgba(255,255,255,.1);
+}
+#visual-sitemap img {
+    height: 200px;
+}
+.clear {
+    clear: both;
+}
+</style>
+<body>
+    <h2>Rockstars</h2>
+    <p>
+        Rockstars shows an example of a self-contained content website complete with its own custom index.html home page and 
+        multiple _layout.html layout pages and partials.
+    </p>
+    <div id="visual-sitemap">
+        <a class="dead" href="rockstars/dead/cobain/"><img src="img/thumb-05.jpg"></a>
+        <a class="alive" href="rockstars/alive/grohl"><img src="img/thumb-01.jpg"></a>
+        <a class="dead" href="rockstars/dead/hendrix/"><img src="img/thumb-06.jpg"></a>
+        <a class="alive" href="rockstars/alive/vedder/"><img src="img/thumb-02.jpg"></a>
+        <a class="dead" href="rockstars/dead/jackson/"><img src="img/thumb-07.jpg"></a>
+        <a class="alive" href="rockstars/alive/springsteen/"><img src="img/thumb-03.jpg"></a>
+        <a class="dead" href="rockstars/dead/presley/"><img src="img/thumb-09.jpg"></a>
+        <a class="alive" href="rockstars/alive/love/"><img src="img/thumb-04.jpg"></a>
+        <a class="dead" href="rockstars/dead/joplin/"><img src="img/thumb-08.jpg"></a>
+    </div>
+    <div class="clear"></div>
+
+    <h2><a href="northwind/">Northwind</a></h2>
+    <p>
+        The Northwind website shows an example of a multi-level data driven website developed using just custom DB Filters.
+    </p>
+</body>
+</html>

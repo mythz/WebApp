@@ -1,0 +1,32 @@
+<!--
+title: Customer Details
+-->
+
+<a id="back" href="javascript:history.back()">&#8592; Back</a>
+
+{{ "select * from customer where id = @id" | dbSingle({ id }) | assignTo: customer }}
+
+{{ "select o.id, employeeId, orderDate, shipCountry, shippedDate, '$' || printf('%.2f', sum((d.unitprice * d.quantity) - d.discount)) Total 
+      from [order] o
+           inner join
+           orderdetail d on (o.id = d.orderId)
+     where customerId = @id
+     group by o.id, employeeId, orderDate, shipCountry, shippedDate" 
+   | dbSelect({ id }) | assignTo: orders }}
+
+{{ { customer, orders } | selectPartial: customer-details }}
+
+<style>
+    .details tbody tr:hover {
+        cursor: pointer;
+        background: #FFF9C4 !important;
+    }
+</style>
+
+{{ `<script>
+$("form select:first").focus();
+$('.details tbody tr').on('click', function(){
+    var id = $(this).find("td:first").html();
+    location.href = 'order?id=' + id;
+})
+</script>` | raw | assignTo: scripts }}

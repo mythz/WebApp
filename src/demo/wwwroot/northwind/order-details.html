@@ -1,0 +1,38 @@
+{{ it.order | assignTo: o }}
+
+<table class="table table-bordered" style="width:auto">
+    <tr>
+        <th>Id</th>
+        <td>{{ o.Id }}</td>
+    </tr>
+    <tr>
+        <th>Date</th>
+        <td>{{ o.OrderDate | dateFormat }}</td>
+    </tr>
+    <tr>
+        <th>Customer Id</th>
+        <td>{{ o.CustomerId }}</td>
+    </tr>
+    <tr>
+        <th>Employee Id</th>
+        <td>{{ o.EmployeeId }}</td>
+    </tr>
+    <tr>
+        <th>Shipped by</th>
+        <td>{{ o.ShipVia }}</td>
+    </tr>
+    <tr>
+        <th>Shipping Cost</th>
+        <td>{{ o.Freight | currency }}</td>
+    </tr>
+    <tr>
+        <th>Shipped to</th>
+        <td>
+            <p>{{ o.ShipAddress }}</p>
+            <p>{{ o.ShipCity }}, {{ o.ShipPostalCode }}, {{ o.ShipCountry }}</p>
+        </td>
+    </tr>
+</table>
+
+{{ it.orderDetails | htmltable({ className: 'table table-striped details', caption: 'Line Items' }) 
+   | if(greaterThan(orderDetails.Count, 0)) | otherwise("There's no details for this order") }}
