@@ -1,0 +1,90 @@
+<html>
+<head>
+    <title>Rockstars</title>
+    <link rel="stylesheet" href="../assets/css/bootstrap.css">
+<style>
+body {
+    color: #444;
+    font-family: "Open Sans", Helvetica, Arial, sans-serif;
+    padding: 60px;
+}
+h2 {
+    font-size: 36px;
+    font-weight: normal;
+    letter-spacing: .1em;
+}
+a { 
+    text-decoration: none;
+    color: #4283b9;
+}
+a:hover {
+    text-decoration: none;
+}
+#visual-sitemap a.dead:hover {
+    background: rgba(141, 110, 99,.5);
+}
+#visual-sitemap a.alive:hover {
+    background: rgba(200,255,200,.5);
+}
+#visual-sitemap a {
+    display: block;
+    float: left;
+    margin: 0 50px 50px 0;
+    padding: 20px;
+    line-height: 0;
+    box-shadow: 0 3px 8px rgba(100, 100, 100, 0.3);
+    background: rgba(255,255,255,.1);
+}
+#visual-sitemap img {
+    height: 200px;
+}
+.clear {
+    clear: both;
+}
+</style>
+</head>
+<body>
+    <h2>Rockstars</h2>
+    <p>
+        Rockstars shows an example of a self-contained content website complete with its own custom index.html home page and 
+        multiple _layout.html layout pages and partials.
+    </p>
+    <div id="visual-sitemap">
+        <a class="dead" href="rockstars/dead/cobain/"><img src="rockstars/img/thumb-05.jpg"></a>
+        <a class="alive" href="rockstars/alive/grohl"><img src="rockstars/img/thumb-01.jpg"></a>
+        <a class="dead" href="rockstars/dead/hendrix/"><img src="rockstars/img/thumb-06.jpg"></a>
+        <a class="alive" href="rockstars/alive/vedder/"><img src="rockstars/img/thumb-02.jpg"></a>
+        <a class="dead" href="rockstars/dead/jackson/"><img src="rockstars/img/thumb-07.jpg"></a>
+        <a class="alive" href="rockstars/alive/springsteen/"><img src="rockstars/img/thumb-03.jpg"></a>
+        <a class="dead" href="rockstars/dead/presley/"><img src="rockstars/img/thumb-09.jpg"></a>
+        <a class="alive" href="rockstars/alive/love/"><img src="rockstars/img/thumb-04.jpg"></a>
+        <a class="dead" href="rockstars/dead/joplin/"><img src="rockstars/img/thumb-08.jpg"></a>
+    </div>
+    <div class="clear"></div>
+
+    <h2>Northwind</h2>
+    <p>
+        The Northwind website shows an example of a multi-level data driven website developed using just custom DB Filters.
+    </p>
+
+    <table class="table table-bordered" style="width:auto">
+        <tr>
+            <th>Search Customers</th>
+            <td><a href="/northwind/">/northwind/</a></td>
+        </tr>
+        <tr>
+            <th>Customers in Germany</th>
+            <td><a href="/northwind/?country=Germany">/northwind/?country=Germany</a></td>
+        </tr>
+        <tr>
+            <th>Alfreds Futterkiste Details</th>
+            <td><a href="/northwind/customer?id=ALFKI">/northwind/customer?id=ALFKI</a></td>
+        </tr>
+        <tr>
+            <th>Order #10643</th>
+            <td><a href="/northwind/order?id=10643">/northwind/order?id=10643</a></td>
+        </tr>
+    </table>
+
+</body>
+</html>

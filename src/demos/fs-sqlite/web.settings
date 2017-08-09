@@ -1,0 +1,5 @@
+debug true
+contentRoot ~/../../../../../demos
+webRoot ~/../../../../../demos/fs-sqlite
+db sqlite
+db.connection ~/northwind.sqlite

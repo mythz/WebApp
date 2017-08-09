@@ -14,8 +14,8 @@
         <td>{{ o.CustomerId }}</td>
     </tr>
     <tr>
-        <th>Employee Id</th>
-        <td>{{ o.EmployeeId }}</td>
+        <th>Employee</th>
+        <td>{{ o.Employee }}</td>
     </tr>
     <tr>
         <th>Shipped by</th>
@@ -34,5 +34,5 @@
     </tr>
 </table>
 
-{{ it.orderDetails | htmltable({ className: 'table table-striped details', caption: 'Line Items' }) 
+{{ it.orderDetails | htmltable({ className: 'table table-striped', caption: 'Line Items' }) 
    | if(greaterThan(orderDetails.Count, 0)) | otherwise("There's no details for this order") }}

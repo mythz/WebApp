@@ -1,0 +1,9 @@
+<!--
+title: Categories
+-->
+
+<a id="back" href="../">&#8592; Home</a>
+
+{{ "select * from Category" | assignTo: sql }}
+
+{{ sql | dbSelect | htmltable({ className: "table table-striped auto-width" }) }}

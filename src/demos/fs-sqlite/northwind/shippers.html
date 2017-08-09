@@ -1,0 +1,9 @@
+<!--
+title: Shippers
+-->
+
+<a id="back" href="../">&#8592; Home</a>
+
+{{ "select * from Shipper" | assignTo: sql }}
+
+{{ sql | dbSelect | htmltable({ className: "table table-striped auto-width" }) }}

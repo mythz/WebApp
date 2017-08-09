@@ -1,0 +1,28 @@
+<!--
+title: Order Details
+-->
+
+<a id="back" href="javascript:history.back()">&#8592; Back</a>
+
+{{ "select o.Id, OrderDate, CustomerId, Freight, 
+           e.FirstName || ' ' || e.LastName as Employee, 
+           s.CompanyName as ShipVia, 
+           ShipAddress, ShipCity, ShipPostalCode, ShipCountry
+      from [Order] o
+           inner join
+           Employee e on o.EmployeeId = e.Id
+           left join 
+           Shipper s on o.ShipVia = s.Id
+     where o.Id = @id" 
+   | dbSingle({ id }) | assignTo: order }}
+
+{{ "select p.ProductName, 
+           '$' || printf('%.2f', od.UnitPrice) UnitPrice,
+           Quantity, Discount
+     from orderDetail od
+          inner join
+          Product p on od.ProductId = p.Id
+    where OrderId = @id" 
+   | dbSelect({ id }) | assignTo: orderDetails }}
+
+{{ { order, orderDetails } | selectPartial: order-details }}

@@ -1,0 +1,18 @@
+<!--
+title: Employees
+-->
+
+<a id="back" href="../">&#8592; Home</a>
+
+{{ "select Id, TitleOfCourtesy as Title, FirstName, LastName, City, Region, Country, HomePhone, Extension from Employee" | assignTo: sql }}
+
+{{ "table table-striped details" | assignTo: className }}
+{{ sql | dbSelect | htmltable({ className }) }}
+
+{{ `<script>
+$('.details tbody tr').on('click', function(){
+    var id = $(this).find("td:first").html();
+    location.href = 'employee?id=' + id;
+})
+</script>` | raw | assignTo: scripts }}
+

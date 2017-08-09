@@ -4,7 +4,7 @@ title: Search Customers
 
 {{ limit | otherwise(20) | assignTo: limit }}
 
-<a id="back" href="../../../">&#8592; Home</a>
+<a id="back" href="../">&#8592; Home</a>
 
 <form class="form-inline">
     <label class="mr-sm-2" for="country">Country</label>
@@ -24,22 +24,15 @@ title: Search Customers
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 
-{{ "select id,companyName,contactName,contactTitle,city,country from customer" | assignTo: sql }}
+{{ "select Id, CompanyName, ContactName, ContactTitle, City, Country from Customer" | assignTo: sql }}
 
-{{ [truthy(country, "country = @country"), truthy(city, "city = @city")] | where: !isNull(it) 
+{{ [truthy(country, "Country = @country"), truthy(city, "City = @city")] | where: !isNull(it) 
    | join(" and ") | assignTo: filters }}
 {{ sql | appendFmt(' where {0}', filters) | if(greaterThan(filters.Length, 0)) | otherwise(sql) | assignTo: sql }}
 
 {{ "table table-striped details" | assignTo: className }}
 {{ sql | appendFmt(' limit {0}', limit) | assignTo: sql }}
 {{ sql | dbSelect({ country, city }) | htmltable({ className }) }}
-
-<style>
-    .details tbody tr:hover {
-        cursor: pointer;
-        background: #FFF9C4 !important;
-    }
-</style>
 
 {{ `<script>
 $('.details tbody tr').on('click', function(){
