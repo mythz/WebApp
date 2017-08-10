@@ -2,7 +2,7 @@
 title: Products
 -->
 
-<a id="back" href="../">&#8592; Home</a>
+<a id="back" href="javascript:history.back()">&#8592; Back</a>
 
 {{ "select p.Id, ProductName,
      c.CategoryName Category,
@@ -19,5 +19,4 @@ title: Products
   | fmt(sqlCurrency("UnitPrice"))
   | assignTo: sql }}
 
-{{ "table table-striped" | assignTo: className }}
-{{ sql | dbSelect | htmltable({ className }) }}
+{{ sql | dbSelect | htmltable({ className: "table table-striped" }) }}

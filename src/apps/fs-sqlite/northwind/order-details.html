@@ -11,15 +11,15 @@
     </tr>
     <tr>
         <th>Customer Id</th>
-        <td>{{ o.CustomerId }}</td>
+        <td><a href="customer?id={{ o.CustomerId }}">{{ o.CustomerId }}</a></td>
     </tr>
     <tr>
         <th>Employee</th>
-        <td>{{ o.Employee }}</td>
+        <td><a href="employee?id={{ o.EmployeeId }}">{{ o.Employee }}</a></td>
     </tr>
     <tr>
         <th>Shipped by</th>
-        <td>{{ o.ShipVia }}</td>
+        <td><a href="shippers">{{ o.ShipVia }}</a></td>
     </tr>
     <tr>
         <th>Shipping Cost</th>

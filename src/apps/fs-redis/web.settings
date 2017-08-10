@@ -1,6 +1,6 @@
 debug true
-contentRoot ~/../../../../../demos
-webRoot ~/../../../../../demos/fs-redis
+contentRoot ~/../../../../../apps
+webRoot ~/../../../../../apps/fs-redis
 db sqlite
 db.connection ~/northwind.sqlite
 redis.connection localhost:6379

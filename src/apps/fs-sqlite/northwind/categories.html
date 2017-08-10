@@ -2,6 +2,6 @@
 title: Categories
 -->
 
-<a id="back" href="../">&#8592; Home</a>
+<a id="back" href="javascript:history.back()">&#8592; Back</a>
 
 {{ "select * from Category" | dbSelect | htmltable({ className: "table table-striped auto-width" }) }}

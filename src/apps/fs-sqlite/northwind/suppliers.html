@@ -2,9 +2,8 @@
 title: Suppliers
 -->
 
-<a id="back" href="../">&#8592; Home</a>
+<a id="back" href="javascript:history.back()">&#8592; Back</a>
 
 {{ "select Id, CompanyName, ContactName, ContactTitle, City, PostalCode, Country, Phone from Supplier" | assignTo: sql }}
 
-{{ "table table-striped" | assignTo: className }}
-{{ sql | dbSelect | htmltable({ className }) }}
+{{ sql | dbSelect | htmltable({ className: "table table-striped" }) }}

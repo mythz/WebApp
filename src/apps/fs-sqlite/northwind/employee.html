@@ -17,4 +17,5 @@ title: Employee Details
            inner join 
            Region r on t.RegionId = r.Id
      where et.EmployeeId = @id"
- | dbSelect({ id }) | htmltable({ className: "table table-striped auto-width", caption: "Employee Territories"}) }}
+ | dbSelect({ id }) 
+ | htmltable({ className: "table table-striped auto-width", caption: "Employee Territories"}) }}

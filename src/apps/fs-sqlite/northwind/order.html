@@ -5,7 +5,7 @@ title: Order Details
 <a id="back" href="javascript:history.back()">&#8592; Back</a>
 
 {{ "select o.Id, OrderDate, CustomerId, Freight, 
-           {0} as Employee, 
+           {0} as Employee, e.Id as EmployeeId,
            s.CompanyName as ShipVia, 
            ShipAddress, ShipCity, ShipPostalCode, ShipCountry
       from [Order] o
