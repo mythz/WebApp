@@ -6,8 +6,10 @@ title: Customer Details
 
 {{ "select * from Customer where Id = @id" | dbSingle({ id }) | assignTo: customer }}
 
-{{ "select o.Id, e.FirstName || ' ' || e.LastName Employee, OrderDate, ShipCountry, ShippedDate, 
-           '$' || printf('%.2f', sum((d.Unitprice * d.Quantity) - d.discount)) Total 
+{{ "select o.Id, 
+           {0} Employee, 
+           OrderDate, ShipCountry, ShippedDate, 
+           {1} Total 
       from [Order] o
            inner join
            Orderdetail d on o.Id = d.OrderId
@@ -15,9 +17,11 @@ title: Customer Details
            Employee e on o.EmployeeId = e.Id
      where CustomerId = @id
      group by o.Id, EmployeeId, OrderDate, ShipCountry, ShippedDate" 
+   | fmt(sqlConcat(["e.FirstName", "' '", "e.LastName"]), sqlCurrency("sum((d.Unitprice * d.Quantity) - d.discount)"))
    | dbSelect({ id }) | assignTo: orders }}
 
-{{ { customer, orders } | selectPartial: customer-details }}
+{{ { customer, orders } | ifExists(customer) | selectPartial: customer-details }}
+{{ "No Customer has id: {0}" | fmt(id) | ifNo(customer) }}
 
 {{ `<script>
 $("form select:first").focus();

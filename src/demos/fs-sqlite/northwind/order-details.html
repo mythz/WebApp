@@ -1,6 +1,6 @@
 {{ it.order | assignTo: o }}
 
-<table class="table table-bordered" style="width:auto">
+<table class="table table-bordered auto-width">
     <tr>
         <th>Id</th>
         <td>{{ o.Id }}</td>
@@ -34,5 +34,4 @@
     </tr>
 </table>
 
-{{ it.orderDetails | htmltable({ className: 'table table-striped', caption: 'Line Items' }) 
-   | if(greaterThan(orderDetails.Count, 0)) | otherwise("There's no details for this order") }}
+{{ it.orderDetails | htmltable({ className: "table table-striped", caption: "Line Items" }) }}

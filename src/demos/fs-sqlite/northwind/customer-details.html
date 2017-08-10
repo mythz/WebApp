@@ -20,9 +20,12 @@
     </tr>
     <tr>
         <th>Fax</th>
-        <td>{{ it.customer | get('Fax') }}</td>
+        <td>{{ c.Fax }}</td>
     </tr>
 </table>
 
-{{ it.orders | htmltable({ className: 'table table-striped details', caption: fmt("{0}'s Orders", c.CompanyName)}) 
-   | if(greaterThan(orders.Count, 0)) | otherwise(fmt('There were no orders from {0}', c.CompanyName)) }}
+{{ it.orders | htmltable({ 
+    className: 'table table-striped details', 
+    caption: fmt("{0}'s Orders", c.CompanyName),
+    emptyCaption: fmt("There's no orders from {0} yet", c.CompanyName) 
+}) }}

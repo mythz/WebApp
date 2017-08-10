@@ -7,14 +7,17 @@ title: Products
 {{ "select p.Id, ProductName,
      c.CategoryName Category,
      s.CompanyName Supplier, 
-     QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel   
+     QuantityPerUnit, 
+     {0} UnitPrice, 
+     UnitsInStock, UnitsOnOrder, ReorderLevel   
      from Product p
           inner join
           Category c on p.CategoryId = c.Id
           inner join 
           Supplier s on p.SupplierId = s.Id
-    where Discontinued = 0
-" | assignTo: sql }}
+    where Discontinued = 0" 
+  | fmt(sqlCurrency("UnitPrice"))
+  | assignTo: sql }}
 
 {{ "table table-striped" | assignTo: className }}
 {{ sql | dbSelect | htmltable({ className }) }}

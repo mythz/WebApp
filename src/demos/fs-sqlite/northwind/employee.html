@@ -8,7 +8,7 @@ title: Employee Details
 
 {{ employee | selectPartial: detail-table }}
 
-{{ "No Employee has id: {0}" | fmt(id) | if(isNull(employee)) }}
+{{ "No Employee has id: {0}" | fmt(id) | ifNo(employee) }}
 
 {{ "select TerritoryDescription, RegionDescription
       from EmployeeTerritory et
