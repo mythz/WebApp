@@ -79,6 +79,8 @@ namespace NorthwindData
             dbFactory = GetDbFactory(provider, connectionString);
             if (dbFactory != null)
             {
+                OrmLiteConfig.DialectProvider.NamingStrategy = new OrmLiteNamingStrategyBase();
+
                 using (db = dbFactory.Open())
                 {
                     db.DropAndCreateTable<Category>();

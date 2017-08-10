@@ -24,5 +24,10 @@ namespace TemplateWebsites
         public object dbSingle(string sql, Dictionary<string,object> args) => exec(db => db.Single<Dictionary<string,object>>(sql,args));
         public object dbScalar(string sql) => exec(db => db.Scalar<object>(sql));
         public object dbScalar(string sql, Dictionary<string,object> args) => exec(db => db.Scalar<object>(sql,args));
+
+        public string sqlConcat(IEnumerable<object> values) => OrmLiteConfig.DialectProvider.SqlConcat(values);
+
+        public string sqlCurrency(string fieldOrValue) => OrmLiteConfig.DialectProvider.SqlCurrency(fieldOrValue);
+        public string sqlCurrency(string fieldOrValue, string symbol) => OrmLiteConfig.DialectProvider.SqlCurrency(fieldOrValue, symbol);
     }
 }
