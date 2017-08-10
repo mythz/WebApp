@@ -25,10 +25,25 @@ namespace TemplateWebsites
         public static IAppSettings AppSettings;
         public static void Main(string[] args)
         {
-            var appSettingsPath = "~/web.settings".MapAbsolutePath();
-            AppSettings = File.Exists(appSettingsPath)
-                ? new TextFileSettings(appSettingsPath)
-                : new DictionarySettings();
+            var webSettings = args.Length > 0 
+                ? args[0]
+                : "web.settings";
+
+            var appSettingsPath = $"~/{webSettings}".MapAbsolutePath();
+            if (args.Length > 0 && !File.Exists(appSettingsPath))
+            {
+                Console.WriteLine($"'{appSettingsPath}' does not exist");
+                return;
+            }
+
+            var usingWebSettings = File.Exists(appSettingsPath);
+            if (usingWebSettings)
+                Console.WriteLine($"Using '{webSettings}'");
+
+            AppSettings = new MultiAppSettings(usingWebSettings
+                    ? new TextFileSettings(appSettingsPath)
+                    : new DictionarySettings(),
+                new EnvironmentVariableSettings());
 
             var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             var webRoot = Directory.Exists(wwwrootPath)
