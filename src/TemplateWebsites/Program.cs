@@ -17,6 +17,7 @@ using ServiceStack.Aws.S3;
 using Amazon.S3;
 using Amazon;
 using ServiceStack.VirtualPath;
+using System.Linq;
 
 namespace TemplateWebsites
 {
@@ -111,6 +112,7 @@ namespace TemplateWebsites
                     if (!File.Exists(connectionString))
                         throw new FileNotFoundException($"SQLite database not found at '{connectionString}'");
                     return new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
+                case "mssql":
                 case "sqlserver":
                     return new OrmLiteConnectionFactory(connectionString, SqlServerDialect.Provider);
                 case "sqlserver2012":
@@ -123,6 +125,7 @@ namespace TemplateWebsites
                     return new OrmLiteConnectionFactory(connectionString, SqlServer2017Dialect.Provider);
                 case "mysql":
                     return new OrmLiteConnectionFactory(connectionString, MySqlDialect.Provider);
+                case "pgsql":
                 case "postgres":
                 case "postgresql":
                     return new OrmLiteConnectionFactory(connectionString, PostgreSqlDialect.Provider);
@@ -156,6 +159,15 @@ namespace TemplateWebsites
 
             switch (provider.ToLower())
             {
+                case "fs":
+                case "filesystem":
+                    if (config.StartsWith("~/"))
+                    {
+                        var dir = VirtualFiles.GetDirectory(config.Substring(2));
+                        if (dir != null)
+                            config = dir.RealPath;
+                    }
+                    return new FileSystemVirtualFiles(config);
                 case "s3":
                 case "s3virtualfiles":
                     var s3Config = config.FromJsv<S3Config>();
@@ -179,7 +191,7 @@ namespace TemplateWebsites
                 return base.GetVirtualFileSources();
 
             var fileSources = base.GetVirtualFileSources();
-            fileSources.Insert(0, vfs);
+            fileSources.Add(vfs);
             return fileSources;
         }
 
@@ -198,10 +210,30 @@ namespace TemplateWebsites
                 container.Register<IRedisClientsManager>(c => new RedisManagerPool(redisConnString));
 
             vfs = GetVirtualFiles(AppSettings.GetString("files"), AppSettings.GetString("files.config"));
+            if (vfs is IVirtualFiles writableFs)
+                VirtualFiles = writableFs;
 
-            Plugins.Add(new TemplatePagesFeature {
+            var feature = new TemplatePagesFeature {
                 PageFormats = { new MarkdownPageFormat() }
-            });
+            };
+
+            var checkForModifiedPagesAfter = AppSettings.GetString("checkForModifiedPagesAfter");
+            if (checkForModifiedPagesAfter != null)
+                feature.CheckForModifiedPagesAfter = checkForModifiedPagesAfter.ConvertTo<TimeSpan>();
+
+            var checkForModifiedPagesAfterSecs = AppSettings.GetString("checkForModifiedPagesAfterSecs");
+            if (checkForModifiedPagesAfterSecs != null)
+                feature.CheckForModifiedPagesAfter = TimeSpan.FromSeconds(checkForModifiedPagesAfterSecs.ConvertTo<int>());            
+
+            var contextArgKeys = AppSettings.GetAllKeys().Where(x => x.StartsWith("args."));
+            foreach (var key in contextArgKeys)
+            {
+                var name = key.RightPart('.');
+                var value = AppSettings.GetString(key);
+                feature.Args[name] = value;
+            }
+
+            Plugins.Add(feature);
         }
     }
 }
