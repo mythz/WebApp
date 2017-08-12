@@ -53,8 +53,8 @@ namespace NorthwindData
                 Console.WriteLine("Syntax:");
                 Console.WriteLine("northwind-data [provider] [connectionString]");
 
-                Console.WriteLine("Available Providers:");
-                Console.WriteLine(Providers.Join(", "));
+                Console.WriteLine("\nAvailable Data Providers:");
+                Providers.Each(x => Console.WriteLine(" - " + x));
                 return;
             }
 
