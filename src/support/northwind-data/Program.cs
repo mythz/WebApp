@@ -23,6 +23,7 @@ namespace NorthwindData
                     if (!File.Exists(filePath))
                         throw new FileNotFoundException($"SQLite database not found at '{filePath}'");
                     return new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
+                case "mssql":
                 case "sqlserver":
                     return new OrmLiteConnectionFactory(connectionString, SqlServerDialect.Provider);
                 case "sqlserver2012":
@@ -35,8 +36,10 @@ namespace NorthwindData
                     return new OrmLiteConnectionFactory(connectionString, SqlServer2017Dialect.Provider);
                 case "mysql":
                     return new OrmLiteConnectionFactory(connectionString, MySqlDialect.Provider);
+                case "pgsql":
                 case "postgres":
                 case "postgresql":
+                    PostgreSqlDialect.Provider.NamingStrategy = new OrmLiteNamingStrategyBase();
                     return new OrmLiteConnectionFactory(connectionString, PostgreSqlDialect.Provider);
             }
 
@@ -58,7 +61,7 @@ namespace NorthwindData
                 return;
             }
 
-            var dbFactory = new OrmLiteConnectionFactory("~/../../demos/northwind.sqlite".MapProjectPath(), SqliteDialect.Provider);
+            var dbFactory = new OrmLiteConnectionFactory("~/../../apps/northwind.sqlite".MapProjectPath(), SqliteDialect.Provider);
             var db = dbFactory.Open();
             var categories = db.Select<Category>();
             var customers = db.Select<Customer>();
@@ -79,8 +82,6 @@ namespace NorthwindData
             dbFactory = GetDbFactory(provider, connectionString);
             if (dbFactory != null)
             {
-                OrmLiteConfig.DialectProvider.NamingStrategy = new OrmLiteNamingStrategyBase();
-
                 using (db = dbFactory.Open())
                 {
                     db.DropAndCreateTable<Category>();
