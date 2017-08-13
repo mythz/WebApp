@@ -6,6 +6,9 @@
 # custom
 *.prod
 *.live
+*.aws
+*.azure
+*.gcloud
 
 # User-specific files
 *.suo
