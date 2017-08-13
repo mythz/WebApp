@@ -18,6 +18,7 @@ using Amazon.S3;
 using Amazon;
 using ServiceStack.VirtualPath;
 using System.Linq;
+using ServiceStack.Templates;
 
 namespace TemplateWebsites
 {
@@ -84,7 +85,45 @@ namespace TemplateWebsites
         }
     }
 
-    public class MyServices : Service {}
+    [Route("/reload/page")]
+    public class ShouldReloadPage : IReturn<ShouldReloadPageResponse>
+    {
+        public string Path { get; set; }
+        public string ETag { get; set; }
+    }
+
+    public class ShouldReloadPageResponse
+    {
+        public string ETag { get; set; }
+        public bool Reload { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class MyServices : Service 
+    {
+        public ITemplatePages Pages { get; set; }
+
+        public async Task<ShouldReloadPageResponse> Any(ShouldReloadPage request)
+        {
+            if (!HostContext.DebugMode)
+                throw new NotImplementedException("set 'debug true' in web.settings to enable this service");
+
+            var page = Pages.GetPage(request.Path ?? "/");
+            if (page == null)
+                throw HttpError.NotFound("Page not found: " + request.Path);
+            
+            if (!page.HasInit)
+                await page.Init();
+
+            var lastModified = Pages.GetLastModified(page);
+
+            if (string.IsNullOrEmpty(request.ETag))
+                return new ShouldReloadPageResponse { ETag = lastModified.Ticks.ToString() };            
+
+            var shouldReload = lastModified.Ticks > long.Parse(request.ETag);
+            return new ShouldReloadPageResponse { Reload = shouldReload, ETag = lastModified.Ticks.ToString() };
+        }
+    }
 
     public class AppHost : AppHostBase
     {
