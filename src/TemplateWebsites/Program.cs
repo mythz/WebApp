@@ -88,7 +88,29 @@ namespace TemplateWebsites
 
     public class AppHost : AppHostBase
     {
-        
+        public static string ResolveValue(string value)
+        {
+            if (value?.StartsWith("$") == true)
+            {
+                var envValue = Environment.GetEnvironmentVariable(value.Substring(1));
+                if (!string.IsNullOrEmpty(envValue))
+                    return envValue;
+            }
+            return value;
+        }
+
+        public string GetAppSetting(string name) => ResolveValue(AppSettings.GetString(name));
+
+        public T GetAppSetting<T>(string name, T defaultValue)
+        {
+            var value = AppSettings.GetString(name);
+            if (value == null)
+                return defaultValue;
+
+            var resolvedValue = ResolveValue(value);
+            return resolvedValue.FromJsv<T>();
+        }
+
         public AppHost()
             : base(Program.AppSettings.Get("name", "ServiceStack Template Website"), typeof(MyServices).GetAssembly()) 
         { 
@@ -171,13 +193,16 @@ namespace TemplateWebsites
                 case "s3":
                 case "s3virtualfiles":
                     var s3Config = config.FromJsv<S3Config>();
-                    var region = RegionEndpoint.GetBySystemName(s3Config.Region);
-                    var awsClient = new AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
-                    return new S3VirtualFiles(awsClient, s3Config.Bucket);
+                    var region = RegionEndpoint.GetBySystemName(ResolveValue(s3Config.Region));
+                    var awsClient = new AmazonS3Client(
+                        ResolveValue(s3Config.AccessKey), 
+                        ResolveValue(s3Config.SecretKey), 
+                        region);
+                    return new S3VirtualFiles(awsClient, ResolveValue(s3Config.Bucket));
                 case "mapping":
                 case "filesystemmapping":
                     var fsConfig = config.FromJsv<FileSystemMappingConfig>();
-                    return new FileSystemMapping(fsConfig.Alias, fsConfig.Path);
+                    return new FileSystemMapping(ResolveValue(fsConfig.Alias), ResolveValue(fsConfig.Path));
             }
 
             throw new NotSupportedException($"Unknown VirtualFiles Provider '{provider}'");
@@ -198,18 +223,18 @@ namespace TemplateWebsites
         public override void Configure(Container container)
         {
             SetConfig(new HostConfig {
-                DebugMode = AppSettings.Get("debug", true),
+                DebugMode = GetAppSetting("debug", true),
             });
 
-            var dbFactory = GetDbFactory(AppSettings.GetString("db"), AppSettings.GetString("db.connection"));
+            var dbFactory = GetDbFactory(GetAppSetting("db"), GetAppSetting("db.connection"));
             if (dbFactory != null)
                 container.Register<IDbConnectionFactory>(dbFactory);
 
-            var redisConnString = AppSettings.GetString("redis.connection");
+            var redisConnString = GetAppSetting("redis.connection");
             if (redisConnString != null)
                 container.Register<IRedisClientsManager>(c => new RedisManagerPool(redisConnString));
 
-            vfs = GetVirtualFiles(AppSettings.GetString("files"), AppSettings.GetString("files.config"));
+            vfs = GetVirtualFiles(GetAppSetting("files"), GetAppSetting("files.config"));
             if (vfs is IVirtualFiles writableFs)
                 VirtualFiles = writableFs;
 
@@ -217,11 +242,11 @@ namespace TemplateWebsites
                 PageFormats = { new MarkdownPageFormat() }
             };
 
-            var checkForModifiedPagesAfter = AppSettings.GetString("checkForModifiedPagesAfter");
+            var checkForModifiedPagesAfter = GetAppSetting("checkForModifiedPagesAfter");
             if (checkForModifiedPagesAfter != null)
                 feature.CheckForModifiedPagesAfter = checkForModifiedPagesAfter.ConvertTo<TimeSpan>();
 
-            var checkForModifiedPagesAfterSecs = AppSettings.GetString("checkForModifiedPagesAfterSecs");
+            var checkForModifiedPagesAfterSecs = GetAppSetting("checkForModifiedPagesAfterSecs");
             if (checkForModifiedPagesAfterSecs != null)
                 feature.CheckForModifiedPagesAfter = TimeSpan.FromSeconds(checkForModifiedPagesAfterSecs.ConvertTo<int>());            
 
@@ -229,7 +254,7 @@ namespace TemplateWebsites
             foreach (var key in contextArgKeys)
             {
                 var name = key.RightPart('.');
-                var value = AppSettings.GetString(key);
+                var value = GetAppSetting(key);
                 feature.Args[name] = value;
             }
 

@@ -47,6 +47,17 @@ namespace NorthwindData
             return null;
         }
 
+        public static string ResolveValue(string value)
+        {
+            if (value?.StartsWith("$") == true)
+            {
+                var envValue = Environment.GetEnvironmentVariable(value.Substring(1));
+                if (!string.IsNullOrEmpty(envValue))
+                    return envValue;
+            }
+            return value;
+        }
+
         public static void Main(string[] args)
         {
             if (args.Length != 2)
@@ -77,8 +88,8 @@ namespace NorthwindData
             var territories = db.Select<Territory>();
             db.Dispose();
 
-            var provider = args[0];
-            var connectionString = args[1];
+            var provider = ResolveValue(args[0]);
+            var connectionString = ResolveValue(args[1]);
 
             dbFactory = GetDbFactory(provider, connectionString);
             if (dbFactory != null)

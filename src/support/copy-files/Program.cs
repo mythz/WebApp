@@ -11,7 +11,7 @@ namespace CopyFiles
 {
     public class Program
     {
-        const string SourcePath = "~/../../apps/fs-xplat";
+        const string SourcePath = "~/../../apps/rockwind-vfs";
 
         public static void Main(string[] args)
         {
@@ -26,10 +26,10 @@ namespace CopyFiles
                 return;
             }
 
-            var destFs = GetVirtualFiles(args[0], args[1]);
+            var destFs = GetVirtualFiles(ResolveValue(args[0]), ResolveValue(args[1]));
             if (destFs == null)
             {
-                Console.WriteLine("Unknown Provider: " + args[0]);
+                Console.WriteLine("Unknown Provider: " + ResolveValue(args[0]));
                 return;
             }
 
@@ -47,6 +47,17 @@ namespace CopyFiles
                 Console.WriteLine("Copying: " + file.VirtualPath);
                 destFs.WriteFile(file);
             }
+        }
+
+        public static string ResolveValue(string value)
+        {
+            if (value?.StartsWith("$") == true)
+            {
+                var envValue = Environment.GetEnvironmentVariable(value.Substring(1));
+                if (!string.IsNullOrEmpty(envValue))
+                    return envValue;
+            }
+            return value;
         }
 
         public class AwsConfig
@@ -73,9 +84,12 @@ namespace CopyFiles
                     case "s3":
                     case "s3virtualfiles":
                         var s3Config = config.FromJsv<S3Config>();
-                        var region = RegionEndpoint.GetBySystemName(s3Config.Region);
-                        var awsClient = new AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
-                        return new S3VirtualFiles(awsClient, s3Config.Bucket);
+                        var region = RegionEndpoint.GetBySystemName(ResolveValue(s3Config.Region));
+                        var awsClient = new AmazonS3Client(
+                            ResolveValue(s3Config.AccessKey), 
+                            ResolveValue(s3Config.SecretKey), 
+                            region);
+                        return new S3VirtualFiles(awsClient, ResolveValue(s3Config.Bucket));
                 }
             }
 
