@@ -3,17 +3,16 @@ title: Search Redis
 -->
 
 {{ limit | default(100) | assignTo: limit }}
-{{ q | default('') | assignTo: q }}
-{{ call | default('') | assignTo: call }}
+{{ q     | default('')  | assignTo: q }}
+{{ key   | default('')  | assignTo: key }}
+{{ call  | exists | iif(call, iif(!isEmpty(key), fmt('GET {0}', key), '')) | assignTo: call }}
+{{ "?"  | addQueryString({ q, limit }) | assignTo: baseUrl }}
 
 <style>
     form {
         padding: 20px 0;
     }
 </style>
-
-{{ "?"  | addQueryString({ q, limit }) | assignTo: baseUrl }}
-{{ call | rightPart(' ') | assignTo: key }}
 
 {{ `<script>
 var baseUrl = "{0}";
@@ -26,7 +25,7 @@ $('input[name=q]').on('input', function(){ $('form').submit() })
 
 $('.details tbody tr').on('click', function(){
     var key = $(this).find('td:first').html();
-    location.href = baseUrl + '&call=' + encodeURIComponent("GET " + key);
+    location.href = baseUrl + '&key=' + encodeURIComponent(key);
 })
 
 $('.action.delete').on('click', function(){
@@ -59,7 +58,7 @@ $('.action.navkey').on('click', function(){
     </div>
     <div class="form-group">
         <div class="input-group input-group-lg">
-            <input type="text" name="call" class="form-control" placeholder="Redis Command" value="{{ call | ifExists }}" style="max-width:400px"
+            <input type="text" name="call" class="form-control" placeholder="Redis Command" value="{{ call | ifExists }}" style="min-width:340px; max-width:400px"
                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <span class="input-group-btn">
                 <button class="btn btn-secondary" type="submit">Go!</button>
@@ -88,5 +87,5 @@ $('.action.navkey').on('click', function(){
 
 {{ results | htmltable({ className: "table table-striped details auto-width" }) }}
 
-{{ "Your search did not match any keys." | ifEmpty(results) }}
+{{ "Your search did not match any keys." | ifEmpty(results) | ifNotEmpty(q) }}
 
