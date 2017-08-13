@@ -2,7 +2,7 @@
 title: Search Customers
 -->
 
-{{ limit | otherwise(20) | assignTo: limit }}
+{{ limit | default(20) | assignTo: limit }}
 
 <a id="back" href="javascript:history.back()">&#8592; Back</a>
 
@@ -10,12 +10,12 @@ title: Search Customers
     <label class="mr-sm-2" for="country">Country</label>
     <select class="custom-select mb-2 mr-sm-2 mb-sm-0" name="country" id="country">
         <option value=""></option>
-        {{ "select distinct Country from customer" | dbSelect | select: <option {'selected' | if(eq(country, it.Country))}>{ it.Country }</option> }}
+        {{ "select distinct Country from customer order by Country" | dbSelect | select: <option {'selected' | if(eq(country, it.Country))}>{ it.Country }</option> }}
     </select>
     <label class="mr-sm-2" for="city">City</label>
     <select class="custom-select mb-2 mr-sm-2 mb-sm-0" name="city" id="city">
         <option value=""></option>
-        {{ "select distinct City from customer" | dbSelect | select: <option {'selected' | if(eq(city, it.City))}>{ it.City }</option> }}
+        {{ "select distinct City from customer order by City" | dbSelect | select: <option {'selected' | if(eq(city, it.City))}>{ it.City }</option> }}
     </select>
 
     <label class="mr-sm-2" for="country">Limit</label>
@@ -31,7 +31,7 @@ title: Search Customers
 {{ sql | appendFmt(' where {0}', filters) | ifNotEmpty(filters) | otherwise(sql) | assignTo: sql }}
 
 {{ "table table-striped details" | assignTo: className }}
-{{ sql | appendFmt(' limit {0}', limit) | assignTo: sql }}
+{{ sql | appendFmt(" ORDER BY CompanyName {0}", sqlLimit(limit)) | assignTo: sql }}
 {{ sql | dbSelect({ country, city }) | htmltable({ className }) }}
 
 {{ `<script>
