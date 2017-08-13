@@ -2,6 +2,7 @@
 using System.IO;
 using Funq;
 using ServiceStack;
+using ServiceStack.Text;
 using ServiceStack.Redis;
 using ServiceStack.OrmLite;
 
@@ -51,13 +52,13 @@ namespace NorthwindData
             if (args.Length != 2)
             {
                 if (args.Length > 0)
-                    Console.WriteLine("Invalid Arguments: " + args.Join(" "));
+                    ("Invalid Arguments: " + args.Join(" ")).Print();
 
-                Console.WriteLine("Syntax:");
-                Console.WriteLine("northwind-data [provider] [connectionString]");
+                "Syntax:".Print();
+                "northwind-data [provider] [connectionString]".Print();
 
-                Console.WriteLine("\nAvailable Data Providers:");
-                Providers.Each(x => Console.WriteLine(" - " + x));
+                "\nAvailable Data Providers:".Print();
+                Providers.Each(x => $" - {x}".Print());
                 return;
             }
 
@@ -85,28 +86,52 @@ namespace NorthwindData
                 using (db = dbFactory.Open())
                 {
                     db.DropAndCreateTable<Category>();
+                    $"Created table {nameof(Category)}".Print();
                     db.DropAndCreateTable<Customer>();
+                    $"Created table {nameof(Customer)}".Print();
                     db.DropAndCreateTable<Employee>();
+                    $"Created table {nameof(Employee)}".Print();
                     db.DropAndCreateTable<EmployeeTerritory>();
+                    $"Created table {nameof(EmployeeTerritory)}".Print();
                     db.DropAndCreateTable<Order>();
+                    $"Created table {nameof(Order)}".Print();
                     db.DropAndCreateTable<OrderDetail>();
+                    $"Created table {nameof(OrderDetail)}".Print();
                     db.DropAndCreateTable<Product>();
+                    $"Created table {nameof(Product)}".Print();
                     db.DropAndCreateTable<Region>();
+                    $"Created table {nameof(Region)}".Print();
                     db.DropAndCreateTable<Shipper>();
+                    $"Created table {nameof(Shipper)}".Print();
                     db.DropAndCreateTable<Supplier>();
+                    $"Created table {nameof(Supplier)}".Print();
                     db.DropAndCreateTable<Territory>();
+                    $"Created table {nameof(Territory)}".Print();
+
+                    "".Print();
 
                     db.InsertAll(categories);
+                    $"Inserted {categories.Count} rows in {nameof(Category)}".Print();
                     db.InsertAll(customers);
+                    $"Inserted {customers.Count} rows in {nameof(Customer)}".Print();
                     db.InsertAll(employees);
+                    $"Inserted {employees.Count} rows in {nameof(Employee)}".Print();
                     db.InsertAll(employeeTerritories);
+                    $"Inserted {employeeTerritories.Count} rows in {nameof(EmployeeTerritory)}".Print();
                     db.InsertAll(orders);
+                    $"Inserted {orders.Count} rows in {nameof(Order)}".Print();
                     db.InsertAll(orderDetails);
+                    $"Inserted {orderDetails.Count} rows in {nameof(OrderDetail)}".Print();
                     db.InsertAll(products);
+                    $"Inserted {products.Count} rows in {nameof(Product)}".Print();
                     db.InsertAll(regions);
+                    $"Inserted {regions.Count} rows in {nameof(Region)}".Print();
                     db.InsertAll(shippers);
+                    $"Inserted {shippers.Count} rows in {nameof(Shipper)}".Print();
                     db.InsertAll(suppliers);
+                    $"Inserted {suppliers.Count} rows in {nameof(Supplier)}".Print();
                     db.InsertAll(territories);
+                    $"Inserted {territories.Count} rows in {nameof(Territory)}".Print();
                 }
             }
             else if (provider == "redis")
@@ -129,9 +154,9 @@ namespace NorthwindData
             }
             else
             {
-                Console.WriteLine("Unknown Provider: " + provider);
-                Console.WriteLine("Available Providers:");
-                Console.WriteLine(Providers.Join(", "));
+                $"Unknown Provider: {provider}".Print();
+                "Available Providers:".Print();
+                Providers.Join(", ").Print();
             }
         }
     }

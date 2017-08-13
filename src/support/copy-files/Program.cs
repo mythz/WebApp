@@ -11,7 +11,7 @@ namespace CopyFiles
 {
     public class Program
     {
-        const string SourcePath = "~/../../apps/fs-sqlite";
+        const string SourcePath = "~/../../apps/fs-xplat";
 
         public static void Main(string[] args)
         {
