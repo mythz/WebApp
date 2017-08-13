@@ -1,0 +1,4 @@
+debug true
+contentRoot ~/../../../../apps/redis
+webRoot ~/../../../../apps/redis
+redis.connection localhost:6379

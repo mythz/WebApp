@@ -1,5 +1,6 @@
 using ServiceStack;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using ServiceStack.Redis;
 using ServiceStack.Configuration;
@@ -21,11 +22,11 @@ namespace TemplateWebsites
         public long Size { get; set; }
     }
 
-    public class RedisTemplateFilters
+    public class RedisTemplateFilters : TemplateFilter
     {
         public IRedisClientsManager RedisManager { get; set; }
         public IAppSettings AppSettings { get; set; }
-        T exec<T>(Func<IRedisClient,T> fn)
+        T exec<T>(Func<IRedisClient, T> fn)
         {
             using (var db = RedisManager.GetClient())
             {
@@ -36,12 +37,15 @@ namespace TemplateWebsites
         {
             var args = new List<string>();
             var lastPos = 0;
-            for (var i = 0; i < cmd.Length; i++) {
+            for (var i = 0; i < cmd.Length; i++)
+            {
                 var c = cmd[i];
-                if (c == '{' || c == '[') { 
+                if (c == '{' || c == '[')
+                {
                     break; //stop splitting args if value is complex type
                 }
-                if (c == ' ') {
+                if (c == ' ')
+                {
                     var arg = cmd.Substring(lastPos, i);
                     args.Add(arg);
                     lastPos = i + 1;
@@ -56,10 +60,11 @@ namespace TemplateWebsites
             if (r == null)
                 return null;
 
-            if (r.Children != null && r.Children.Count > 0) 
+            if (r.Children != null && r.Children.Count > 0)
             {
                 var to = new List<object>();
-                for (var i = 0; i < r.Children.Count; i++) {
+                for (var i = 0; i < r.Children.Count; i++)
+                {
                     var child = r.Children[i];
                     var value = child.Text ?? toObject(child);
                     to.Add(value);
@@ -71,8 +76,12 @@ namespace TemplateWebsites
 
         public object redisCall(string cmd)
         {
+            if (string.IsNullOrEmpty(cmd))
+                return null;
+
             var args = parseCommandString(cmd);
-            var redisText = exec(r => r.Custom(args));
+            var objParams = args.Select(x => (object)x).ToArray();
+            var redisText = exec(r => r.Custom(objParams));
             var result = toObject(redisText);
             return result;
         }
@@ -80,10 +89,24 @@ namespace TemplateWebsites
         public List<SearchResult> redisSearchKeys(TemplateScopeContext scope, string query) => redisSearchKeys(scope, query, null);
         public List<SearchResult> redisSearchKeys(TemplateScopeContext scope, string query, object options)
         {
+            var json = redisSearchKeysAsJson(scope, query, options);
+            const string noResult = "{\"cursor\":0,\"results\":{}}";
+            if (json == noResult)
+                return new List<SearchResult>();
+
+            var searchResults = json.FromJson<SearchCursorResult>();
+            return searchResults.Results;
+        }
+
+        public string redisSearchKeysAsJson(TemplateScopeContext scope, string query, object options)
+        {
+            if (string.IsNullOrEmpty(query))
+                return null;
+
             var args = scope.AssertOptions(nameof(redisSearchKeys), options);
             var limit = args.TryGetValue("limit", out object value)
                 ? value.ConvertTo<int>()
-                : AppSettings.Get("redis.search.limit", 100);
+                : scope.GetValue("redis.search.limit") ?? 100;
 
             const string LuaScript = @"
 local limit = tonumber(ARGV[2])
@@ -102,8 +125,9 @@ repeat
 until cursor == 0 or len == limit
 local cursorAttrs = {['cursor'] = cursor, ['results'] = {}}
 if len == 0 then
-    return cursorAttrs
+    return cjson.encode(cursorAttrs)
 end
+
 local keyAttrs = {}
 for i,key in ipairs(keys) do
     local type = redis.call('type', key)['ok']
@@ -120,17 +144,16 @@ for i,key in ipairs(keys) do
     elseif type == 'hash' then
         size = redis.call('hlen', key)
     end
-    local attrs = {['id'] = key, ['type'] = type, ['ttl'] = pttl, ['size'] = size}
+    local attrs = {['id'] = key, ['type'] = type, ['ttl'] = pttl, ['size'] = size, ['foo'] = 'bar'}
     table.insert(keyAttrs, attrs)    
 end
 cursorAttrs['results'] = keyAttrs
 return cjson.encode(cursorAttrs)";
 
-            var json = exec(r => r.ExecCachedLua(LuaScript, sha1 => 
+            var json = exec(r => r.ExecCachedLua(LuaScript, sha1 =>
                 r.ExecLuaShaAsString(sha1, query, limit.ToString(), "0")));
 
-            var searchResults = json.FromJson<SearchCursorResult>();
-            return searchResults.Results;
+            return json;
         }
     }
 }
