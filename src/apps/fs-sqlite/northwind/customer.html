@@ -6,18 +6,18 @@ title: Customer Details
 
 {{ "select * from Customer where Id = @id" | dbSingle({ id }) | assignTo: customer }}
 
-{{ "select o.Id, 
+{{ 'select o.Id, 
            {0} Employee, 
            OrderDate, ShipCountry, ShippedDate, 
            {1} Total 
-      from [Order] o
+      from {2} o
            inner join
-           Orderdetail d on o.Id = d.OrderId
+           OrderDetail d on o.Id = d.OrderId
            inner join 
            Employee e on o.EmployeeId = e.Id
      where CustomerId = @id
-     group by o.Id, EmployeeId, FirstName, LastName, OrderDate, ShipCountry, ShippedDate" 
-   | fmt(sqlConcat(["e.FirstName", "' '", "e.LastName"]), sqlCurrency("sum((d.Unitprice * d.Quantity) - d.discount)"))
+     group by o.Id, EmployeeId, FirstName, LastName, OrderDate, ShipCountry, ShippedDate'
+   | fmt(sqlConcat(["e.FirstName", "' '", "e.LastName"]), sqlCurrency("sum((d.Unitprice * d.Quantity) - d.discount)"), sqlQuote("Order"))
    | dbSelect({ id }) | assignTo: orders }}
 
 {{ { customer, orders } | ifExists(customer) | selectPartial: customer-details }}
