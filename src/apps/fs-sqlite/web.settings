@@ -1,6 +1,0 @@
-debug true
-port 5000
-contentRoot ~/../../../../apps
-webRoot ~/../../../../apps/fs-sqlite
-db sqlite
-db.connection ~/northwind.sqlite

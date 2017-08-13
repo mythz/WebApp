@@ -1,0 +1,22 @@
+<!--
+title: Products
+-->
+
+<a id="back" href="javascript:history.back()">&#8592; Back</a>
+
+{{ `select p."Id", "ProductName",
+     c."CategoryName" Category,
+     s."CompanyName" Supplier, 
+     "QuantityPerUnit", 
+     {0} UnitPrice, 
+     "UnitsInStock", "UnitsOnOrder", "ReorderLevel"   
+     from "Product" p
+          inner join
+          "Category" c on p."CategoryId" = c."Id"
+          inner join 
+          "Supplier" s on p."SupplierId" = s."Id"
+    where "Discontinued" = {1}`
+  | fmt(sqlCurrency(`"UnitPrice"`), sqlFalse)
+  | assignTo: sql }}
+
+{{ sql | dbSelect | htmltable({ className: "table table-striped" }) }}

@@ -1,0 +1,32 @@
+<!--
+title: Customer Details
+-->
+
+<a id="back" href="javascript:history.back()">&#8592; Back</a>
+
+{{ `select * from "Customer" where "Id" = @id` | dbSingle({ id }) | assignTo: customer }}
+
+{{ `select o."Id", 
+           {0} "Employee", 
+           "OrderDate", "ShipCountry", "ShippedDate", 
+           {1} Total 
+      from "Order" o
+           inner join
+           "OrderDetail" d on o."Id" = d."OrderId"
+           inner join 
+           "Employee" e on o."EmployeeId" = e."Id"
+     where "CustomerId" = @id
+     group by o."Id", e."FirstName", e."LastName", "EmployeeId", "OrderDate", "ShipCountry", "ShippedDate"` 
+   | fmt(sqlConcat([`e."FirstName"`, `' '`, `e."LastName"`]), sqlCurrency(`sum((d."UnitPrice" * d."Quantity") - d."Discount")`))
+   | dbSelect({ id }) | assignTo: orders }}
+
+{{ { customer, orders } | ifExists(customer) | selectPartial: customer-details }}
+{{ "No Customer has id: {0}" | fmt(id) | ifNo(customer) }}
+
+{{ `<script>
+$("form select:first").focus();
+$('.details tbody tr').on('click', function(){
+    var id = $(this).find("td:first").html();
+    location.href = 'order?id=' + id;
+})
+</script>` | raw | assignTo: scripts }}
