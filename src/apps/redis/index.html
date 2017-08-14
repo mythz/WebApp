@@ -6,7 +6,7 @@ title: Search Redis
 {{ q     | default('')  | assignTo: q }}
 {{ key   | default('')  | assignTo: key }}
 {{ call  | exists | iif(call, iif(!isEmpty(key), fmt('GET {0}', key), '')) | assignTo: call }}
-{{ "?"  | addQueryString({ q, limit }) | assignTo: baseUrl }}
+{{ "?"   | addQueryString({ q, limit }) | assignTo: baseUrl }}
 
 <style>
     form {
@@ -21,11 +21,17 @@ var limit = "{2}";
 </script>` | fmt(baseUrl, key, limit) | raw }}
 
 {{ `<script>
-$('input[name=q]').on('input', function(){ $('form').submit() })
+$('input[name=q]').on('input', function(){ $(this).closest('form').submit() })
 
 $('.details tbody tr').on('click', function(){
     var key = $(this).find('td:first').html();
     location.href = baseUrl + '&key=' + encodeURIComponent(key);
+})
+
+$('.action.edit').on('click', function(){
+    if (!key) return;
+    $('#setKey').val(key);
+    $('#setValue').val(window.keyValue);
 })
 
 $('.action.delete').on('click', function(){
@@ -34,6 +40,17 @@ $('.action.delete').on('click', function(){
 
 $('.action.navkey').on('click', function(){
     location.href = '?q=' + encodeURIComponent(key.split(':').slice(0, $(this).data('pos') + 1).join(':'));
+})
+
+$('#setKey,#setValue').on('input', function(){
+    var key = $('#setKey').val();
+    $(this).closest('form').find('button').attr('disabled', !key);
+    $('#setKey').val(key.replace(/\s+/g,''))
+})
+$('#create-key').submit(function(e){
+    e.preventDefault();
+    var key = $('#setKey').val();
+    location.href = '?q=' + key + '&call=' + encodeURIComponent("SET " + key + " " + $('#setValue').val());
 })
 </script>` | raw | assignTo: scripts }}
 
@@ -67,25 +84,59 @@ $('.action.navkey').on('click', function(){
     </div>
 </form>
 
-{{ q | ifNotEmpty | select: <h3>Results for '{ it }'</h3> }}
+{{ ['flush','monitor','brpop','blpop'] | where: contains(lower(call), it)
+   | ifNotEmpty | assignTo: illegalCommand }}
 
-{{ call | ifExists | redisCall | jsonToObjectDictionary | assignTo: obj }}
+{{ illegalCommand | select: <p class="text-danger">Command is not allowed.</p> }}
+
+{{ q    | endIfEmpty | select: <h3>Results for '{ it }'</h3> }}
+{{ call | endIf(or(isEmpty(call), exists(illegalCommand))) | redisCall | assignTo: json }}
+{{ json | endIfEmpty | parseJson | default(json) | assignTo: obj }}
+
+<script>window.keyValue = '{{ json | replace("'","\'") | raw }}';</script>
 
 <div style="position:absolute;margin-left:535px;max-width:620px">
     <table class="table table-bordered auto-width">
-        {{ obj | ifNotEmpty | toList | select: <tr><th>{ it.Key }</th><td>{ it.Value }</td> }}
-        {{ obj | ifNotEmpty | select: <tr><td colspan="2" style="text-align:right"><span class='action delete'>delete</a></td></tr> }}            
+        {{ obj | endIf(!isDictionary(obj))  | toList | select: <tr><th>{ it.Key }</th><td>{ it.Value }</td> }}
+        {{ obj | endIf(!isList(obj))        | toList | select: <tr><td>{ it | htmltable }</td> }}
+        {{ obj | endIf(or(isDictionary(obj),isList(obj))) | select: <tr><td colspan="2">{ it }</td></tr> }}
+
+        {{ obj | endIf(or(isEmpty(it), isEmpty(key))) | use(['edit','delete']) | select: <span class='action {it}'>{it}</a>
+               | assignTo: actions }}
+        {{ actions | select: <tr><td colspan="2" style="text-align:right">{ actions | raw }</td></tr> }}            
     </table>
 
-    <div class="breadcrumbs">
-        {{ key | ifNotEmpty(obj) | split(':') | select: { '<b> / </b>' | if(gt(index,0)) | raw }<span class='action navkey' data-pos='{ index }'>{ it }</span> }}
+    <div class="breadcrumbs" style="color:red">
+        {{ key | ifExists(obj) | split(':') | assignTo: parts }}
+        {{ parts | endIf(!isList(parts)) | if(hasMinCount(parts,2)) | select: { '<b> / </b>' | if(gt(index,0)) | raw }<span class='action navkey' data-pos='{ index }'>{ it }</span> }}
     </div>
+
+    <form id="create-key" style="margin:40px 0 0 0">
+        <h3>Set Key</h3>
+        <div class="form-group">
+            <div class="input-group input-group-lg">
+                <input id="setKey" type="text" class="form-control" placeholder="Key" value="" style="min-width:400px"
+                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="input-group input-group-lg">
+                <textarea id="setValue" class="form-control" placeholder="Value" value="" style="min-width:400px;min-height:200px"
+                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <span class="input-group-btn">
+                <button class="btn btn-secondary" disabled>Submit</button>
+            </span>
+        </div>
+    </form>
 </div>
 
 {{ "{0}*" | fmt(q) | ifNotEmpty(q) | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
    | assignTo: results }}
 
-{{ results | htmltable({ className: "table table-striped details auto-width" }) }}
+{{ results | if(isList(results)) | htmltable({ className: "table table-striped details auto-width" }) }}
 
-{{ "Your search did not match any keys." | ifEmpty(results) | ifNotEmpty(q) }}
+{{ "Your search did not match any keys." | if(and(isEmpty(results), !isEmpty(q))) }}
 

@@ -33,6 +33,11 @@ namespace TemplateWebsites
                 return fn(db);
             }
         }
+
+        static Dictionary<string, int> cmdArgCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) {
+            { "SET", 3 }
+        };
+
         List<string> parseCommandString(string cmd)
         {
             var args = new List<string>();
@@ -46,9 +51,13 @@ namespace TemplateWebsites
                 }
                 if (c == ' ')
                 {
-                    var arg = cmd.Substring(lastPos, i);
+                    var arg = cmd.Substring(lastPos, i - lastPos);
                     args.Add(arg);
                     lastPos = i + 1;
+
+                    //if we've reached the command args count, capture the rest of the body as the last arg
+                    if (cmdArgCounts.TryGetValue(args[0], out int argCount) && args.Count == argCount - 1)
+                        break;
                 }
             }
             args.Add(cmd.Substring(lastPos));
