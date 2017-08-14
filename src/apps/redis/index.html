@@ -5,7 +5,7 @@ title: Search Redis
 {{ limit | default(100) | assignTo: limit }}
 {{ q     | default('')  | assignTo: q }}
 {{ key   | default('')  | assignTo: key }}
-{{ call  | exists | iif(call, iif(!isEmpty(key), fmt('GET {0}', key), '')) | assignTo: call }}
+{{ call  | ifExists     | otherwise(iif(!isEmpty(key), fmt('GET {0}', key), '')) | assignTo: call }}
 {{ "?"   | addQueryString({ q, limit }) | assignTo: baseUrl }}
 
 <style>
@@ -57,7 +57,7 @@ $('#create-key').submit(function(e){
 <form role="search" class="form-inline">
     <div class="form-group">
         <div class="input-group input-group-lg">
-            <input type="text" name="q" class="form-control" placeholder="Search for key..." aria-label="Search for key..." value="{{ q }}"
+            <input type="text" name="q" class="form-control" placeholder="Search for key, e.g. urn..." aria-label="Search for key..." value="{{ q }}"
                    autofocus onfocus="var hold=this.value; this.value=''; this.value=hold"
                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <span class="input-group-btn">
@@ -84,31 +84,31 @@ $('#create-key').submit(function(e){
     </div>
 </form>
 
-{{ ['flush','monitor','brpop','blpop'] | where: contains(lower(call), it)
-   | ifNotEmpty | assignTo: illegalCommand }}
+{{ ['flush','monitor','brpop','blpop'] | any: contains(lower(call), it)
+   | assignTo: illegalCommand }}
 
-{{ illegalCommand | select: <p class="text-danger">Command is not allowed.</p> }}
+{{ illegalCommand | ifDo | select: <p class="text-danger">Command is not allowed.</p> }}
 
 {{ q    | endIfEmpty | select: <h3>Results for '{ it }'</h3> }}
-{{ call | endIf(or(isEmpty(call), exists(illegalCommand))) | redisCall | assignTo: json }}
+{{ call | endIf(or(isEmpty(call), illegalCommand)) | redisCall | assignTo: json }}
 {{ json | endIfEmpty | parseJson | default(json) | assignTo: obj }}
 
-<script>window.keyValue = '{{ json | replace("'","\'") | raw }}';</script>
+<script>window.keyValue = '{{ json | jsString }}';</script>
 
 <div style="position:absolute;margin-left:535px;max-width:620px">
     <table class="table table-bordered auto-width">
-        {{ obj | endIf(!isDictionary(obj))  | toList | select: <tr><th>{ it.Key }</th><td>{ it.Value }</td> }}
-        {{ obj | endIf(!isList(obj))        | toList | select: <tr><td>{ it | htmltable }</td> }}
-        {{ obj | endIf(or(isDictionary(obj),isList(obj))) | select: <tr><td colspan="2">{ it }</td></tr> }}
+        {{ obj | useIf(isDictionary(obj)) | toList | select: <tr><th>{ it.Key }</th><td>{ it.Value }</td> }}
+        {{ obj | useIf(isList(obj))       | toList | select: <tr><td>{ it | htmltable }</td> }}
+        {{ obj | endIf(or(isDictionary(obj), isList(obj))) | select: <tr><td colspan="2">{ it }</td></tr> }}
 
-        {{ obj | endIf(or(isEmpty(it), isEmpty(key))) | use(['edit','delete']) | select: <span class='action {it}'>{it}</a>
-               | assignTo: actions }}
+        {{ ['edit','delete'] | useIf(!isEmpty(key)) | select: <span class='action {it}'>{it}</a>
+           | assignTo: actions }}
         {{ actions | select: <tr><td colspan="2" style="text-align:right">{ actions | raw }</td></tr> }}            
     </table>
 
     <div class="breadcrumbs" style="color:red">
-        {{ key | ifExists(obj) | split(':') | assignTo: parts }}
-        {{ parts | endIf(!isList(parts)) | if(hasMinCount(parts,2)) | select: { '<b> / </b>' | if(gt(index,0)) | raw }<span class='action navkey' data-pos='{ index }'>{ it }</span> }}
+        {{ key   | ifExists(obj)  | split(':')   | assignTo: parts }}
+        {{ parts | hasMinCount(2) | ifUse(parts) | select: { '<b> / </b>' | if(!isZero(index)) | raw }<span class='action navkey' data-pos='{ index }'>{ it }</span> }}
     </div>
 
     <form id="create-key" style="margin:40px 0 0 0">
@@ -133,10 +133,9 @@ $('#create-key').submit(function(e){
     </form>
 </div>
 
-{{ "{0}*" | fmt(q) | ifNotEmpty(q) | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
-   | assignTo: results }}
+{{ q | endIfEmpty | append("*") | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
+     | assignTo: results }}
 
-{{ results | if(isList(results)) | htmltable({ className: "table table-striped details auto-width" }) }}
+{{ results | isList | ifUse(results) | htmltable({ className: "table table-striped details auto-width" }) }}
 
 {{ "Your search did not match any keys." | if(and(isEmpty(results), !isEmpty(q))) }}
-
