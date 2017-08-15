@@ -278,7 +278,10 @@ namespace TemplateWebsites
                 VirtualFiles = writableFs;
 
             var feature = new TemplatePagesFeature {
-                PageFormats = { new MarkdownPageFormat() }
+                PageFormats = { new MarkdownPageFormat() },
+                Args = {
+                    ["debug"] = Config.DebugMode
+                }
             };
 
             var checkForModifiedPagesAfter = GetAppSetting("checkForModifiedPagesAfter");
