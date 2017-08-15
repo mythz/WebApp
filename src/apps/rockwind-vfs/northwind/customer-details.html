@@ -24,7 +24,7 @@
     </tr>
 </table>
 
-{{ it.orders | htmltable({ 
+{{ it.orders | htmlDump({ 
     className: 'table table-striped details', 
     caption: fmt("{0}'s Orders", c.CompanyName),
     emptyCaption: fmt("There's no orders from {0} yet", c.CompanyName) 

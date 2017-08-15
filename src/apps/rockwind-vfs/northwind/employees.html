@@ -6,7 +6,7 @@ title: Employees
 
 {{ `select "Id", "TitleOfCourtesy" as "Title", "FirstName", "LastName", "City", "Region", "Country", "HomePhone", "Extension" from "Employee"` | assignTo: sql }}
 
-{{ sql | dbSelect | htmltable({ className: "table table-striped details" }) }}
+{{ sql | dbSelect | htmlDump({ className: "table table-striped details" }) }}
 
 {{ `<script>
 $('.details tbody tr').on('click', function(){

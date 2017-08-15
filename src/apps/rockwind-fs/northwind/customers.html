@@ -26,13 +26,13 @@ title: Search Customers
 
 {{ "select Id, CompanyName, ContactName, ContactTitle, City, Country from Customer" | assignTo: sql }}
 
-{{ [ifNotEmpty("Country = @country", country), ifNotEmpty("City = @city", city)] | where: !isNull(it) 
+{{ [ifNotEmpty("Country = @country", country), ifNotEmpty("City = @city", city)] 
+   | where: !isNull(it) 
    | join(" and ") | assignTo: filters }}
-{{ sql | appendFmt(' where {0}', filters) | ifNotEmpty(filters) | otherwise(sql) | assignTo: sql }}
+{{ filters | endIfEmpty | useFmt("{0} where {1}", sql, filters) | assignTo: sql }}
 
-{{ "table table-striped details" | assignTo: className }}
 {{ sql | appendFmt(" ORDER BY CompanyName {0}", sqlLimit(limit)) | assignTo: sql }}
-{{ sql | dbSelect({ country, city }) | htmltable({ className }) }}
+{{ sql | dbSelect({ country, city }) | htmlDump({ className: "table table-striped details" }) }}
 
 {{ `<script>
 $('.details tbody tr').on('click', function(){

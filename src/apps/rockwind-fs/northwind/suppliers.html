@@ -6,4 +6,4 @@ title: Suppliers
 
 {{ "select Id, CompanyName, ContactName, ContactTitle, City, PostalCode, Country, Phone from Supplier" | assignTo: sql }}
 
-{{ sql | dbSelect | htmltable({ className: "table table-striped" }) }}
+{{ sql | dbSelect | htmlDump({ className: "table table-striped" }) }}

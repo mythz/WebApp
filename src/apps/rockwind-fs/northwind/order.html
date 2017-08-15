@@ -4,7 +4,8 @@ title: Order Details
 
 <a id="back" href="javascript:history.back()">&#8592; Back</a>
 
-{{ "select o.Id, OrderDate, CustomerId, Freight, 
+{{ id | endIfEmpty | useFmt(
+   "select o.Id, OrderDate, CustomerId, Freight, 
            {0} as Employee, e.Id as EmployeeId,
            s.CompanyName as ShipVia, 
            ShipAddress, ShipCity, ShipPostalCode, ShipCountry
@@ -13,18 +14,19 @@ title: Order Details
            Employee e on o.EmployeeId = e.Id
            left join 
            Shipper s on o.ShipVia = s.Id
-     where o.Id = @id" 
-   | fmt(sqlConcat(["e.FirstName", "' '", "e.LastName"]), sqlQuote("Order")) 
+     where o.Id = @id",
+     sqlConcat(["e.FirstName", "' '", "e.LastName"]), sqlQuote("Order")) 
    | dbSingle({ id }) | assignTo: order }}
 
-{{ "select p.ProductName, 
+{{ id | endIfEmpty | useFmt(
+   "select p.ProductName, 
            {0} UnitPrice,
            Quantity, Discount
      from orderDetail od
           inner join
           Product p on od.ProductId = p.Id
-    where OrderId = @id" 
-  | fmt(sqlCurrency("od.UnitPrice"))
+    where OrderId = @id",
+    sqlCurrency("od.UnitPrice"))
   | dbSelect({ id }) | assignTo: orderDetails }}
 
 {{ { order, orderDetails } | ifExists(order) | selectPartial: order-details }}

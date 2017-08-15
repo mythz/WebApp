@@ -19,4 +19,4 @@ title: Products
   | fmt(sqlCurrency("UnitPrice"))
   | assignTo: sql }}
 
-{{ sql | dbSelect | htmltable({ className: "table table-striped" }) }}
+{{ sql | dbSelect | htmlDump({ className: "table table-striped" }) }}

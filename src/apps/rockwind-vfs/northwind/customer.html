@@ -4,9 +4,10 @@ title: Customer Details
 
 <a id="back" href="javascript:history.back()">&#8592; Back</a>
 
-{{ `select * from "Customer" where "Id" = @id` | dbSingle({ id }) | assignTo: customer }}
+{{ id | endIfEmpty | use(`select * from "Customer" where "Id" = @id`) | dbSingle({ id }) | assignTo: customer }}
 
-{{ `select o."Id", 
+{{ id | endIfEmpty | useFmt(
+  `select o."Id", 
            {0} "Employee", 
            "OrderDate", "ShipCountry", "ShippedDate", 
            {1} Total 
@@ -16,12 +17,12 @@ title: Customer Details
            inner join 
            "Employee" e on o."EmployeeId" = e."Id"
      where "CustomerId" = @id
-     group by o."Id", e."FirstName", e."LastName", "EmployeeId", "OrderDate", "ShipCountry", "ShippedDate"` 
-   | fmt(sqlConcat([`e."FirstName"`, `' '`, `e."LastName"`]), sqlCurrency(`sum((d."UnitPrice" * d."Quantity") - d."Discount")`))
+     group by o."Id", e."FirstName", e."LastName", "EmployeeId", "OrderDate", "ShipCountry", "ShippedDate"`,
+     sqlConcat([`e."FirstName"`, `' '`, `e."LastName"`]), sqlCurrency(`sum((d."UnitPrice" * d."Quantity") - d."Discount")`))
    | dbSelect({ id }) | assignTo: orders }}
 
-{{ { customer, orders } | ifExists(customer) | selectPartial: customer-details }}
-{{ "No Customer has id: {0}" | fmt(id) | ifNo(customer) }}
+{{ { customer, orders }   | ifExists(customer) | selectPartial: customer-details }}
+{{ customer | endIfExists | useFmt("No Customer has id: {0}", id) }}
 
 {{ `<script>
 $("form select:first").focus();
