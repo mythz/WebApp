@@ -5,7 +5,6 @@ title: Search Redis
 {{ limit | default(100) | assignTo: limit }}
 {{ q     | default('')  | assignTo: q }}
 {{ key   | default('')  | assignTo: key }}
-{{ call  | ifExists     | otherwise(iif(!isEmpty(key), fmt('GET {0}', key), '')) | assignTo: call }}
 {{ "?"   | addQueryString({ q, limit }) | assignTo: baseUrl }}
 
 {{ `<script>
@@ -19,7 +18,18 @@ $('input[name=q]').on('input', function(){ $(this).closest('form').submit() })
 
 $('.details tbody tr').on('click', function(){
     var key = $(this).find('td:first').html()
-    location.href = baseUrl + '&key=' + encodeURIComponent(key)
+    var type = $(this).find('td:nth-child(2)').html()
+    var call = type == "string" ?
+        "GET " + key
+        : type == "list" ? 
+        "LRANGE " + key + " 0 -1"
+        : type == "set" ?
+        "SMEMBERS " + key
+        : type == "zset" ?
+        "ZRANGE " + key + " 0 -1 WITHSCORES" 
+        : type == "hash" ?
+        "HGETALL " + key  : null;
+    location.href = baseUrl + '&key=' + encodeURIComponent(key) + "&type=" + type + "&call=" + encodeURIComponent(call)
 })
 
 $('.action.edit').on('click', function(){
@@ -47,6 +57,10 @@ $('#create-key').submit(function(e){
     var key = $('#setKey').val()
     location.href = '?q=' + key + '&call=' + encodeURIComponent("SET " + key + " " + $('#setValue').val())
 })
+
+$("#search-results tr td:first-child").each(function(){
+    if ($(this).html() == key) $(this).parent().addClass('active')
+})
 </script>` | raw | assignTo: scripts }}
 
 <form role="search" class="form-inline">
@@ -55,9 +69,6 @@ $('#create-key').submit(function(e){
             <input type="text" name="q" class="form-control" placeholder="Search for key, e.g. urn..." aria-label="Search for key..." value="{{ q }}"
                    autofocus onfocus="var hold=this.value; this.value=''; this.value=hold"
                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <span class="input-group-btn">
-                <button class="btn btn-secondary" type="submit">Go!</button>
-            </span>
         </div>
         <div class="col-auto"></div>
         <div class="input-group input-group-lg">
@@ -70,7 +81,7 @@ $('#create-key').submit(function(e){
     </div>
     <div class="form-group">
         <div class="input-group input-group-lg">
-            <input type="text" name="call" class="form-control" placeholder="Redis Command" value="{{ call | ifExists }}" style="min-width:340px; max-width:400px"
+            <input type="text" name="call" class="form-control" placeholder="Redis Command" value="{{ call | ifExists }}" style="min-width:410px"
                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <span class="input-group-btn">
                 <button class="btn btn-secondary" type="submit">Go!</button>
@@ -79,18 +90,16 @@ $('#create-key').submit(function(e){
     </div>
 </form>
 
-{{ ['flush','monitor','brpop','blpop'] | any: contains(lower(call), it)
+{{ ['flush','monitor','brpop','blpop'] | ifNotEmpty(call) | any: contains(lower(call), it)
    | assignTo: illegalCommand }}
 
-{{ illegalCommand | ifDo | select: <p class="text-danger">Command is not allowed.</p> }}
-
-{{ q    | endIfEmpty | select: <h3>Results for '{ it }'</h3> }}
-{{ call | endIf(or(isEmpty(call), illegalCommand)) | redisCall | assignTo: json }}
+{{ call | endIfEmpty | endIf(illegalCommand) | redisCall | assignTo: json }}
 {{ json | endIfEmpty | parseJson | default(json) | assignTo: obj }}
 
 <script>window.keyValue = '{{ json | jsString }}';</script>
 
-<div style="position:absolute;margin-left:535px;max-width:620px">
+<div style="position:absolute;margin-left:465px;max-width:900px;padding-right:20px">
+    {{ illegalCommand | ifDo | select: <h3 class="text-danger">Command is not allowed.</h3> }}
 
     <table class="table table-bordered auto-width">
         <caption>
@@ -98,16 +107,15 @@ $('#create-key').submit(function(e){
         {{ parts | hasMinCount(2) | ifUse(parts) | select: { '>' | if(!isZero(index)) }<span class='action q' data-pos='{ index }'>{ it }</span> }}
         </caption>
 
-        {{ obj | useIf(isDictionary(obj)) | toList | select: <tr><th>{ it.Key }</th><td>{ it.Value }</td> }}
-        {{ obj | useIf(isList(obj))       | toList | select: <tr><td>{ it | htmltable }</td> }}
-        {{ obj | endIf(or(isDictionary(obj), isList(obj))) | select: <tr><td colspan="2">{ it }</td></tr> }}
+        {{ obj  | endIfEmpty | htmlDump({ className: "table table-striped" }) | assignTo: html }}
+        {{ html | ifExists   | select: <tr><td>{ it }</td></tr> }}
 
-        {{ ['edit','delete'] | useIf(!isEmpty(key)) | select: <span class='action {it}'>{it}</a>
+        {{ ['edit','delete'] | useIf(and(!isEmpty(obj), equals(type,'string'))) | select: <span class='action {it}'>{it}</span>
            | assignTo: actions }}
         {{ actions | select: <tr><td colspan="2" style="text-align:right">{ actions | raw }</td></tr> }}            
     </table>
 
-    <form id="create-key" style="margin:40px 0 0 0">
+    <form id="create-key" style="margin-top:40px">
         <h3>Set Key</h3>
         <div class="form-group">
             <div class="input-group input-group-lg">
@@ -130,9 +138,10 @@ $('#create-key').submit(function(e){
 
 </div>
 
-{{ q | endIfEmpty | append("*") | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
-     | assignTo: results }}
-
-{{ results | isList | ifUse(results) | htmltable({ className: "table table-striped details auto-width" }) }}
-
-{{ "Your search did not match any keys." | if(and(isEmpty(results), !isEmpty(q))) }}
+<div id="search-results">
+    {{ q | endIfEmpty | append("*") | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
+        | assignTo: searchResults }}
+    {{ q| endIfEmpty | select: <h3>Results for '{ it }'</h3> }}
+    {{ searchResults | useIf(isList(searchResults))      | htmlDump({ className: "table table-striped details auto-width" }) }}
+    {{ searchResults | endIfNotEmpty | doIf(!isEmpty(q)) | select: Your search did not match any keys.. }}
+</div>
