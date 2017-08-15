@@ -8,12 +8,6 @@ title: Search Redis
 {{ call  | ifExists     | otherwise(iif(!isEmpty(key), fmt('GET {0}', key), '')) | assignTo: call }}
 {{ "?"   | addQueryString({ q, limit }) | assignTo: baseUrl }}
 
-<style>
-    form {
-        padding: 20px 0;
-    }
-</style>
-
 {{ `<script>
 var baseUrl = "{0}";
 var key = "{1}";
@@ -24,33 +18,34 @@ var limit = "{2}";
 $('input[name=q]').on('input', function(){ $(this).closest('form').submit() })
 
 $('.details tbody tr').on('click', function(){
-    var key = $(this).find('td:first').html();
-    location.href = baseUrl + '&key=' + encodeURIComponent(key);
+    var key = $(this).find('td:first').html()
+    location.href = baseUrl + '&key=' + encodeURIComponent(key)
 })
 
 $('.action.edit').on('click', function(){
-    if (!key) return;
-    $('#setKey').val(key);
-    $('#setValue').val(window.keyValue);
+    if (!key) return
+    $('#setKey').val(key)
+    $('#setValue').val(window.keyValue)
 })
 
 $('.action.delete').on('click', function(){
-    location.href = baseUrl + '&call=' + encodeURIComponent("DEL " + key);
+    location.href = baseUrl + '&call=' + encodeURIComponent("DEL " + key)
 })
 
-$('.action.navkey').on('click', function(){
-    location.href = '?q=' + encodeURIComponent(key.split(':').slice(0, $(this).data('pos') + 1).join(':'));
+$('.action.q').on('click', function(){
+    location.href = '?q=' + encodeURIComponent(key.split(':').slice(0, $(this).data('pos') + 1).join(':'))
 })
 
 $('#setKey,#setValue').on('input', function(){
-    var key = $('#setKey').val();
-    $(this).closest('form').find('button').attr('disabled', !key);
-    $('#setKey').val(key.replace(/\s+/g,''))
+    var newKey = $('#setKey').val()
+    $(this).closest('form').find('button').attr('disabled', !newKey || (newKey == key && $('#setValue').val() == window.keyValue))
+    $('#setKey').val(newKey.replace(/\s+/g,''))
 })
+
 $('#create-key').submit(function(e){
-    e.preventDefault();
-    var key = $('#setKey').val();
-    location.href = '?q=' + key + '&call=' + encodeURIComponent("SET " + key + " " + $('#setValue').val());
+    e.preventDefault()
+    var key = $('#setKey').val()
+    location.href = '?q=' + key + '&call=' + encodeURIComponent("SET " + key + " " + $('#setValue').val())
 })
 </script>` | raw | assignTo: scripts }}
 
@@ -96,7 +91,13 @@ $('#create-key').submit(function(e){
 <script>window.keyValue = '{{ json | jsString }}';</script>
 
 <div style="position:absolute;margin-left:535px;max-width:620px">
+
     <table class="table table-bordered auto-width">
+        <caption>
+        {{ key   | ifExists(obj)  | split(':')   | assignTo: parts }}
+        {{ parts | hasMinCount(2) | ifUse(parts) | select: { '>' | if(!isZero(index)) }<span class='action q' data-pos='{ index }'>{ it }</span> }}
+        </caption>
+
         {{ obj | useIf(isDictionary(obj)) | toList | select: <tr><th>{ it.Key }</th><td>{ it.Value }</td> }}
         {{ obj | useIf(isList(obj))       | toList | select: <tr><td>{ it | htmltable }</td> }}
         {{ obj | endIf(or(isDictionary(obj), isList(obj))) | select: <tr><td colspan="2">{ it }</td></tr> }}
@@ -105,11 +106,6 @@ $('#create-key').submit(function(e){
            | assignTo: actions }}
         {{ actions | select: <tr><td colspan="2" style="text-align:right">{ actions | raw }</td></tr> }}            
     </table>
-
-    <div class="breadcrumbs" style="color:red">
-        {{ key   | ifExists(obj)  | split(':')   | assignTo: parts }}
-        {{ parts | hasMinCount(2) | ifUse(parts) | select: { '<b> / </b>' | if(!isZero(index)) | raw }<span class='action navkey' data-pos='{ index }'>{ it }</span> }}
-    </div>
 
     <form id="create-key" style="margin:40px 0 0 0">
         <h3>Set Key</h3>
@@ -131,6 +127,7 @@ $('#create-key').submit(function(e){
             </span>
         </div>
     </form>
+
 </div>
 
 {{ q | endIfEmpty | append("*") | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
