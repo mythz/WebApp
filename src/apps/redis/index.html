@@ -99,21 +99,22 @@ $("#search-results tr td:first-child").each(function(){
 <script>window.keyValue = '{{ json | jsString }}';</script>
 
 <div style="position:absolute;margin-left:465px;max-width:900px;padding-right:20px">
-    {{ illegalCommand | ifDo | select: <h3 class="text-danger">Command is not allowed.</h3> }}
-
     <table class="table table-bordered auto-width">
         <caption>
         {{ key   | ifExists(obj)  | split(':')   | assignTo: parts }}
-        {{ parts | hasMinCount(2) | ifUse(parts) | select: { '>' | if(!isZero(index)) }<span class='action q' data-pos='{ index }'>{ it }</span> }}
+        {{ parts | hasMinCount(2) | ifUse(parts) | select: { '>' | if(!isZero(index)) }<span class="action q" data-pos="{ index }">{ it }</span> }}
         </caption>
 
         {{ obj  | endIfEmpty | htmlDump({ className: "table table-striped" }) | assignTo: html }}
         {{ html | ifExists   | select: <tr><td>{ it }</td></tr> }}
 
-        {{ ['edit','delete'] | useIf(and(!isEmpty(obj), equals(type,'string'))) | select: <span class='action {it}'>{it}</span>
+        {{ ['edit','delete'] | useIf(and(!isEmpty(obj), equals(type,'string'))) | select: <span class="action {it}">{it}</span>
            | assignTo: actions }}
         {{ actions | select: <tr><td colspan="2" style="text-align:right">{ actions | raw }</td></tr> }}            
     </table>
+
+    {{ illegalCommand | ifDo | select: <div class="alert alert-danger">Command is not allowed.</div> }}
+    {{ htmlErrorMessage }}
 
     <form id="create-key" style="margin-top:40px">
         <h3>Set Key</h3>

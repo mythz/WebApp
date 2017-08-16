@@ -85,44 +85,8 @@ namespace TemplateWebsites
         }
     }
 
-    [Route("/reload/page")]
-    public class ShouldReloadPage : IReturn<ShouldReloadPageResponse>
-    {
-        public string Path { get; set; }
-        public string ETag { get; set; }
-    }
-
-    public class ShouldReloadPageResponse
-    {
-        public string ETag { get; set; }
-        public bool Reload { get; set; }
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
     public class MyServices : Service 
     {
-        public ITemplatePages Pages { get; set; }
-
-        public async Task<ShouldReloadPageResponse> Any(ShouldReloadPage request)
-        {
-            if (!HostContext.DebugMode)
-                throw new NotImplementedException("set 'debug true' in web.settings to enable this service");
-
-            var page = Pages.GetPage(request.Path ?? "/");
-            if (page == null)
-                throw HttpError.NotFound("Page not found: " + request.Path);
-            
-            if (!page.HasInit)
-                await page.Init();
-
-            var lastModified = Pages.GetLastModified(page);
-
-            if (string.IsNullOrEmpty(request.ETag))
-                return new ShouldReloadPageResponse { ETag = lastModified.Ticks.ToString() };            
-
-            var shouldReload = lastModified.Ticks > long.Parse(request.ETag);
-            return new ShouldReloadPageResponse { Reload = shouldReload, ETag = lastModified.Ticks.ToString() };
-        }
     }
 
     public class AppHost : AppHostBase
@@ -265,24 +229,29 @@ namespace TemplateWebsites
                 DebugMode = GetAppSetting("debug", true),
             });
 
+            var feature = new TemplatePagesFeature {
+                PageFormats = { new MarkdownPageFormat() },
+            };
+
             var dbFactory = GetDbFactory(GetAppSetting("db"), GetAppSetting("db.connection"));
             if (dbFactory != null)
+            {
                 container.Register<IDbConnectionFactory>(dbFactory);
+                feature.TemplateFilters.Add(new TemplateDbFilters { DbFactory = dbFactory });
+            }
 
             var redisConnString = GetAppSetting("redis.connection");
             if (redisConnString != null)
+            {
                 container.Register<IRedisClientsManager>(c => new RedisManagerPool(redisConnString));
+                feature.TemplateFilters.Add(new TemplateRedisFilters { 
+                    RedisManager = container.Resolve<IRedisClientsManager>()
+                });
+            }
 
             vfs = GetVirtualFiles(GetAppSetting("files"), GetAppSetting("files.config"));
             if (vfs is IVirtualFiles writableFs)
                 VirtualFiles = writableFs;
-
-            var feature = new TemplatePagesFeature {
-                PageFormats = { new MarkdownPageFormat() },
-                Args = {
-                    ["debug"] = Config.DebugMode
-                }
-            };
 
             var checkForModifiedPagesAfter = GetAppSetting("checkForModifiedPagesAfter");
             if (checkForModifiedPagesAfter != null)
