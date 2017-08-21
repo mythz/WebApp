@@ -237,7 +237,7 @@ namespace TemplateWebsites
             if (dbFactory != null)
             {
                 container.Register<IDbConnectionFactory>(dbFactory);
-                feature.TemplateFilters.Add(new TemplateDbFilters { DbFactory = dbFactory });
+                feature.TemplateFilters.Add(new TemplateDbFilters());
             }
 
             var redisConnString = GetAppSetting("redis.connection");

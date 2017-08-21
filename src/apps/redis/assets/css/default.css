@@ -38,6 +38,28 @@ a:hover {
     cursor: pointer;
     padding: 0 10px;
 }
+.hidden {
+    display: none !important;
+}
+#key-types {
+    margin: 40px 0 0 0;
+}
 form {
-    padding: 20px 0;
+    max-width: 910px;
+}
+.type-buttons {
+    margin: 0 0 10px 0;
+}
+.type-string #type-string, .type-list #type-list, .type-set #type-set, .type-zset #type-zset, .type-hash #type-hash {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.type- #score, .type- #field,
+.type-string #score, .type-string #field,
+.type-list #score, .type-list #field,
+.type-set #score, .type-set #field,
+.type-zset #field,
+.type-hash #score {
+    display: none;
 }

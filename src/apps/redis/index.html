@@ -2,16 +2,19 @@
 title: Search Redis
 -->
 
-{{ limit | default(100) | assignTo: limit }}
-{{ q     | default('')  | assignTo: q }}
-{{ key   | default('')  | assignTo: key }}
+{{ limit | default(100)      | assignTo: limit }}
+{{ q     | default('')       | assignTo: q }}
+{{ key   | default('')       | assignTo: key }}
+{{ type  | default('string') | assignTo: type }}
 {{ "?"   | addQueryString({ q, limit }) | assignTo: baseUrl }}
 
 {{ `<script>
 var baseUrl = "{0}";
 var key = "{1}";
 var limit = "{2}";
-</script>` | fmt(baseUrl, key, limit) | raw }}
+var type = "{3}";
+var call = "{4}";
+</script>` | fmt([baseUrl, key, limit, type, call]) | raw }}
 
 {{ `<script>
 $('input[name=q]').on('input', function(){ $(this).closest('form').submit() })
@@ -34,8 +37,8 @@ $('.details tbody tr').on('click', function(){
 
 $('.action.edit').on('click', function(){
     if (!key) return
-    $('#setKey').val(key)
-    $('#setValue').val(window.keyValue)
+    $("#type-string").trigger('click')
+    $('#value').val(window.keyValue)
 })
 
 $('.action.delete').on('click', function(){
@@ -46,46 +49,67 @@ $('.action.q').on('click', function(){
     location.href = '?q=' + encodeURIComponent(key.split(':').slice(0, $(this).data('pos') + 1).join(':'))
 })
 
-$('#setKey,#setValue').on('input', function(){
-    var newKey = $('#setKey').val()
-    $(this).closest('form').find('button').attr('disabled', !newKey || (newKey == key && $('#setValue').val() == window.keyValue))
-    $('#setKey').val(newKey.replace(/\s+/g,''))
+$('#key,#value').on('input', function(){
+    $('#key').val($('#key').val().replace(/\s+/g,''))
+    $('#btn-key-type').attr('disabled', !$('#key').val() || ($('#key').val() == key && $('#value').val() == window.keyValue))
 })
 
-$('#create-key').submit(function(e){
+$('#key-types').submit(function(e){
     e.preventDefault()
-    var key = $('#setKey').val()
-    location.href = '?q=' + key + '&call=' + encodeURIComponent("SET " + key + " " + $('#setValue').val())
+    var key = $(this).find('#key').val(), value = $(this).find('#value').val(), type = this.className.split('-')[1];
+    var url = '?q=' + encodeURIComponent(key) + '&key=' + encodeURIComponent(key) + '&type=' + type + '&call=';
+    url += type == 'list' 
+        ? encodeURIComponent("RPUSH " + key + " " + value)
+        : type == 'set' 
+        ? encodeURIComponent("SADD " + key + " " + value)
+        : type == 'zset' 
+        ? encodeURIComponent("ZADD " + key + " " + $("#score").val() + " " + value)
+        : type == 'hash' 
+        ? encodeURIComponent("HSET " + key + " " + $("#field").val() + " " + value)
+        : encodeURIComponent("SET " + key + " " + value)
+    location.href = url;
 })
 
 $("#search-results tr td:first-child").each(function(){
     if ($(this).html() == key) $(this).parent().addClass('active')
 })
+
+$(".type-buttons button").on('click', function(){
+    $("#key-types").removeClass().addClass(this.id).find('.btn-success').html($(this).data('label'))
+    var isForKey = type == this.id.split('-')[1];
+    $("#key").val(isForKey ? key : '')
+    $("#value").val(isForKey && (call || "").toUpperCase().startsWith("GET") ? keyValue : '')
+    $('#btn-key-type').attr('disabled', !$('#key').val() || !$('#value').val() || ($('#key').val() == key && $('#value').val() == window.keyValue && type == "string"))
+})
+
+if (type) {
+    $("#type-" + type).trigger('click');
+}
+
 </script>` | raw | assignTo: scripts }}
 
-<form role="search" class="form-inline">
-    <div class="form-group">
-        <div class="input-group input-group-lg">
+<form>
+    <div class="row">
+        <div class="col-5">
             <input type="text" name="q" class="form-control" placeholder="Search for key, e.g. urn..." aria-label="Search for key..." value="{{ q }}"
-                   autofocus onfocus="var hold=this.value; this.value=''; this.value=hold"
-                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        </div>
-        <div class="col-auto"></div>
-        <div class="input-group input-group-lg">
-            <input type="text" name="limit" class="form-control" placeholder="limit" value="{{ limit }}" style="width:80px;"
-                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            autofocus onfocus="var hold=this.value; this.value=''; this.value=hold"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         </div>
         <div class="col-auto">
-            <label for="limit">results</label>
+            <input type="text" name="limit" id="limit" class="form-control" placeholder="limit" value="{{ limit }}"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:70px">
         </div>
-    </div>
-    <div class="form-group">
-        <div class="input-group input-group-lg">
-            <input type="text" name="call" class="form-control" placeholder="Redis Command" value="{{ call | ifExists }}" style="min-width:410px"
-                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <span class="input-group-btn">
-                <button class="btn btn-secondary" type="submit">Go!</button>
-            </span>
+        <div class="col-auto">
+            <label for="limit" style="margin:0 0 0 15px;line-height:2rem">results</label>
+        </div>
+        <div class="col-5">
+            <div class="input-group">
+                <input type="text" name="call" class="form-control" placeholder="Redis Command" value="{{ call | ifExists }}"
+                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit">Go!</button>
+                </span>
+            </div>
         </div>
     </div>
 </form>
@@ -96,53 +120,70 @@ $("#search-results tr td:first-child").each(function(){
 {{ call | endIfEmpty | endIf(illegalCommand) | redisCall | assignTo: json }}
 {{ json | endIfEmpty | parseJson | default(json) | assignTo: obj }}
 
-<script>window.keyValue = '{{ json | jsString }}';</script>
+<script>window.keyValue = '{{ json | onlyIfExists | jsString }}';</script>
 
 <div style="position:absolute;margin-left:465px;max-width:900px;padding-right:20px">
     <table class="table table-bordered auto-width">
         <caption>
-        {{ key   | ifExists(obj)  | split(':')   | assignTo: parts }}
-        {{ parts | hasMinCount(2) | ifUse(parts) | select: { '>' | if(!isZero(index)) }<span class="action q" data-pos="{ index }">{ it }</span> }}
+        {{ key     | ifExists(obj)  | split(':')   | assignTo: parts }}
+        {{ parts   | hasMinCount(2) | ifUse(parts) | select: { '>' | if(!isZero(index)) }<span class="action q" data-pos="{ index }">{ it }</span> }}
         </caption>
 
-        {{ obj  | endIfEmpty | htmlDump({ className: "table table-striped" }) | assignTo: html }}
-        {{ html | ifExists   | select: <tr><td>{ it }</td></tr> }}
+        {{ obj     | endIfEmpty     | htmlDump({ className: "table table-striped" }) | assignTo: html }}
+        {{ html    | ifExists       | select: <tr><td>{ it }</td></tr> }}
 
-        {{ ['edit','delete'] | useIf(and(!isEmpty(obj), equals(type,'string'))) | select: <span class="action {it}">{it}</span>
-           | assignTo: actions }}
-        {{ actions | select: <tr><td colspan="2" style="text-align:right">{ actions | raw }</td></tr> }}            
-    </table>
+        {{ ['GET','LRANGE','SMEMBERS','ZRANGE','HGETALL'] | assignTo: viewCommands }}
+        {{ obj     | endIfEmpty     | onlyIf(any(viewCommands, `startsWith(call, it)`) )
+                   | use('delete')  | addTo: actions }}
+        {{ actions | endIfEmpty     | onlyIf(equals(type,'string')) | use('edit') | addTo: actions }}
+        {{ actions | endIfEmpty     | select: <span class="action {it}">{it}</span> 
+                   | assignTo:links }}
+        {{ links   | select: <tr><td colspan="2" style="text-align:right">{ it | raw }</td></tr> }}  
+   </table>
 
     {{ illegalCommand | ifDo | select: <div class="alert alert-danger">Command is not allowed.</div> }}
     {{ htmlErrorMessage }}
+    {{ ifError | select: <a href="{ baseUrl }">clear command</a> }}
 
-    <form id="create-key" style="margin-top:40px">
-        <h3>Set Key</h3>
-        <div class="form-group">
-            <div class="input-group input-group-lg">
-                <input id="setKey" type="text" class="form-control" placeholder="Key" value="" style="min-width:400px"
-                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div class="type-{{ type }}" id="key-types">
+        <div class="type-buttons">
+            <button id="type-string" type="button" class="btn btn-secondary" data-label="Set Key">Strings</button>
+            <button id="type-list"   type="button" class="btn btn-secondary" data-label="Add to List">Lists</button>
+            <button id="type-set"    type="button" class="btn btn-secondary" data-label="Add to Set">Sets</button>
+            <button id="type-zset"   type="button" class="btn btn-secondary" data-label="Add to Sorted Set">Sorted Sets</button>
+            <button id="type-hash"   type="button" class="btn btn-secondary" data-label="Set Hash Entry">Hashes</button>
+        </div>
+        <form>
+            <div class="form-group">
+                <div class="input-group input-group-lg">
+                    <input id="key" type="text" class="form-control" placeholder="key" value="" style="min-width:200px"
+                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <input id="field" type="text" class="form-control" placeholder="field" value="" style="max-width:130px"
+                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <input id="score" type="text" class="form-control" placeholder="score" value="" style="max-width:130px"
+                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <div class="input-group input-group-lg">
-                <textarea id="setValue" class="form-control" placeholder="Value" value="" style="min-width:400px;min-height:200px"
-                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+            <div class="form-group">
+                <div class="input-group input-group-lg">
+                    <textarea id="value" class="form-control" placeholder="value" value="" style="min-width:400px;min-height:300px"
+                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <span class="input-group-btn">
-                <button class="btn btn-secondary" disabled>Submit</button>
-            </span>
-        </div>
-    </form>
+            <div class="form-group">
+                <span class="input-group-btn">
+                    <button id="btn-key-type" class="btn btn-success btn-lg" disabled>Set String</button>
+                </span>
+            </div>
+        </form>
+    </div>
 
 </div>
 
 <div id="search-results">
     {{ q | endIfEmpty | append("*") | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
-        | assignTo: searchResults }}
-    {{ q| endIfEmpty | select: <h3>Results for '{ it }'</h3> }}
-    {{ searchResults | useIf(isList(searchResults))      | htmlDump({ className: "table table-striped details auto-width" }) }}
-    {{ searchResults | endIfNotEmpty | doIf(!isEmpty(q)) | select: Your search did not match any keys.. }}
+         | assignTo: searchResults }}
+    {{ q | endIfEmpty | select: <h3>Results for '{ it }'</h3> }}
+    {{ searchResults  | useIf(isList(searchResults))    | htmlDump({ className: "table table-striped details auto-width" }) }}
+    {{ searchResults  | onlyIfEmpty | doIf(!isEmpty(q)) | select: Your search did not match any keys.. }}
 </div>
