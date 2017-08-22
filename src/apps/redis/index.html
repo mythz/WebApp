@@ -1,5 +1,5 @@
 <!--
-title: Search Redis
+title: Redis
 -->
 
 {{ limit | default(100)      | assignTo: limit }}
@@ -8,19 +8,21 @@ title: Search Redis
 {{ type  | default('string') | assignTo: type }}
 {{ "?"   | addQueryString({ q, limit }) | assignTo: baseUrl }}
 
+{{ ['GET','LRANGE','SMEMBERS','ZRANGE','HGETALL'] | any: startsWith(call, it) 
+   | assignTo: isViewCommand }}
+
 {{ `<script>
 var baseUrl = "{0}";
 var key = "{1}";
 var limit = "{2}";
 var type = "{3}";
 var call = "{4}";
-</script>` | fmt([baseUrl, key, limit, type, call]) | raw }}
+var isViewCommand = {5};
+</script>` | fmt([baseUrl, key, limit, type, escapeDoubleQuotes(call), lower(isViewCommand)]) | raw }}
 
 {{ `<script>
 $('input[name=q]').on('input', function(){ 
-    if (!['GET','LRANGE','SMEMBERS','ZRANGE','HGETALL'].some(function(cmd){ return $("[name=call]").val().toUpperCase().startsWith(cmd) })) {
-        $("[name=call]").val('')
-    }
+    if (isViewCommand) $("[name=call]").val('')
     $(this).closest('form').submit() 
 })
 
@@ -56,7 +58,7 @@ $('.action.q').on('click', function(){
 
 $('#key,#value').on('input', function(){
     $('#key').val($('#key').val().replace(/\s+/g,''))
-    $('#btn-key-type').attr('disabled', !$('#key').val() || ($('#key').val() == key && $('#value').val() == window.keyValue))
+    $('#btn-key-type').attr('disabled', !$('#key').val() || !$('#value').val() || ($('#key').val() == key && $('#value').val() == window.keyValue))
 })
 
 $('#key-types').submit(function(e){
@@ -81,21 +83,19 @@ $("#search-results tr td:first-child").each(function(){
 
 $(".type-buttons button").on('click', function(){
     $("#key-types").removeClass().addClass(this.id).find('.btn-success').html($(this).data('label'))
-    var isForKey = type == this.id.split('-')[1];
+    var isForKey = type == this.id.split('-')[1]
     $("#key").val(isForKey ? key : '')
     $("#value").val(isForKey && (call || "").toUpperCase().startsWith("GET") ? keyValue : '')
-    $('#btn-key-type').attr('disabled', !$('#key').val() || !$('#value').val() || ($('#key').val() == key && $('#value').val() == window.keyValue && type == "string"))
+    $('#btn-key-type').attr('disabled', !$('#key').val() || !$('#value').val() || ($('#key').val() == key && $('#value').val() == window.keyValue && type == "string"));
+    if (isViewCommand) $("#key-types input:text:visible,#value").filter(function(){ return !this.value || this.id == "value" }).first().focus()
 })
 
-if (type) {
-    $("#type-" + type).trigger('click');
-}
-
+$("#type-" + type).trigger('click');
 </script>` | raw | assignTo: scripts }}
 
 <form>
     <div class="row">
-        <div class="col-5">
+        <div class="col-4">
             <input type="hidden" name="type" value="{{ type }}">
             <input type="text" name="q" class="form-control" placeholder="Search for key, e.g. urn..." aria-label="Search for key..." value="{{ q }}"
             autofocus onfocus="var hold=this.value; this.value=''; this.value=hold"
@@ -106,19 +106,21 @@ if (type) {
                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:70px">
         </div>
         <div class="col-auto">
-            <label for="limit" style="margin:0 0 0 15px;line-height:2.4rem">results</label>
+            <label for="limit" style="width:30px;line-height:2rem;margin: 0 0 0 -10px">results</label>
         </div>
-        <div class="col-5">
+        <div class="col-6">
             <div class="input-group">
                 <input type="text" name="call" class="form-control" placeholder="Redis Command" value="{{ call | ifExists }}"
                     autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-                <span class="input-group-btn">
-                    <button class="btn btn-primary" type="submit">Go!</button>
-                </span>
+                <span class="input-group-btn"><button class="btn btn-primary" type="submit">Go!</button></span>
             </div>
         </div>
     </div>
 </form>
+
+{{ ifHttpPost | use({ host, port, db, password }) | withoutEmptyValues | redisChangeConnection | end }}
+<h6 id="connection"><a href="?connection">@ {{ redisConnectionString }}</a></h6>
+{{ connection | onlyIfExists | selectPartial: connection-info }}
 
 {{ ['flush','monitor','brpop','blpop'] | ifNotEmpty(call) | any: contains(lower(call), it)
    | assignTo: illegalCommand }}
@@ -128,7 +130,7 @@ if (type) {
 
 <script>window.keyValue = '{{ json | onlyIfExists | jsString }}';</script>
 
-<div style="position:absolute;margin-left:465px;max-width:900px;padding-right:20px">
+<div id="details">
     <table class="table table-bordered auto-width">
         <caption>
         {{ key     | ifExists(obj)  | split(':')   | assignTo: parts }}
@@ -138,9 +140,7 @@ if (type) {
         {{ obj     | endIfEmpty     | htmlDump({ className: "table table-striped" }) | assignTo: html }}
         {{ html    | ifExists       | select: <tr><td>{ it }</td></tr> }}
 
-        {{ ['GET','LRANGE','SMEMBERS','ZRANGE','HGETALL'] | assignTo: viewCommands }}
-        {{ obj     | endIfEmpty     | onlyIf(any(viewCommands, `startsWith(call, it)`) )
-                   | use('delete')  | addTo: actions }}
+        {{ obj     | endIfEmpty     | onlyIf(isViewCommand) | use('delete') | addTo: actions }}
         {{ actions | endIfEmpty     | onlyIf(equals(type,'string')) | use('edit') | addTo: actions }}
         {{ actions | endIfEmpty     | select: <span class="action {it}">{it}</span> 
                    | assignTo:links }}
@@ -153,11 +153,11 @@ if (type) {
 
     <div class="type-{{ type }}" id="key-types">
         <div class="type-buttons">
-            <button id="type-string" type="button" class="btn btn-secondary" data-label="Set String">Strings</button>
-            <button id="type-list"   type="button" class="btn btn-secondary" data-label="Add to List">Lists</button>
-            <button id="type-set"    type="button" class="btn btn-secondary" data-label="Add to Set">Sets</button>
-            <button id="type-zset"   type="button" class="btn btn-secondary" data-label="Add to Sorted Set">Sorted Sets</button>
-            <button id="type-hash"   type="button" class="btn btn-secondary" data-label="Set Hash Entry">Hashes</button>
+            <button id="type-string" type="button" class="btn btn-outline-secondary" data-label="Set String">Strings</button>
+            <button id="type-list"   type="button" class="btn btn-outline-secondary" data-label="Add to List">Lists</button>
+            <button id="type-set"    type="button" class="btn btn-outline-secondary" data-label="Add to Set">Sets</button>
+            <button id="type-zset"   type="button" class="btn btn-outline-secondary" data-label="Add to Sorted Set">Sorted Sets</button>
+            <button id="type-hash"   type="button" class="btn btn-outline-secondary" data-label="Set Hash Entry">Hashes</button>
         </div>
         <form>
             <div class="form-group">
@@ -177,19 +177,22 @@ if (type) {
                 </div>
             </div>
             <div class="form-group">
-                <span class="input-group-btn">
-                    <button id="btn-key-type" class="btn btn-success btn-lg" disabled>Set String</button>
-                </span>
+                <span class="input-group-btn"><button id="btn-key-type" class="btn btn-success btn-lg" disabled>Set String</button></span>
             </div>
         </form>
     </div>
-
 </div>
 
 <div id="search-results">
-    {{ q | endIfEmpty | append("*") | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
+    {{ q | onlyIfEmpty | endIfExists(connection) | redisInfo | assignTo: info }}
+    <table class="table table-striped" style="width:450px"><tbody>
+        {{ q | onlyIfEmpty | use(info)  | toList 
+             | select: <tr><th>{ it.Key | replace('_',' ') }</th><td title="{ it.Value}">{ it.Value | substringWithElipsis(32) }</td></tr> }}
+    </tbody></table>
+
+    {{ q | endIfEmpty  | append("*") | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 
          | assignTo: searchResults }}
-    {{ q | endIfEmpty | select: <h3>Results for '{ it }'</h3> }}
-    {{ searchResults  | useIf(isList(searchResults))    | htmlDump({ className: "table table-striped details auto-width" }) }}
-    {{ searchResults  | onlyIfEmpty | doIf(!isEmpty(q)) | select: Your search did not match any keys.. }}
+    {{ q | endIfEmpty  | select: <h3>Results for '{ it }'</h3> }}
+    {{ searchResults   | useIf(isList(searchResults))    | htmlDump({ className: "table table-striped details auto-width" }) }}
+    {{ searchResults   | onlyIfEmpty | doIf(!isEmpty(q)) | select: Your search did not match any keys.. }}
 </div>

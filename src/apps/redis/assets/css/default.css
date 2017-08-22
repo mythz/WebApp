@@ -16,7 +16,22 @@
     line-height: 2rem;
     z-index: 1;
 }
-
+#connection {
+    position: absolute;
+    left: 235px;
+    text-align: right;
+    margin: -103px 0 0 5;
+}
+#details {
+    position: absolute; 
+    margin-left: 465px;
+    max-width: 900px;
+    padding-right: 20px;
+    background:#fff;
+}
+#details caption {
+    background: #fff;
+}
 caption {
     caption-side: top;
 }
