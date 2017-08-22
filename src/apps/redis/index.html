@@ -17,7 +17,12 @@ var call = "{4}";
 </script>` | fmt([baseUrl, key, limit, type, call]) | raw }}
 
 {{ `<script>
-$('input[name=q]').on('input', function(){ $(this).closest('form').submit() })
+$('input[name=q]').on('input', function(){ 
+    if (!['GET','LRANGE','SMEMBERS','ZRANGE','HGETALL'].some(function(cmd){ return $("[name=call]").val().toUpperCase().startsWith(cmd) })) {
+        $("[name=call]").val('')
+    }
+    $(this).closest('form').submit() 
+})
 
 $('.details tbody tr').on('click', function(){
     var key = $(this).find('td:first').html()
@@ -57,8 +62,8 @@ $('#key,#value').on('input', function(){
 $('#key-types').submit(function(e){
     e.preventDefault()
     var key = $(this).find('#key').val(), value = $(this).find('#value').val(), type = this.className.split('-')[1];
-    var url = '?q=' + encodeURIComponent(key) + '&key=' + encodeURIComponent(key) + '&type=' + type + '&call=';
-    url += type == 'list' 
+    var url = '?q=' + encodeURIComponent(key) + '&key=' + encodeURIComponent(key) + '&type=' + type + '&call='
+        + (type == 'list' 
         ? encodeURIComponent("RPUSH " + key + " " + value)
         : type == 'set' 
         ? encodeURIComponent("SADD " + key + " " + value)
@@ -66,8 +71,8 @@ $('#key-types').submit(function(e){
         ? encodeURIComponent("ZADD " + key + " " + $("#score").val() + " " + value)
         : type == 'hash' 
         ? encodeURIComponent("HSET " + key + " " + $("#field").val() + " " + value)
-        : encodeURIComponent("SET " + key + " " + value)
-    location.href = url;
+        : encodeURIComponent("SET " + key + " " + value))
+    location.href = url
 })
 
 $("#search-results tr td:first-child").each(function(){
@@ -91,6 +96,7 @@ if (type) {
 <form>
     <div class="row">
         <div class="col-5">
+            <input type="hidden" name="type" value="{{ type }}">
             <input type="text" name="q" class="form-control" placeholder="Search for key, e.g. urn..." aria-label="Search for key..." value="{{ q }}"
             autofocus onfocus="var hold=this.value; this.value=''; this.value=hold"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -100,7 +106,7 @@ if (type) {
                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:70px">
         </div>
         <div class="col-auto">
-            <label for="limit" style="margin:0 0 0 15px;line-height:2rem">results</label>
+            <label for="limit" style="margin:0 0 0 15px;line-height:2.4rem">results</label>
         </div>
         <div class="col-5">
             <div class="input-group">
@@ -147,7 +153,7 @@ if (type) {
 
     <div class="type-{{ type }}" id="key-types">
         <div class="type-buttons">
-            <button id="type-string" type="button" class="btn btn-secondary" data-label="Set Key">Strings</button>
+            <button id="type-string" type="button" class="btn btn-secondary" data-label="Set String">Strings</button>
             <button id="type-list"   type="button" class="btn btn-secondary" data-label="Add to List">Lists</button>
             <button id="type-set"    type="button" class="btn btn-secondary" data-label="Add to Set">Sets</button>
             <button id="type-zset"   type="button" class="btn btn-secondary" data-label="Add to Sorted Set">Sorted Sets</button>

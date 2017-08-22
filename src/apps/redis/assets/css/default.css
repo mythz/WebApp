@@ -6,6 +6,17 @@
 #back:hover {
     text-decoration: none;
 }
+#sig {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    color: #7f8c8d;
+    font-size: .85rem;
+    line-height: 2rem;
+    z-index: 1;
+}
+
 caption {
     caption-side: top;
 }
