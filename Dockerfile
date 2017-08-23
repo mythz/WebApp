@@ -1,7 +1,6 @@
 FROM microsoft/dotnet:2.0-sdk
 COPY src /app
-WORKDIR /app
-COPY apps/rockwind-vfs-aws/web.settings WebTemplates/web.settings
+COPY src/apps/rockwind-vfs-aws/web.settings /app/WebTemplates
 WORKDIR /app/WebTemplates
 RUN ["dotnet", "restore", "--configfile", "NuGet.Config"]
 RUN ["dotnet", "build"]
