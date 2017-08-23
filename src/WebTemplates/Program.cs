@@ -63,12 +63,13 @@ namespace TemplateWebsites
             if (useWebRoot.StartsWith("~/"))
                 useWebRoot = useWebRoot.MapAbsolutePath();
 
+            var bind = AppSettings.Get("bind", "localhost");
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(contentRoot)
                 .UseWebRoot(useWebRoot)
                 .UseStartup<Startup>()
-                .UseUrls($"http://localhost:{port}/")
+                .UseUrls($"http://{bind}:{port}/")
                 .Build();
 
             host.Run();
@@ -234,7 +235,7 @@ namespace TemplateWebsites
             var feature = new TemplatePagesFeature {
                 PageFormats = { new MarkdownPageFormat() },
                 ApiPath = GetAppSetting("apiPath") ?? "/api",
-                CheckForModifiedPages = GetAppSetting("checkForModifiedPages", true),
+                CheckForModifiedPages = GetAppSetting("checkForModifiedPages", false),
             };
 
             var dbFactory = GetDbFactory(GetAppSetting("db"), GetAppSetting("db.connection"));

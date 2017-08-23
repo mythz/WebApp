@@ -1,5 +1,6 @@
 # Note: values prefixed with '$' are resolved from Environment Variables
 debug false
+bind localhost
 port 5000
 contentRoot ~/../../../../apps/rockwind-vfs-aws
 webRoot ~/../../../../apps/rockwind-vfs-aws
