@@ -1,7 +1,8 @@
 FROM microsoft/dotnet:2.0-sdk
 COPY src /app
-WORKDIR /app/TemplateWebsites
-COPY ../apps/rockwind-vfs-aws/web.settings web.settings
+WORKDIR /app
+COPY apps/rockwind-vfs-aws/web.settings WebTemplates/web.settings
+WORKDIR /app/WebTemplates
 RUN ["dotnet", "restore", "--configfile", "NuGet.Config"]
 RUN ["dotnet", "build"]
 EXPOSE 5000/tcp
