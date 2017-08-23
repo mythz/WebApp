@@ -4,6 +4,14 @@ title: Search Customers
 
 {{ limit | default(20) | assignTo: limit }}
 
+{{ `select "Id", "CompanyName", "ContactName", "ContactTitle", "City", "Country" from "Customer"` | assignTo: sql }}
+
+{{ id       | endIfEmpty | use(`"Id" = @id`)           | addTo: filters }}
+{{ city     | endIfEmpty | use(`"City" = @city`)       | addTo: filters }}
+{{ country  | endIfEmpty | use(`"Country" = @country`) | addTo: filters }}
+{{ filters  | endIfEmpty | useFmt('{0} where {1}', sql, join(filters, ' and ')) | assignTo: sql }}
+{{ sql      | appendFmt(` ORDER BY "CompanyName" {0}`, sqlLimit(limit))         | assignTo: sql }}
+
 <a id="back" href="javascript:history.back()">&#8592; Back</a>
 
 <form class="form-inline">
@@ -24,15 +32,8 @@ title: Search Customers
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 
-{{ `select "Id", "CompanyName", "ContactName", "ContactTitle", "City", "Country" from "Customer"` | assignTo: sql }}
-
-{{ [ifNotEmpty(`"Country" = @country`, country), ifNotEmpty(`"City" = @city`, city)] 
-   | where: !isNull(it) 
-   | join(" and ") | assignTo: filters }}
-{{ filters | endIfEmpty | useFmt("{0} where {1}", sql, filters) | assignTo: sql }}
-
-{{ sql | appendFmt(` ORDER BY "CompanyName" {0}`, sqlLimit(limit)) | assignTo: sql }}
-{{ sql | dbSelect({ country, city }) | htmlDump({ className: "table table-striped details" }) }}
+{{ sql | dbSelect({ id, city, country }) 
+       | htmlDump({ className: "table table-striped details" }) }}
 
 {{ `<script>
 $('.details tbody tr').on('click', function(){

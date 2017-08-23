@@ -90,7 +90,7 @@ $(".type-buttons button").on('click', function(){
     if (isViewCommand) $("#key-types input:text:visible,#value").filter(function(){ return !this.value || this.id == "value" }).first().focus()
 })
 
-$("#type-" + type).trigger('click');
+$("#type-" + type).trigger('click')
 </script>` | raw | assignTo: scripts }}
 
 <form>
@@ -186,8 +186,8 @@ $("#type-" + type).trigger('click');
 <div id="search-results">
     {{ q | onlyIfEmpty | endIfExists(connection) | redisInfo | assignTo: info }}
     <table class="table table-striped" style="width:450px"><tbody>
-        {{ q | onlyIfEmpty | use(info)  | toList 
-             | select: <tr><th>{ it.Key | replace('_',' ') }</th><td title="{ it.Value}">{ it.Value | substringWithElipsis(32) }</td></tr> }}
+    {{ q | onlyIfEmpty | use(info)  | toList 
+         | select: <tr><th>{ it.Key | replace('_',' ') }</th><td title="{ it.Value}">{ it.Value | substringWithElipsis(32) }</td></tr> }}
     </tbody></table>
 
     {{ q | endIfEmpty  | append("*") | redisSearchKeys({ limit }) | map: toObjectDictionary(it) 

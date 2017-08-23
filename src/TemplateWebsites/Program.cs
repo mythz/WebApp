@@ -1,24 +1,26 @@
-﻿using System.IO;
+﻿using System;
+using System.Linq;
+using System.IO;
 using System.Reflection;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Funq;
 using ServiceStack;
+using ServiceStack.Text;
 using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
-using System;
 using ServiceStack.Data;
 using ServiceStack.Redis;
-using System.Collections.Generic;
 using ServiceStack.IO;
 using ServiceStack.Aws.S3;
+using ServiceStack.VirtualPath;
+using ServiceStack.Templates;
+
 using Amazon.S3;
 using Amazon;
-using ServiceStack.VirtualPath;
-using System.Linq;
-using ServiceStack.Templates;
 
 namespace TemplateWebsites
 {
@@ -231,6 +233,8 @@ namespace TemplateWebsites
 
             var feature = new TemplatePagesFeature {
                 PageFormats = { new MarkdownPageFormat() },
+                ApiPath = GetAppSetting("apiPath") ?? "/api",
+                CheckForModifiedPages = GetAppSetting("checkForModifiedPages", true),
             };
 
             var dbFactory = GetDbFactory(GetAppSetting("db"), GetAppSetting("db.connection"));
@@ -259,7 +263,15 @@ namespace TemplateWebsites
 
             var checkForModifiedPagesAfterSecs = GetAppSetting("checkForModifiedPagesAfterSecs");
             if (checkForModifiedPagesAfterSecs != null)
-                feature.CheckForModifiedPagesAfter = TimeSpan.FromSeconds(checkForModifiedPagesAfterSecs.ConvertTo<int>());            
+                feature.CheckForModifiedPagesAfter = TimeSpan.FromSeconds(checkForModifiedPagesAfterSecs.ConvertTo<int>());
+
+            var defaultFileCacheExpirySecs = GetAppSetting("defaultFileCacheExpirySecs");
+            if (defaultFileCacheExpirySecs != null)
+                feature.Args[TemplateConstants.DefaultFileCacheExpiry] = TimeSpan.FromSeconds(defaultFileCacheExpirySecs.ConvertTo<int>());
+
+            var defaultUrlCacheExpirySecs = GetAppSetting("defaultUrlCacheExpirySecs");
+            if (defaultUrlCacheExpirySecs != null)
+                feature.Args[TemplateConstants.DefaultUrlCacheExpiry] = TimeSpan.FromSeconds(defaultUrlCacheExpirySecs.ConvertTo<int>());
 
             var contextArgKeys = AppSettings.GetAllKeys().Where(x => x.StartsWith("args."));
             foreach (var key in contextArgKeys)
