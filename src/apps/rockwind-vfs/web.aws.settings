@@ -10,5 +10,5 @@ files.config {AccessKey:$AWS_ACCESS_KEY,SecretKey:$AWS_SECRET_KEY,Region:us-east
 args.assetsBase http://s3-postgresql.s3-website-us-east-1.amazonaws.com/
 
 # Reduces an S3 API call, but takes longer for modified pages to appear
-checkForModifiedPagesAfterSecs 60
-defaultFileCacheExpirySecs     60
+checkForModifiedPagesAfterSecs 600
+defaultFileCacheExpirySecs     600
