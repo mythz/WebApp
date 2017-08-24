@@ -202,7 +202,6 @@ namespace TemplateWebsites
                     var region = RegionEndpoint.GetBySystemName(ResolveValue(s3Config.Region));
                     s3Config.AccessKey = ResolveValue(s3Config.AccessKey);
                     s3Config.SecretKey = ResolveValue(s3Config.SecretKey);
-                    Console.WriteLine($"Key: {s3Config.AccessKey}, Secret: {s3Config.SecretKey}");
                     var awsClient = new AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
                     return new S3VirtualFiles(awsClient, ResolveValue(s3Config.Bucket));
                 case "mapping":
@@ -233,7 +232,6 @@ namespace TemplateWebsites
             });
 
             var feature = new TemplatePagesFeature {
-                PageFormats = { new MarkdownPageFormat() },
                 ApiPath = GetAppSetting("apiPath") ?? "/api",
                 CheckForModifiedPages = GetAppSetting("checkForModifiedPages", false),
             };
