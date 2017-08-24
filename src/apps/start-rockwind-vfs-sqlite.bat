@@ -1,1 +1,1 @@
-dotnet bin\web.dll ..\rockwind-vfs\web.sqlite.settings
+dotnet bin/web.dll ../rockwind-vfs/web.sqlite.settings

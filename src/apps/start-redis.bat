@@ -1,1 +1,1 @@
-dotnet bin\web.dll ..\redis\web.settings
+dotnet bin/web.dll ../redis/web.settings
