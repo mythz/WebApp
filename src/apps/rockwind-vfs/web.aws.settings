@@ -3,8 +3,6 @@ debug false
 bind *
 port 5000
 name AWS S3 PostgreSQL WebTemplate
-contentRoot ~/../../../../apps/rockwind-vfs-aws
-webRoot ~/../../../../apps/rockwind-vfs-aws
 db postgres
 db.connection $AWS_RDS_POSTGRES
 files s3
