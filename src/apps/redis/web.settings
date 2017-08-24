@@ -1,5 +1,6 @@
 debug true
-port 5002
-contentRoot ~/../../../../apps/redis
-webRoot ~/../../../../apps/redis
+name Redis WebTemplate
+port 5000
+contentRoot ~/..
+webRoot ~/../redis
 redis.connection localhost:6379

@@ -1,0 +1,1 @@
+dotnet bin\web.dll ..\rockwind\web.sqlite.settings

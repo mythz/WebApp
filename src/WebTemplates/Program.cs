@@ -118,7 +118,7 @@ namespace TemplateWebsites
         }
 
         public AppHost()
-            : base(Program.AppSettings.Get("name", "ServiceStack Template Website"), typeof(MyServices).GetAssembly()) 
+            : base(Program.AppSettings.Get("name", "ServiceStack WebTemplate"), typeof(MyServices).GetAssembly()) 
         { 
             AppSettings = Program.AppSettings;
         }

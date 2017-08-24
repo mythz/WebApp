@@ -1,8 +1,8 @@
 # Note: values prefixed with '$' are resolved from Environment Variables
 debug false
+name AWS S3 PostgreSQL WebTemplate
 bind *
 port 5000
-name AWS S3 PostgreSQL WebTemplate
 db postgres
 db.connection $AWS_RDS_POSTGRES
 files s3
