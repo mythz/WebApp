@@ -200,10 +200,10 @@ namespace TemplateWebsites
                 case "s3virtualfiles":
                     var s3Config = config.FromJsv<S3Config>();
                     var region = RegionEndpoint.GetBySystemName(ResolveValue(s3Config.Region));
-                    var awsClient = new AmazonS3Client(
-                        ResolveValue(s3Config.AccessKey), 
-                        ResolveValue(s3Config.SecretKey), 
-                        region);
+                    s3Config.AccessKey = ResolveValue(s3Config.AccessKey);
+                    s3Config.SecretKey = ResolveValue(s3Config.SecretKey);
+                    Console.WriteLine($"Key: {s3Config.AccessKey}, Secret: {s3Config.SecretKey}");
+                    var awsClient = new AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
                     return new S3VirtualFiles(awsClient, ResolveValue(s3Config.Bucket));
                 case "mapping":
                 case "filesystemmapping":

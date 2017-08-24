@@ -9,5 +9,5 @@ export AWS_ECS_CLUSTER_NAME=default
 export AWS_VIRTUAL_HOST=webtemplates.netcore.io
 
 # set any sensitive information in travis-ci encrypted project settings:
-# required: AWS_ACCOUNT_NUMBER, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+# required: AWS_ACCOUNT_ID, AWS_ACCESS_KEY, AWS_SECRET_KEY
 # optional: SERVICESTACK_LICENSE

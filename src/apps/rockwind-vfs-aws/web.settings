@@ -1,7 +1,6 @@
 # Note: values prefixed with '$' are resolved from Environment Variables
 debug false
-bind localhost
-port 5000
+name AWS S3 PostgreSQL WebTemplate
 contentRoot ~/../../../../apps/rockwind-vfs-aws
 webRoot ~/../../../../apps/rockwind-vfs-aws
 db postgres
@@ -11,5 +10,5 @@ files.config {AccessKey:$AWS_ACCESS_KEY,SecretKey:$AWS_SECRET_KEY,Region:us-east
 args.assetsBase http://s3-postgresql.s3-website-us-east-1.amazonaws.com/
 
 # Reduces an S3 API call, but takes longer for modified pages to appear
-checkForModifiedPagesAfterSecs 10
-defaultFileCacheExpirySecs     10
+checkForModifiedPagesAfterSecs 60
+defaultFileCacheExpirySecs     60

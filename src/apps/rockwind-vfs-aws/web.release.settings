@@ -1,5 +1,6 @@
 # Note: values prefixed with '$' are resolved from Environment Variables
 debug false
+name AWS S3 PostgreSQL WebTemplate
 contentRoot ~/../apps/rockwind-vfs-aws
 webRoot ~/../apps/rockwind-vfs-aws
 db postgres
