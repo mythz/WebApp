@@ -1,0 +1,28 @@
+<!--
+title: Web Template Plugins
+-->
+
+<p>
+    This demo uses Filters and Services available from this <a href="">Wep App's</a> <b>/plugins</b> folder
+    built from the .NET Core 2.0 projects in <a href="">/example-plugins</a>.
+</p>
+
+<p>
+    Plugins allow "no touch" sharing of 
+    <a href="http://docs.servicestack.net/create-your-first-webservice">ServiceStack Services</a>, 
+    <a href="http://templates.servicestack.net/docs/filters">Template Filters</a>
+    or 
+    <a href="http://templates.servicestack.net/docs/code-pages">Template Code Pages</a>
+    that are contained within <b>.dll's</b> or <b>.exe's</b> dropped in a Web App's <b>/plugins</b> folder
+    which are automatically registered on startup. 
+
+<h3>/FiltersPlugin</h3>
+
+{{ 'filter-plugins.txt' | includeFile | assignTo: template }}
+
+{{ "live-template" | partial({ rows:13, template }) }}
+
+<p>
+    
+</p>
+

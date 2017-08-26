@@ -1,0 +1,5 @@
+debug true
+name WebTemplate Plugins
+port 5000
+contentRoot ~/
+webRoot ~/wwwroot

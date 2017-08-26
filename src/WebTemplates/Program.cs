@@ -26,7 +26,6 @@ namespace TemplateWebsites
 {
     public class Program
     {
-        public static IAppSettings AppSettings;
         public static void Main(string[] args)
         {
             var webSettings = args.Length > 0 
@@ -44,7 +43,7 @@ namespace TemplateWebsites
             if (usingWebSettings)
                 Console.WriteLine($"Using '{webSettings}'");
 
-            AppSettings = new MultiAppSettings(usingWebSettings
+            WebTemplateUtils.AppSettings = new MultiAppSettings(usingWebSettings
                     ? new TextFileSettings(appSettingsPath)
                     : new DictionarySettings(),
                 new EnvironmentVariableSettings());
@@ -54,16 +53,16 @@ namespace TemplateWebsites
                 ? wwwrootPath
                 : Directory.GetCurrentDirectory();
 
-            var port = AppSettings.Get("port", "5000");
-            var contentRoot = AppSettings.Get("contentRoot", Directory.GetCurrentDirectory());
+            var port = "port".GetAppSetting(defaultValue:"5000");
+            var contentRoot = "contentRoot".GetAppSetting(defaultValue:Directory.GetCurrentDirectory());
             if (contentRoot.StartsWith("~/"))
                 contentRoot = contentRoot.MapAbsolutePath();
 
-            var useWebRoot = AppSettings.Get("webRoot", webRoot);
+            var useWebRoot = "webRoot".GetAppSetting(webRoot);
             if (useWebRoot.StartsWith("~/"))
                 useWebRoot = useWebRoot.MapAbsolutePath();
 
-            var bind = AppSettings.Get("bind", "localhost");
+            var bind = "bind".GetAppSetting("localhost");
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(contentRoot)
@@ -78,23 +77,147 @@ namespace TemplateWebsites
 
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-        }
+        public void ConfigureServices(IServiceCollection services) {}
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseServiceStack(new AppHost());
+            WebTemplateUtils.VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
+            
+            AppHostBase appHost = null;
+
+            var assemblies = new List<Assembly>();
+            var vfs = "files".GetAppSetting().GetVirtualFiles(config:"files.config".GetAppSetting());
+            var pluginsDir = (vfs ?? WebTemplateUtils.VirtualFiles).GetDirectory("plugins");
+            if (pluginsDir != null)
+            {
+                var plugins = pluginsDir.GetFiles();
+                foreach (var plugin in plugins)
+                {
+                    if (plugin.Extension != "dll" && plugin.Extension != "exe")
+                        continue;
+
+                    var dllBytes = plugin.ReadAllBytes();
+                    var asm = Assembly.Load(dllBytes);
+                    assemblies.Add(asm);
+
+                    if (appHost == null)
+                    {
+                        foreach (var type in asm.GetTypes())
+                        {
+                            if (typeof(AppHostBase).IsAssignableFromType(type))
+                            {
+                                appHost = type.CreateInstance<AppHostBase>();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (appHost == null)
+                appHost = new AppHost();
+
+            if (assemblies.Count > 0)
+                appHost.ServiceAssemblies.AddRange(assemblies);
+
+            if (vfs != null)
+                appHost.AddVirtualFileSources.Add(vfs);
+
+            if (vfs is IVirtualFiles writableFs)
+                appHost.VirtualFiles = writableFs;
+
+            appHost.BeforeConfigure.Add(ConfigureAppHost);
+
+            app.UseServiceStack(appHost);
+        }
+
+        public void ConfigureAppHost(ServiceStackHost appHost)
+        {
+            appHost.Config.DebugMode = "debug".GetAppSetting(true);
+
+            var feature = new TemplatePagesFeature {
+                ApiPath = "apiPath".GetAppSetting() ?? "/api",
+                CheckForModifiedPages = "checkForModifiedPages".GetAppSetting(defaultValue:false),
+            };
+
+            var dbFactory = "db".GetAppSetting().GetDbFactory(connectionString:"db.connection".GetAppSetting());
+            if (dbFactory != null)
+            {
+                appHost.Container.Register<IDbConnectionFactory>(dbFactory);
+                feature.TemplateFilters.Add(new TemplateDbFiltersAsync());
+            }
+
+            var redisConnString = "redis.connection".GetAppSetting();
+            if (redisConnString != null)
+            {
+                appHost.Container.Register<IRedisClientsManager>(c => new RedisManagerPool(redisConnString));
+                feature.TemplateFilters.Add(new TemplateRedisFilters { 
+                    RedisManager = appHost.Container.Resolve<IRedisClientsManager>()
+                });
+            }
+
+            var checkForModifiedPagesAfter = "checkForModifiedPagesAfter".GetAppSetting();
+            if (checkForModifiedPagesAfter != null)
+                feature.CheckForModifiedPagesAfter = checkForModifiedPagesAfter.ConvertTo<TimeSpan>();
+
+            var checkForModifiedPagesAfterSecs = "checkForModifiedPagesAfterSecs".GetAppSetting();
+            if (checkForModifiedPagesAfterSecs != null)
+                feature.CheckForModifiedPagesAfter = TimeSpan.FromSeconds(checkForModifiedPagesAfterSecs.ConvertTo<int>());
+
+            var defaultFileCacheExpirySecs = "defaultFileCacheExpirySecs".GetAppSetting();
+            if (defaultFileCacheExpirySecs != null)
+                feature.Args[TemplateConstants.DefaultFileCacheExpiry] = TimeSpan.FromSeconds(defaultFileCacheExpirySecs.ConvertTo<int>());
+
+            var defaultUrlCacheExpirySecs = "defaultUrlCacheExpirySecs".GetAppSetting();
+            if (defaultUrlCacheExpirySecs != null)
+                feature.Args[TemplateConstants.DefaultUrlCacheExpiry] = TimeSpan.FromSeconds(defaultUrlCacheExpirySecs.ConvertTo<int>());
+
+            var contextArgKeys = WebTemplateUtils.AppSettings.GetAllKeys().Where(x => x.StartsWith("args."));
+            foreach (var key in contextArgKeys)
+            {
+                var name = key.RightPart('.');
+                var value = key.GetAppSetting();
+                feature.Args[name] = value;
+            }
+
+            appHost.Plugins.Add(feature);
         }
     }
 
-    public class MyServices : Service 
-    {
-    }
+    public class MyServices : Service {}
 
     public class AppHost : AppHostBase
     {
-        public static string ResolveValue(string value)
+        public AppHost()
+            : base("name".GetAppSetting("ServiceStack WebTemplate"), typeof(MyServices).GetAssembly()) {}
+
+        public override void Configure(Container container) {}
+    }
+
+    public class AwsConfig
+    {
+        public string AccessKey { get; set; }
+        public string SecretKey { get; set; }
+        public string Region { get; set; }
+    }
+
+    public class S3Config : AwsConfig
+    {
+        public string Bucket { get; set; }
+    }
+
+    public class FileSystemMappingConfig
+    {
+        public string Alias { get; set; }
+        public string Path { get; set; }
+    }
+
+    public static class WebTemplateUtils
+    {
+        public static IAppSettings AppSettings;
+        public static IVirtualFiles VirtualFiles;
+
+        public static string ResolveValue(this string value)
         {
             if (value?.StartsWith("$") == true)
             {
@@ -105,9 +228,9 @@ namespace TemplateWebsites
             return value;
         }
 
-        public string GetAppSetting(string name) => ResolveValue(AppSettings.GetString(name));
+        public static string GetAppSetting(this string name) => ResolveValue(AppSettings.GetString(name));
 
-        public T GetAppSetting<T>(string name, T defaultValue)
+        public static T GetAppSetting<T>(this string name, T defaultValue)
         {
             var value = AppSettings.GetString(name);
             if (value == null)
@@ -117,13 +240,40 @@ namespace TemplateWebsites
             return resolvedValue.FromJsv<T>();
         }
 
-        public AppHost()
-            : base(Program.AppSettings.Get("name", "ServiceStack WebTemplate"), typeof(MyServices).GetAssembly()) 
-        { 
-            AppSettings = Program.AppSettings;
+        public static IVirtualPathProvider GetVirtualFiles(this string provider, string config)
+        {
+            if (provider == null)
+                return null;
+
+            switch (provider.ToLower())
+            {
+                case "fs":
+                case "filesystem":
+                    if (config.StartsWith("~/"))
+                    {
+                        var dir = VirtualFiles.GetDirectory(config.Substring(2));
+                        if (dir != null)
+                            config = dir.RealPath;
+                    }
+                    return new FileSystemVirtualFiles(config);
+                case "s3":
+                case "s3virtualfiles":
+                    var s3Config = config.FromJsv<S3Config>();
+                    var region = RegionEndpoint.GetBySystemName(s3Config.Region.ResolveValue());
+                    s3Config.AccessKey = s3Config.AccessKey.ResolveValue();
+                    s3Config.SecretKey = s3Config.SecretKey.ResolveValue();
+                    var awsClient = new AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
+                    return new S3VirtualFiles(awsClient, s3Config.Bucket.ResolveValue());
+                case "mapping":
+                case "filesystemmapping":
+                    var fsConfig = config.FromJsv<FileSystemMappingConfig>();
+                    return new FileSystemMapping(fsConfig.Alias.ResolveValue(), fsConfig.Path.ResolveValue());
+            }
+
+            throw new NotSupportedException($"Unknown VirtualFiles Provider '{provider}'");
         }
 
-        public OrmLiteConnectionFactory GetDbFactory(string dbProvider, string connectionString)
+        public static OrmLiteConnectionFactory GetDbFactory(this string dbProvider, string connectionString)
         {
             if (dbProvider == null || connectionString == null)
                 return null;
@@ -162,125 +312,5 @@ namespace TemplateWebsites
             throw new NotSupportedException($"Unknown DB Provider '{dbProvider}'");
         }
 
-        public class AwsConfig
-        {
-            public string AccessKey { get; set; }
-            public string SecretKey { get; set; }
-            public string Region { get; set; }
-        }
-
-        public class S3Config : AwsConfig
-        {
-            public string Bucket { get; set; }
-        }
-
-        public class FileSystemMappingConfig
-        {
-            public string Alias { get; set; }
-            public string Path { get; set; }
-        }
-
-        public IVirtualPathProvider GetVirtualFiles(string provider, string config)
-        {
-            if (provider == null)
-                return null;
-
-            switch (provider.ToLower())
-            {
-                case "fs":
-                case "filesystem":
-                    if (config.StartsWith("~/"))
-                    {
-                        var dir = VirtualFiles.GetDirectory(config.Substring(2));
-                        if (dir != null)
-                            config = dir.RealPath;
-                    }
-                    return new FileSystemVirtualFiles(config);
-                case "s3":
-                case "s3virtualfiles":
-                    var s3Config = config.FromJsv<S3Config>();
-                    var region = RegionEndpoint.GetBySystemName(ResolveValue(s3Config.Region));
-                    s3Config.AccessKey = ResolveValue(s3Config.AccessKey);
-                    s3Config.SecretKey = ResolveValue(s3Config.SecretKey);
-                    var awsClient = new AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
-                    return new S3VirtualFiles(awsClient, ResolveValue(s3Config.Bucket));
-                case "mapping":
-                case "filesystemmapping":
-                    var fsConfig = config.FromJsv<FileSystemMappingConfig>();
-                    return new FileSystemMapping(ResolveValue(fsConfig.Alias), ResolveValue(fsConfig.Path));
-            }
-
-            throw new NotSupportedException($"Unknown VirtualFiles Provider '{provider}'");
-        }
-
-        IVirtualPathProvider vfs;
-
-        public override List<IVirtualPathProvider> GetVirtualFileSources()
-        {
-            if (vfs == null)
-                return base.GetVirtualFileSources();
-
-            var fileSources = base.GetVirtualFileSources();
-            fileSources.Add(vfs);
-            return fileSources;
-        }
-
-        public override void Configure(Container container)
-        {
-            SetConfig(new HostConfig {
-                DebugMode = GetAppSetting("debug", true),
-            });
-
-            var feature = new TemplatePagesFeature {
-                ApiPath = GetAppSetting("apiPath") ?? "/api",
-                CheckForModifiedPages = GetAppSetting("checkForModifiedPages", false),
-            };
-
-            var dbFactory = GetDbFactory(GetAppSetting("db"), GetAppSetting("db.connection"));
-            if (dbFactory != null)
-            {
-                container.Register<IDbConnectionFactory>(dbFactory);
-                feature.TemplateFilters.Add(new TemplateDbFiltersAsync());
-            }
-
-            var redisConnString = GetAppSetting("redis.connection");
-            if (redisConnString != null)
-            {
-                container.Register<IRedisClientsManager>(c => new RedisManagerPool(redisConnString));
-                feature.TemplateFilters.Add(new TemplateRedisFilters { 
-                    RedisManager = container.Resolve<IRedisClientsManager>()
-                });
-            }
-
-            vfs = GetVirtualFiles(GetAppSetting("files"), GetAppSetting("files.config"));
-            if (vfs is IVirtualFiles writableFs)
-                VirtualFiles = writableFs;
-
-            var checkForModifiedPagesAfter = GetAppSetting("checkForModifiedPagesAfter");
-            if (checkForModifiedPagesAfter != null)
-                feature.CheckForModifiedPagesAfter = checkForModifiedPagesAfter.ConvertTo<TimeSpan>();
-
-            var checkForModifiedPagesAfterSecs = GetAppSetting("checkForModifiedPagesAfterSecs");
-            if (checkForModifiedPagesAfterSecs != null)
-                feature.CheckForModifiedPagesAfter = TimeSpan.FromSeconds(checkForModifiedPagesAfterSecs.ConvertTo<int>());
-
-            var defaultFileCacheExpirySecs = GetAppSetting("defaultFileCacheExpirySecs");
-            if (defaultFileCacheExpirySecs != null)
-                feature.Args[TemplateConstants.DefaultFileCacheExpiry] = TimeSpan.FromSeconds(defaultFileCacheExpirySecs.ConvertTo<int>());
-
-            var defaultUrlCacheExpirySecs = GetAppSetting("defaultUrlCacheExpirySecs");
-            if (defaultUrlCacheExpirySecs != null)
-                feature.Args[TemplateConstants.DefaultUrlCacheExpiry] = TimeSpan.FromSeconds(defaultUrlCacheExpirySecs.ConvertTo<int>());
-
-            var contextArgKeys = AppSettings.GetAllKeys().Where(x => x.StartsWith("args."));
-            foreach (var key in contextArgKeys)
-            {
-                var name = key.RightPart('.');
-                var value = GetAppSetting(key);
-                feature.Args[name] = value;
-            }
-
-            Plugins.Add(feature);
-        }
     }
 }
