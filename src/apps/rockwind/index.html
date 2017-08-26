@@ -41,6 +41,9 @@ a:hover {
 .clear {
     clear: both;
 }
+th:first-child {
+    text-align: right;
+}
 </style>
 </head>
 <body>
@@ -173,7 +176,7 @@ a:hover {
             <td></td>
         </tr>
         <tr>
-            <th style="text-align:center">As List</th>
+            <th>As List</th>
             <td>
                 <div><a href="/api/customers?id=ALFKI">/api/customers?id=ALFKI</a></div>
                 <div><a href="/api/customers.csv?id=ALFKI">/api/customers.csv?id=ALFKI</a></div>
@@ -200,16 +203,25 @@ a:hover {
             <td></td>
         </tr>
         <tr>
+            <th>All Products</th>
+            <td>
+                <div><a href="/api/products">/api/products</a></div>
+                <div><a href="/api/products.csv">/api/products.csv</a></div>
+                <div><a href="/api/products.html">/api/products.html</a></div>
+            </td>
+            <td><a href="https://github.com/NetCoreApps/WebTemplates/blob/master/src/apps/rockwind/api/products.html">/api/products.html</a></td>
+        </tr>
+        <tr>
             <th>Chai Product Details</th>
             <td>
                 <div><a href="/api/products/1">/api/products/1</a></div>
                 <div><a href="/api/products/1.csv">/api/products/1.csv</a></div>
                 <div><a href="/api/products/1.html">/api/products/1.html</a></div>
             </td>
-            <td><a href="https://github.com/NetCoreApps/WebTemplates/blob/master/src/apps/rockwind/api/products.html">/api/products.html</a></td>
+            <td></td>
         </tr>
         <tr>
-            <th style="text-align:center">As List</th>
+            <th>As List</th>
             <td>
                 <div><a href="/api/products?id=1">/api/products?id=1</a></div>
                 <div><a href="/api/products.csv?id=1">/api/products.csv?id=1</a></div>
