@@ -3,8 +3,10 @@ title: Web Template Plugins
 -->
 
 <p>
-    This demo uses Filters and Services available from this <a href="">Wep App's</a> <b>/plugins</b> folder
-    built from the .NET Core 2.0 projects in <a href="">/example-plugins</a>.
+    This demo uses Filters and Services available from this 
+    <a href="https://github.com/NetCoreApps/WebTemplates/tree/master/src/apps/web-plugins">Wep App's</a> <b>/plugins</b> folder
+    built from the .NET Core 2.0 projects in 
+    <a href="https://github.com/NetCoreApps/WebTemplates/tree/master/src/example-plugins">/example-plugins</a>.
 </p>
 
 <p>
@@ -15,14 +17,247 @@ title: Web Template Plugins
     <a href="http://templates.servicestack.net/docs/code-pages">Template Code Pages</a>
     that are contained within <b>.dll's</b> or <b>.exe's</b> dropped in a Web App's <b>/plugins</b> folder
     which are automatically registered on startup. 
+</p>
 
-<h3>/FiltersPlugin</h3>
+<h3>FilterInfo Plugin</h3>
 
-{{ 'filter-plugins.txt' | includeFile | assignTo: template }}
+<p>
+    The <a href="https://github.com/NetCoreApps/WebTemplates/tree/master/src/example-plugins/FilterInfo">/FilterInfo</a> plugin contains the 
+    <a href="https://github.com/NetCoreApps/WebTemplates/blob/master/src/example-plugins/FilterInfo/EvaluateTemplateService.cs">EvaluateTemplateService</a>
+    which lets us evaluate templates via Ajax and the
+    <a href="https://github.com/NetCoreApps/WebTemplates/blob/master/src/example-plugins/FilterInfo/FilterInfoFilters.cs">FilterInfoFilters</a>
+    which provides the <em>filterLinkToSrc</em> and <em>filtersAvailable</em> filters used below to provide the UI to quickly browse the 
+    different filters available in ServiceStack:
+</p>
+
+<hr>
+
+<form style="margin: 0 0 20px 0">
+    <div class="row">
+        <div class="col-auto">
+            <div class="input-group">
+                <label for="nameContains" style="line-height:2rem;margin:0 10px 0 0">Search for available filters:</label>
+                <input type="text" id="nameContains" name="nameContains" class="form-control" placeholder="Filter Name Contains" 
+                       value="{{ nameContains | ifExists }}"
+                       autofocus onfocus="var hold=this.value; this.value=''; this.value=hold"
+                       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <span class="input-group-btn"><button class="btn btn-primary" type="submit">Go!</button></span>
+                <input type="hidden" name="tab">
+            </div>
+        </div>
+    </div>
+</form>
+
+<ul id="filters" class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#default-filters" role="tab">Default Filters</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#html-filters" role="tab">HTML Filters</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#protected-filters" role="tab">Protected Filters</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#info-filters" role="tab">Info Filters</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#redis-filters" role="tab">Redis Filters</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#db-filters" role="tab">DB Filters</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#ss-filters" role="tab">ServiceStack</a>
+    </li>
+</ul>
+
+{{ `<script>
+var tab = queryStringParams()['tab'] || 'default-filters';
+$("#" + tab).addClass('active');
+$(".nav-link[href$=" + tab + "]").addClass('active');
+
+$("FORM").submit(function(){
+    $("input[name=tab]").val($(".tab-pane.active").attr('id'))
+})
+</script>` | raw | assignTo: scripts }}
+
+<style>
+    .tab-content .result .output {
+        margin: 0;
+        padding: 0;
+        max-height: auto;
+        font-size: 16px;
+        border-radius: 0;
+        border-top: 0;
+    }
+    .tab-content .live-template {
+        padding-top: 0;
+    }
+    .tab-content .live-template textarea {
+        border-top: 0;
+        border-radius: 0;
+    }
+    .tab-content td:first-child {
+        text-align: right
+    }
+</style>
+
+{{ 8 | assignTo: rows }}
+<div class="tab-content">
+    <div class="tab-pane" id="default-filters" role="tabpanel">
+{{ "live-template" | partial({ rows, className, template:`{{ 'TemplateDefaultFilters' | assignTo: filter }}
+<table class="table table-striped"><caption>{{ filter | filterLinkToSrc }}</caption>
+{{ filter | filtersAvailable
+    | where: contains(lower(it.Name), lower(default(nameContains,'')))
+    | select: <tr><td>{ it.FirstParam }</td><td>{ it.Body }</td><td>{ it.Return }</td></tr>
+}}
+</table>` }) }}
+    </div>
+    <div class="tab-pane" id="html-filters" role="tabpanel">
+{{ "live-template" | partial({ rows, className, template:`{{ 'TemplateHtmlFilters' | assignTo: filter }}
+<table class="table table-striped"><caption>{{ filter | filterLinkToSrc }}</caption>
+{{ filter | filtersAvailable
+    | where: contains(lower(it.Name), lower(default(nameContains,'')))
+    | select: <tr><td>{ it.FirstParam }</td><td>{ it.Body }</td><td>{ it.Return }</td></tr>
+}}
+</table>` }) }}
+    </div>
+    <div class="tab-pane" id="protected-filters" role="tabpanel">
+{{ "live-template" | partial({ rows, className, template:`{{ 'TemplateProtectedFilters' | assignTo: filter }}
+<table class="table table-striped"><caption>{{ filter | filterLinkToSrc }}</caption>
+{{ filter | filtersAvailable
+    | where: contains(lower(it.Name), lower(default(nameContains,'')))
+    | select: <tr><td>{ it.FirstParam }</td><td>{ it.Body }</td><td>{ it.Return }</td></tr>
+}}
+</table>` }) }}
+    </div>
+    <div class="tab-pane" id="info-filters" role="tabpanel">
+{{ "live-template" | partial({ rows, className, template:`{{ 'TemplateInfoFilters' | assignTo: filter }}
+<table class="table table-striped"><caption>{{ filter | filterLinkToSrc }}</caption>
+{{ filter | filtersAvailable
+    | where: contains(lower(it.Name), lower(default(nameContains,'')))
+    | select: <tr><td>{ it.FirstParam }</td><td>{ it.Body }</td><td>{ it.Return }</td></tr>
+}}
+</table>` }) }}
+    </div>
+    <div class="tab-pane" id="redis-filters" role="tabpanel">
+{{ "live-template" | partial({ rows, className, template:`{{ 'TemplateRedisFilters' | assignTo: filter }}
+<table class="table table-striped"><caption>{{ filter | filterLinkToSrc }}</caption>
+{{ filter | filtersAvailable
+    | where: contains(lower(it.Name), lower(default(nameContains,'')))
+    | select: <tr><td>{ it.FirstParam }</td><td>{ it.Body }</td><td>{ it.Return }</td></tr>
+}}
+</table>` }) }}
+    </div>
+    <div class="tab-pane" id="db-filters" role="tabpanel">
+{{ "live-template" | partial({ rows, className, template:`{{ 'TemplateDbFiltersAsync' | assignTo: filter }}
+<table class="table table-striped"><caption>{{ filter | filterLinkToSrc }}</caption>
+{{ filter | filtersAvailable
+    | where: contains(lower(it.Name), lower(default(nameContains,'')))
+    | select: <tr><td>{ it.FirstParam }</td><td>{ it.Body }</td><td>{ it.Return }</td></tr>
+}}
+</table>` }) }}
+    </div>
+    <div class="tab-pane" id="ss-filters" role="tabpanel">
+{{ "live-template" | partial({ rows, className, template:`{{ 'TemplateServiceStackFilters' | assignTo: filter }}
+<table class="table table-striped"><caption>{{ filter | filterLinkToSrc }}</caption>
+{{ filter | filtersAvailable
+    | where: contains(lower(it.Name), lower(default(nameContains,'')))
+    | select: <tr><td>{ it.FirstParam }</td><td>{ it.Body }</td><td>{ it.Return }</td></tr>
+}}
+</table>` }) }}
+    </div>
+</div>
+
+
+<h3>ServerInfo Plugin</h3>
+
+<p>
+    The <a href="https://github.com/NetCoreApps/WebTemplates/tree/master/src/example-plugins/ServerInfo">/ServerInfo</a> plugin contains the 
+    <a href="https://github.com/NetCoreApps/WebTemplates/blob/master/src/example-plugins/ServerInfo/ServerInfoFilters.cs">ServerInfoFilters</a>
+    which gives our Templates access to this Server's Drive and Process Info used below:
+</p>
+
+<hr>
+
+{{ 'templates/server-info.txt' | includeFile | assignTo: template }}
 
 {{ "live-template" | partial({ rows:13, template }) }}
 
+<style>
+    #server-info th:first-child {
+        text-align: right;
+    }
+</style>
+
+<h4>ServerInfo Services</h4>
+
 <p>
-    
+    It also contains the 
+    <a href="https://github.com/NetCoreApps/WebTemplates/blob/master/src/example-plugins/ServerInfo/ServerInfoServices.cs">ServerInfoServices</a>
+    which adds ServiceStack Services to make the below Drive and Process Info APIs available:
 </p>
 
+<table id="server-info" class="table table-striped">
+    <tr class="bg-success">
+        <td colspan="2" style="text-align:center;color:#fff;font-size:1.5rem">/drives API</td>
+    </tr>
+    <tr>
+        <th>All Drives</th>
+        <td>
+            <div><a href="/drives">/drives</a></div>
+        </td>
+    </tr>
+    <tr>
+        <th>Drives larger than 1 GB</th>
+        <td>
+            <div><a href="/drives?LargerThanBytes=1000000000">/drives?LargerThanBytes=1000000000</a></div>
+        </td>
+    </tr>
+    <tr>
+        <th>Drives smaller than 1 GB</th>
+        <td>
+            <div><a href="/drives?SmallerThanBytes=1000000000">/drives?SmallerThanBytes=1000000000</a></div>
+        </td>
+    </tr>
+    <tr class="bg-success">
+        <td colspan="2" style="text-align:center;color:#fff;font-size:1.5rem">/process API</td>
+    </tr>
+    <tr>
+        <th>Current Process</th>
+        <td>
+            <div><a href="/process/current">/process/current</a></div>
+        </td>
+    </tr>
+    <tr>
+        <th>All Processes</th>
+        <td>
+            <div><a href="/processes">/processes</a></div>
+        </td>
+    </tr>
+    <tr>
+        <th>Process by Id</th>
+        <td>
+            <div><a href="/process/{{ currentProcess | select: { it.Id } }}">/process/{{ currentProcess | select: { it.Id } }}</a></div>
+        </td>
+    </tr>
+    <tr>
+        <th>'dotnet' Processes</th>
+        <td>
+            <div><a href="/processes?NameContains=dotnet">/processes?NameContains=dotnet</a></div>
+        </td>
+    </tr>
+    <tr>
+        <th>Processes larger than 100 MB</th>
+        <td>
+            <div><a href="/processes?MemoryBytesAbove=100000000">/processes?MemoryBytesAbove=100000000</a></div>
+        </td>
+    </tr>
+    <tr>
+        <th>More than 10 Active Threads</th>
+        <td>
+            <div><a href="/processes?ActiveThreadsAbove=10">/processes?ActiveThreadsAbove=10</a></div>
+        </td>
+    </tr>
+</table>

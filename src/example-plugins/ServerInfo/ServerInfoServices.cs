@@ -12,8 +12,8 @@ using System.Reflection;
 
 namespace CustomFilters
 {
-    [Route("/process")]
     [Route("/process/{Id}")]
+    [Route("/process/current")]
     public class GetProcess : IReturn<GetProcessResponse>
     {
         public int? Id { get; set; }
@@ -24,7 +24,7 @@ namespace CustomFilters
         public ProcessInfo Result { get; set; }
     }
 
-    [Route("/process/search")]
+    [Route("/processes")]
     public class SearchProcess : IReturn<SearchProcessResponse>
     {
         public string NameContains { get; set; }
@@ -39,11 +39,16 @@ namespace CustomFilters
     }
 
     [Route("/drives")]
-    public class GetDrives {}
+    public class SearchDrives 
+    {
+        public int? LargerThanBytes { get; set; }
+        public int? SmallerThanBytes { get; set; }
+    }
 
-    public class GetDrivesResponse
+    public class SearchDrivesResponse
     {
         public List<Drive> Results { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
     }
 
     public class ProcessInfo
@@ -91,9 +96,20 @@ namespace CustomFilters
             };
         }
 
-        public object Any(GetDrives request) => new GetDrivesResponse  {
-            Results = DriveInfo.GetDrives().Map(x => x.ToDto())
-        };
+        public object Any(SearchDrives request) 
+        {
+            IEnumerable<DriveInfo> allDrives = DriveInfo.GetDrives();
+
+            if (request.LargerThanBytes != null)
+                allDrives = allDrives.Where(x => x.TotalSize > request.LargerThanBytes);
+
+            if (request.SmallerThanBytes != null)
+                allDrives = allDrives.Where(x => x.TotalSize < request.SmallerThanBytes);
+
+            return new SearchDrivesResponse {
+                Results = allDrives.Map(x => x.ToDto())
+            };
+        }
     }
 
     public static class ProcessExtensions

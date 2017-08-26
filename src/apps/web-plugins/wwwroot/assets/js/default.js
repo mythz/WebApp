@@ -33,3 +33,12 @@ function handleError(el, jqxhr) {
         el.find('.output').html('<div class="alert alert-danger"><pre>' + jqxhr.status + ' ' + jqxhr.statusText + '</pre></div>')
     }
 }
+
+function queryStringParams(qs) {
+    qs = (qs || document.location.search).split('+').join(' ')
+    var params = {}, tokens, re = /[?&]?([^=]+)=([^&]*)/g
+    while (tokens = re.exec(qs)) {
+        params[tokens[1]] = tokens[2];
+    }
+    return params;
+}

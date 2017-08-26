@@ -41,9 +41,6 @@ h3 {
     letter-spacing: .1em;
     margin: 30px 0 20px 0;
 }
-#page {
-    max-width: 990px;
-}
 .live-template .output {
     border: 1px solid #eee;
     border-radius: 2px;
@@ -68,4 +65,25 @@ caption {
     caption-side: top; 
     text-align: center;
     font-size: 1.2rem;
+}
+#content {
+    max-width: 990px;
+}
+#content em {
+    font-style: normal;
+    line-height: 1.5em;
+    padding: 2px 5px;
+    margin: 0;
+    background-color: rgba(0,0,0,0.04);
+    color: #c7254e;
+    border-radius: 3px;
+}
+#content a em {
+    color: #007bff;
+}
+#content a:hover em {
+    color: #0056b3;
+}
+#content h2, #content h3, #content h4 {
+    padding: 15px 0;
 }
