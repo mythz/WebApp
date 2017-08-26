@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>FiltersPlugin</AssemblyName>
-    <PackageId>FiltersPlugin</PackageId>
+    <AssemblyName>ServerInfo</AssemblyName>
+    <PackageId>ServerInfo</PackageId>
     <OutputType>Library</OutputType>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>

@@ -1,8 +1,8 @@
-dotnet build ..\example-plugins\FiltersPlugin
-copy ..\example-plugins\FiltersPlugin\bin\Debug\netcoreapp2.0\FiltersPlugin.dll ..\apps\web-plugins\plugins
+dotnet build ..\example-plugins\FilterInfo
+copy ..\example-plugins\FilterInfo\bin\Debug\netcoreapp2.0\FilterInfo.dll ..\apps\web-plugins\plugins
 
-dotnet build ..\example-plugins\ServicesPlugin
-copy ..\example-plugins\ServicesPlugin\bin\Debug\netcoreapp2.0\ServicesPlugin.dll ..\apps\web-plugins\plugins
+dotnet build ..\example-plugins\ServerInfo
+copy ..\example-plugins\ServerInfo\bin\Debug\netcoreapp2.0\ServerInfo.dll ..\apps\web-plugins\plugins
 
 (Get-Content ..\apps\web-plugins\web.settings) `
     -replace 'contentRoot ~/', 'contentRoot ~/../../../../apps/web-plugins' `
