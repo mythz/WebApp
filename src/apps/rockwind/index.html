@@ -6,11 +6,10 @@
 <style>
 body {
     color: #444;
-    font-family: "Open Sans", Helvetica, Arial, sans-serif;
     padding: 60px;
 }
 h2 {
-    font-size: 36px;
+    font-size: 38px;
     font-weight: normal;
     letter-spacing: .1em;
 }
@@ -67,7 +66,8 @@ a:hover {
 
     <h2>Northwind</h2>
     <p>
-        The Northwind website shows an example of a multi-level data driven website developed using just custom DB Filters.
+        The Northwind website shows an example of a multi-level data driven website developed using just 
+        <a href="http://templates.servicestack.net/docs/db-filters"DB Filters></a>.
     </p>
 
     <table class="table table-bordered" style="width:auto">
@@ -102,7 +102,7 @@ a:hover {
             <td><a href="https://github.com/NetCoreApps/WebTemplates/blob/master/src/apps/rockwind/northwind/shippers.html">/northwind/shippers.html</a></td>
         </tr>
         <tr>
-            <th class="bg-primary" colspan="3" style="text-align:center;color:#fff">Page Queries</th>
+            <td class="bg-primary" colspan="3" style="text-align:center;color:#fff;font-size:1.5rem">Page Queries</td>
         </tr>
         <tr>
             <th>Customers in Germany</th>
@@ -150,14 +150,14 @@ a:hover {
             <td></td>
         </tr>
         <tr>
-            <th class="bg-primary" colspan="3" style="text-align:center;color:#fff">API Queries</th>
+            <td class="bg-primary" colspan="3" style="text-align:center;color:#fff;font-size:1.5rem">API Queries</td>
         </tr>
         <tr>
             <th>All Customers</th>
             <td>
                 <div><a href="/api/customers">/api/customers</a></div>
-                <div><a href="/api/customers.html">/api/customers.html</a></div>
                 <div><a href="/api/customers.csv">/api/customers.csv</a></div>
+                <div><a href="/api/customers.html">/api/customers.html</a></div>
                 <div><a href="/api/customers?format=html">/api/customers?format=html</a></div>
                 <div style="margin:5px 0 0 0;color:#888;font-size:13px"><b>Accept</b> HTTP Header also supported</div>
             </td>
@@ -167,8 +167,8 @@ a:hover {
             <th>Alfreds Futterkiste Details</th>
             <td>
                 <div><a href="/api/customers/ALFKI">/api/customers/ALFKI</a></div>
-                <div><a href="/api/customers/ALFKI.html">/api/customers/ALFKI.html</a></div>
                 <div><a href="/api/customers/ALFKI.csv">/api/customers/ALFKI.csv</a></div>
+                <div><a href="/api/customers/ALFKI.html">/api/customers/ALFKI.html</a></div>
             </td>
             <td></td>
         </tr>
@@ -176,8 +176,8 @@ a:hover {
             <th style="text-align:center">As List</th>
             <td>
                 <div><a href="/api/customers?id=ALFKI">/api/customers?id=ALFKI</a></div>
-                <div><a href="/api/customers.html?id=ALFKI">/api/customers.html?id=ALFKI</a></div>
                 <div><a href="/api/customers.csv?id=ALFKI">/api/customers.csv?id=ALFKI</a></div>
+                <div><a href="/api/customers.html?id=ALFKI">/api/customers.html?id=ALFKI</a></div>
             </td>
             <td></td>
         </tr>
@@ -185,8 +185,8 @@ a:hover {
             <th>Customers in Germany</th>
             <td>
                 <div><a href="/api/customers?country=Germany">/api/customers?country=Germany</a></div>
-                <div><a href="/api/customers.html?country=Germany">/api/customers.html?country=Germany</a></div>
                 <div><a href="/api/customers.csv?country=Germany">/api/customers.csv?country=Germany</a></div>
+                <div><a href="/api/customers.html?country=Germany">/api/customers.html?country=Germany</a></div>
             </td>
             <td></td>
         </tr>
@@ -194,6 +194,7 @@ a:hover {
             <th>Customers in London</th>
             <td>
                 <div><a href="/api/customers?city=London">/api/customers?city=London</a></div>
+                <div><a href="/api/customers.csv?city=London">/api/customers.csv?city=London</a></div>
                 <div><a href="/api/customers.html?city=London">/api/customers.html?city=London</a></div>
             </td>
             <td></td>
@@ -202,6 +203,7 @@ a:hover {
             <th>Chai Product Details</th>
             <td>
                 <div><a href="/api/products/1">/api/products/1</a></div>
+                <div><a href="/api/products/1.csv">/api/products/1.csv</a></div>
                 <div><a href="/api/products/1.html">/api/products/1.html</a></div>
             </td>
             <td><a href="https://github.com/NetCoreApps/WebTemplates/blob/master/src/apps/rockwind/api/products.html">/api/products.html</a></td>
@@ -210,6 +212,7 @@ a:hover {
             <th style="text-align:center">As List</th>
             <td>
                 <div><a href="/api/products?id=1">/api/products?id=1</a></div>
+                <div><a href="/api/products.csv?id=1">/api/products.csv?id=1</a></div>
                 <div><a href="/api/products.html?id=1">/api/products.html?id=1</a></div>
             </td>
             <td></td>
@@ -218,6 +221,7 @@ a:hover {
             <th>Beverage Products</th>
             <td>
                 <div><a href="/api/products?category=Beverages">/api/products?category=Beverages</a></div>
+                <div><a href="/api/products.csv?category=Beverages">/api/products.csv?category=Beverages</a></div>
                 <div><a href="/api/products.html?category=Beverages">/api/products.html?category=Beverages</a></div>
             </td>
             <td></td>
@@ -226,6 +230,7 @@ a:hover {
             <th>Products from Bigfoot Breweries</th>
             <td>
                 <div><a href="/api/products?supplier=Bigfoot+Breweries">/api/products?supplier=Bigfoot+Breweries</a></div>
+                <div><a href="/api/products.csv?supplier=Bigfoot+Breweries">/api/products.csv?supplier=Bigfoot+Breweries</a></div>
                 <div><a href="/api/products.html?supplier=Bigfoot+Breweries">/api/products.html?supplier=Bigfoot+Breweries</a></div>
             </td>
             <td></td>
@@ -234,6 +239,7 @@ a:hover {
             <th>Products containing Tofu</th>
             <td>
                 <div><a href="/api/products?nameContains=Tofu">/api/products?nameContains=Tofu</a></div>
+                <div><a href="/api/products.csv?nameContains=Tofu">/api/products.csv?nameContains=Tofu</a></div>
                 <div><a href="/api/products.html?nameContains=Tofu">/api/products.html?nameContains=Tofu</a></div>
             </td>
             <td></td>
