@@ -1,1 +1,1 @@
-dotnet bin/web.dll ../rockwind/web.sqlite.settings
+dotnet app/web.dll ../rockwind/web.sqlite.settings
