@@ -135,10 +135,9 @@ namespace TemplateWebsites
         {
             appHost.Config.DebugMode = "debug".GetAppSetting(true);
 
-            var feature = new TemplatePagesFeature {
-                ApiPath = "apiPath".GetAppSetting() ?? "/api",
-                CheckForModifiedPages = "checkForModifiedPages".GetAppSetting(defaultValue:false),
-            };
+            var feature = nameof(TemplatePagesFeature).GetAppSetting() != null
+                ? (TemplatePagesFeature)typeof(TemplatePagesFeature).CreatePlugin()
+                : new TemplatePagesFeature();
 
             var dbFactory = "db".GetAppSetting().GetDbFactory(connectionString:"db.connection".GetAppSetting());
             if (dbFactory != null)
@@ -156,11 +155,7 @@ namespace TemplateWebsites
                 });
             }
 
-            var checkForModifiedPagesAfter = "checkForModifiedPagesAfter".GetAppSetting();
-            if (checkForModifiedPagesAfter != null)
-                feature.CheckForModifiedPagesAfter = checkForModifiedPagesAfter.ConvertTo<TimeSpan>();
-
-            var checkForModifiedPagesAfterSecs = "checkForModifiedPagesAfterSecs".GetAppSetting();
+           var checkForModifiedPagesAfterSecs = "checkForModifiedPagesAfterSecs".GetAppSetting();
             if (checkForModifiedPagesAfterSecs != null)
                 feature.CheckForModifiedPagesAfter = TimeSpan.FromSeconds(checkForModifiedPagesAfterSecs.ConvertTo<int>());
 
@@ -186,6 +181,8 @@ namespace TemplateWebsites
             if (features != null)
             {
                 var featureTypes = features.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                featureTypes.Remove(nameof(TemplatePagesFeature)); //already added
+
                 var externalPlugins = new[] {
                     typeof(ServiceStack.Api.OpenApi.OpenApiFeature),
                     typeof(ServiceStack.AutoQueryFeature), 
@@ -196,6 +193,7 @@ namespace TemplateWebsites
                     if (featureTypes.Contains(type.Name))
                     {
                         var plugin = type.CreatePlugin();
+                        appHost.Plugins.RemoveAll(x => x.GetType() == type);
                         appHost.Plugins.Add(plugin);
                         featureTypes.Remove(type.Name);
                     }
@@ -209,6 +207,7 @@ namespace TemplateWebsites
                     if (featureTypes.Contains(type.Name))
                     {
                         var plugin = type.CreatePlugin();
+                        appHost.Plugins.RemoveAll(x => x.GetType() == type);
                         appHost.Plugins.Add(plugin);
                         featureTypes.Remove(type.Name);
                     }
@@ -222,6 +221,7 @@ namespace TemplateWebsites
                     if (featureTypes.Contains(type.Name))
                     {
                         var plugin = type.CreatePlugin();
+                        appHost.Plugins.RemoveAll(x => x.GetType() == type);
                         appHost.Plugins.Add(plugin);
                         featureTypes.Remove(type.Name);
                     }
