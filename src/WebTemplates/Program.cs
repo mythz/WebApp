@@ -181,6 +181,58 @@ namespace TemplateWebsites
             }
 
             appHost.Plugins.Add(feature);
+
+            var features = "features".GetAppSetting();
+            if (features != null)
+            {
+                var featureTypes = features.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                var externalPlugins = new[] {
+                    typeof(ServiceStack.Api.OpenApi.OpenApiFeature),
+                    typeof(ServiceStack.AutoQueryFeature), 
+                };
+
+                foreach (var type in externalPlugins)
+                {
+                    if (featureTypes.Contains(type.Name))
+                    {
+                        var plugin = type.CreatePlugin();
+                        appHost.Plugins.Add(plugin);
+                        featureTypes.Remove(type.Name);
+                    }
+                }
+
+                foreach (var type in typeof(ServiceStackHost).GetAssembly().GetTypes())
+                {
+                    if (featureTypes.Count == 0)
+                        break;
+
+                    if (featureTypes.Contains(type.Name))
+                    {
+                        var plugin = type.CreatePlugin();
+                        appHost.Plugins.Add(plugin);
+                        featureTypes.Remove(type.Name);
+                    }
+                }
+
+                foreach (var type in appHost.ServiceAssemblies.SelectMany(x => x.GetTypes()))
+                {
+                    if (featureTypes.Count == 0)
+                        break;
+
+                    if (featureTypes.Contains(type.Name))
+                    {
+                        var plugin = type.CreatePlugin();
+                        appHost.Plugins.Add(plugin);
+                        featureTypes.Remove(type.Name);
+                    }
+                }
+
+                if (featureTypes.Count > 0)
+                {
+                    var plural = featureTypes.Count > 1 ? "s" : "";
+                    throw new NotSupportedException($"Unable to locate plugin{plural}: " + string.Join(", ", featureTypes));
+                }
+            }
         }
     }
 
@@ -312,5 +364,27 @@ namespace TemplateWebsites
             throw new NotSupportedException($"Unknown DB Provider '{dbProvider}'");
         }
 
+        public static IPlugin CreatePlugin(this Type type)
+        {
+            if (!type.HasInterface(typeof(IPlugin)))
+                throw new NotSupportedException($"'{type.Name}' is not a ServiceStack IPlugin");
+            
+            var pluginConfig = type.Name.GetAppSetting();
+            if (pluginConfig != null)
+            {
+                pluginConfig.ToStringSegment().ParseNextToken(out object value, out _);
+                if (value is Dictionary<string, object> objDictionary)
+                {
+                    var plugin = objDictionary.FromObjectDictionary(type);
+                    return (IPlugin)plugin;
+                }
+                else throw new NotSupportedException($"'{pluginConfig}' is not an Object Dictionary");
+            }
+            else
+            {
+                var plugin = type.CreateInstance<IPlugin>();
+                return plugin;
+            }
+        }
     }
 }
