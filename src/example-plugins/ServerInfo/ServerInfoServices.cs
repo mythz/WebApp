@@ -43,6 +43,7 @@ namespace CustomFilters
     {
         public int? LargerThanBytes { get; set; }
         public int? SmallerThanBytes { get; set; }
+        public List<string> DriveFormatIn { get; set; }
     }
 
     public class SearchDrivesResponse
@@ -105,6 +106,9 @@ namespace CustomFilters
 
             if (request.SmallerThanBytes != null)
                 allDrives = allDrives.Where(x => x.TotalSize < request.SmallerThanBytes);
+
+            if (request.DriveFormatIn?.Count > 0)
+                allDrives = allDrives.Where(x => request.DriveFormatIn.Contains(x.DriveFormat));
 
             return new SearchDrivesResponse {
                 Results = allDrives.Map(x => x.ToDto())
