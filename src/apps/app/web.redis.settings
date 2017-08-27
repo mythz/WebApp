@@ -1,0 +1,6 @@
+debug false
+name Redis WebTemplate
+port 5003
+contentRoot ~/..
+webRoot ~/../redis
+redis.connection localhost:6379

@@ -1,0 +1,7 @@
+debug false
+name WebTemplate Plugins
+port 5004
+contentRoot ~/../web-plugins
+webRoot ~/../web-plugins/wwwroot
+features OpenApiFeature, PostmanFeature, CorsFeature, ValidationFeature
+ValidationFeature { ScanAppHostAssemblies: true }

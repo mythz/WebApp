@@ -1,0 +1,1 @@
+dotnet app/web.dll ../web-plugins/web.settings

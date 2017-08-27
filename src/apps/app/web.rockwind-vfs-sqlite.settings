@@ -1,0 +1,7 @@
+debug false
+name Rockwind VFS SQLite WebTemplate
+port 5002
+contentRoot ~/..
+webRoot ~/../rockwind-vfs
+db sqlite
+db.connection ~/northwind.sqlite
