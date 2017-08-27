@@ -1,28 +1,20 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using ServiceStack;
-using ServiceStack.Templates;
 using ServiceStack.IO;
-using System.Threading.Tasks;
-using System;
 using ServiceStack.Web;
-using ServiceStack.OrmLite;
 using ServiceStack.Data;
+using ServiceStack.OrmLite;
+using ServiceStack.Templates;
 
-namespace TemplatePages
+namespace FilterInfo
 {
     [Route("/template/eval")]
     public class EvaluateTemplate
     {
         public string Template { get; set; }
-    }
-
-    public class ReturnExceptionsInJsonAttribute : ResponseFilterAttribute
-    {
-        public override void Execute(IRequest req, IResponse res, object responseDto)
-        {
-            if (responseDto is Exception || responseDto is IHttpError)
-                req.ResponseContentType = MimeTypes.Json;
-        }
     }
 
     [ReturnExceptionsInJson]
@@ -32,7 +24,16 @@ namespace TemplatePages
 
         public async Task<string> Any(EvaluateTemplate request)
         {
-            var pageResult = new PageResult(Pages.OneTimePage(request.Template, "html"))
+            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
+            var context = new TemplateContext {
+                TemplateFilters = { 
+                    new FilterInfoFilters(), 
+                    feature.TemplateFilters.FirstOrDefault(x => x.GetType().Name == "ServerInfoFilters")
+                },
+                VirtualFiles = feature.VirtualFiles,
+            }.Init();
+
+            var pageResult = new PageResult(context.OneTimePage(request.Template))
             {
                 Args = base.Request.GetTemplateRequestParams()
             };

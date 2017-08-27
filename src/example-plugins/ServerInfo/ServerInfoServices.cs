@@ -10,7 +10,7 @@ using ServiceStack.Redis;
 using ServiceStack.OrmLite;
 using System.Reflection;
 
-namespace CustomFilters
+namespace ServerInfo
 {
     [Route("/process/{Id}")]
     [Route("/process/current")]
@@ -99,7 +99,7 @@ namespace CustomFilters
 
         public object Any(SearchDrives request) 
         {
-            IEnumerable<DriveInfo> allDrives = DriveInfo.GetDrives();
+            var allDrives = ServerInfoFilters.Instance.drives();
 
             if (request.LargerThanBytes != null)
                 allDrives = allDrives.Where(x => x.TotalSize > request.LargerThanBytes);

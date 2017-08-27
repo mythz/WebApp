@@ -12,7 +12,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.Templates;
 using ServiceStack.FluentValidation;
 
-namespace CustomFilters
+namespace FilterInfo
 {
     [Route("/contacts", "GET")]
     public class GetContacts : IReturn<GetContactsResponse> {}

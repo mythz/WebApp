@@ -61,6 +61,9 @@ h3 {
 .live-template.error {
     border-color: #a94442;
 }
+.error .output {
+    padding: 0;
+}
 caption {
     caption-side: top; 
     text-align: center;

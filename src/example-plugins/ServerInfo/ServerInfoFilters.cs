@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using ServiceStack;
 using ServiceStack.Templates;
 
-namespace CustomFilters
+namespace ServerInfo
 {
     public class ServerInfoFilters : TemplateFilter
     {
@@ -18,10 +18,16 @@ namespace CustomFilters
             catch (Exception) { return false; }
         }
 
+        bool HasAccess(DriveInfo drive)
+        {
+            try { return !string.IsNullOrEmpty(drive.DriveFormat); } 
+            catch (Exception) { return false; }
+        }
+
         public IEnumerable<Process> processes() => Process.GetProcesses().Where(HasAccess);
         public Process processById(int processId) => Process.GetProcessById(processId);
         public Process currentProcess() => Process.GetCurrentProcess();
 
-        public DriveInfo[] drives() => DriveInfo.GetDrives();
+        public IEnumerable<DriveInfo> drives() => DriveInfo.GetDrives().Where(HasAccess);
     }
 }

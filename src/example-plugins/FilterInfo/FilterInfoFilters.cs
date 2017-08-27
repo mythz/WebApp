@@ -10,7 +10,7 @@ using ServiceStack.Redis;
 using ServiceStack.OrmLite;
 using System.Reflection;
 
-namespace CustomFilters
+namespace FilterInfo
 {
     public class FilterInfoFilters : TemplateFilter
     {
