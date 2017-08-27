@@ -9,6 +9,7 @@
 *.aws
 *.azure
 *.gcloud
+/app/web.*.settings
 
 # User-specific files
 *.suo
