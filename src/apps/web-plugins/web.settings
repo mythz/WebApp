@@ -3,3 +3,5 @@ name WebTemplate Plugins
 port 5000
 contentRoot ~/
 webRoot ~/wwwroot
+features OpenApiFeature, PostmanFeature, CorsFeature, ValidationFeature
+ValidationFeature { ScanAppHostAssemblies: true }

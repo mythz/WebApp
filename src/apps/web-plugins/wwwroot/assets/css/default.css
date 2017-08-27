@@ -87,3 +87,12 @@ caption {
 #content h2, #content h3, #content h4 {
     padding: 15px 0;
 }
+#content h4 {
+    font-size: 1.8rem;
+    font-weight: normal;
+}
+pre {
+    background: #f8f8f8;
+    padding: 10px;
+    color: #2c3e50;
+}
