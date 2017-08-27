@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "1dc14e618ff3179ee11254c1a1f0b2e361ebddae"
+    "signature": "cf13a6771733cc319cb5c29fe432ba227ffbceaf"
   },
   "compilationOptions": {
     "defines": [
@@ -28,6 +28,7 @@
           "Microsoft.NETCore.App": "2.0.0",
           "MySql.Data": "7.0.7-m61",
           "Npgsql": "3.2.4.1",
+          "ServiceStack.Api.OpenApi.Core": "1.0.44",
           "ServiceStack.Aws.Core": "1.0.44",
           "ServiceStack.Client.Core": "1.0.44",
           "ServiceStack.Common.Core": "1.0.44",
@@ -2699,6 +2700,25 @@
             "rid": "win-x86",
             "assetType": "native"
           }
+        }
+      },
+      "ServiceStack.Api.OpenApi.Core/1.0.44": {
+        "dependencies": {
+          "ServiceStack.Client.Core": "1.0.44",
+          "ServiceStack.Common.Core": "1.0.44",
+          "ServiceStack.Core": "1.0.44",
+          "ServiceStack.Interfaces.Core": "1.0.44",
+          "ServiceStack.Text.Core": "1.0.44",
+          "System.Collections.Specialized": "4.3.0",
+          "System.Runtime.Serialization.Primitives": "4.3.0",
+          "System.ServiceModel.Primitives": "4.3.0",
+          "System.Xml.XmlSerializer": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.6/ServiceStack.Api.OpenApi.dll": {}
+        },
+        "compile": {
+          "lib/netstandard1.6/ServiceStack.Api.OpenApi.dll": {}
         }
       },
       "ServiceStack.Aws.Core/1.0.44": {
@@ -6293,6 +6313,13 @@
       "hashPath": "runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",
       "runtimeStoreManifestName": "aspnetcore-store-2.0.0-win7-x86.xml"
     },
+    "ServiceStack.Api.OpenApi.Core/1.0.44": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZgMqvVpsnuiG4mzEQBKeLjdSCT2Pk1nX6MphWGhHSwpGQImAhBwoR0+QQltDGd1LZU8tam+M/r/qkaVqz1UNlQ==",
+      "path": "servicestack.api.openapi.core/1.0.44",
+      "hashPath": "servicestack.api.openapi.core.1.0.44.nupkg.sha512"
+    },
     "ServiceStack.Aws.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
@@ -6303,28 +6330,28 @@
     "ServiceStack.Client.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ewNTUrBLcU1lOPxW6Qfylfd2C7km6L7KNfrsNrL0BiJF6IS8BNnmay7sYC/JWwjQCzFJBEc69TPZqNVROo6MhQ==",
+      "sha512": "sha512-kztFlefBhlJM7fLibHc0RBarMP5oAK+Y/PXwmu6kqLr04RiDRnTW9m2HeDVsVGD305eP4KCM51pbabheqGrhZw==",
       "path": "servicestack.client.core/1.0.44",
       "hashPath": "servicestack.client.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.Common.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-g+zMp1aGDJHk4dlUlwf1nwHwFzCNNP7pY1LrOxzJJLpLds4OZbKJcuNo2MNYQ8GUiNizTP1R7tnlHO0iziN7DQ==",
+      "sha512": "sha512-yc/ax9vZPOYT4ZV3AM8qK1C6jinDBTRBvqCI93U6flSwb+dvaG9yrwjMM2+SCW46jbgvTK4EaLHbq5rZlBt4aw==",
       "path": "servicestack.common.core/1.0.44",
       "hashPath": "servicestack.common.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-6uDKYm+GXlUf1P0IQN7xnQYlcSfttiBaouYfeHzlg7n04dlYCzcahBki5eT6sMmJyRxipNsB4c2/af1EpqQayg==",
+      "sha512": "sha512-NWN+7ueVxeOXqfOEDVu4uEThtaEyNK9PTXQPuWeSvgmdYPrJ0Uvtevd3w9idpWNWIzcrEmNY78s3Fu60uq4IwQ==",
       "path": "servicestack.core/1.0.44",
       "hashPath": "servicestack.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.Interfaces.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-tT4jjzGt0goU07cmGSMIatxMOm8bAC2Slwm6seOg6Ml81O4wROV1Q3TFpVX6ZA0W96RyimwDMOr4jeSSU8YyrQ==",
+      "sha512": "sha512-vjZTVe6haFbM9s5YiaQQ1+gAUKJOIs29LnM4288FZlPVe1NrwSFcNjHnEcTMowC99BQECoDXIEbd3LXRmJHxFw==",
       "path": "servicestack.interfaces.core/1.0.44",
       "hashPath": "servicestack.interfaces.core.1.0.44.nupkg.sha512"
     },
@@ -6373,7 +6400,7 @@
     "ServiceStack.Server.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hfaB11fuII+x8rSVBARSvZ4Bof0VDxW4kjs8LM4eRLG7WpWX4eN0mbS6DvG6SG+KhGFgdI7ZKDFk0WyXXAunkg==",
+      "sha512": "sha512-McRdJz+aFU5GMiO5MVc4raQktyaDLS8oEv9RoGJWn07Pj4ZLC8+RsZpveNe9KXb5B0VKi3+IwXBMykR3ubrg6A==",
       "path": "servicestack.server.core/1.0.44",
       "hashPath": "servicestack.server.core.1.0.44.nupkg.sha512"
     },

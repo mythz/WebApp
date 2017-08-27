@@ -27,6 +27,7 @@
     <PackageReference Include="ServiceStack.OrmLite.PostgreSQL.Core" Version="1.0.*" />
     <PackageReference Include="ServiceStack.Redis.Core" Version="1.0.*" />
     <PackageReference Include="ServiceStack.Aws.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Api.OpenApi.Core" Version="1.0.*" />
 
     <!-- <Reference Include="..\..\..\..\ServiceStack\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
@@ -34,12 +35,14 @@
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
-    <ProjectReference Include="..\..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />  -->
+    <ProjectReference Include="..\..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />   -->
+   
   </ItemGroup>
 </Project>
