@@ -275,33 +275,6 @@ namespace WebApp
         public string Path { get; set; }
     }
 
-    public class WebAppFilters : TemplateFilter
-    {
-        public string dirPath(string filePath)
-        {
-            if (string.IsNullOrEmpty(filePath) || filePath[filePath.Length - 1] == '/')
-                return null;
-
-            var lastDirPos = filePath.LastIndexOf('/');
-            return lastDirPos >= 0
-                ? filePath.Substring(0, lastDirPos)
-                : null;
-        }
-
-        public string resolveAsset(TemplateScopeContext scope, string virtualPath)
-        {
-            if (string.IsNullOrEmpty(virtualPath))
-                return string.Empty;
-
-            if (!scope.Context.Args.TryGetValue("assetsBase", out object assetsBase))
-                return virtualPath;
-
-            return virtualPath[0] == '/'
-                ? assetsBase.ToString().CombineWith(virtualPath).ResolvePaths()
-                : assetsBase.ToString().CombineWith(dirPath(scope.Page.VirtualPath), virtualPath).ResolvePaths();
-        }
-    }
-
     public static class WebTemplateUtils
     {
         public static IAppSettings AppSettings;
