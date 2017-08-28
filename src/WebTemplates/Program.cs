@@ -22,7 +22,7 @@ using ServiceStack.Templates;
 using Amazon.S3;
 using Amazon;
 
-namespace TemplateWebsites
+namespace WebTemplates
 {
     public class Program
     {
@@ -97,6 +97,7 @@ namespace TemplateWebsites
                         continue;
 
                     var dllBytes = plugin.ReadAllBytes();
+                    $"Attempting to load plugin '{plugin.VirtualPath}', size: {dllBytes.Length} bytes".Print();
                     var asm = Assembly.Load(dllBytes);
                     assemblies.Add(asm);
 
@@ -106,7 +107,9 @@ namespace TemplateWebsites
                         {
                             if (typeof(AppHostBase).IsAssignableFromType(type))
                             {
+                                $"Using AppHost from Plugin '{plugin.VirtualPath}'".Print();
                                 appHost = type.CreateInstance<AppHostBase>();
+                                appHost.AppSettings = WebTemplateUtils.AppSettings;
                                 break;
                             }
                         }
@@ -118,7 +121,7 @@ namespace TemplateWebsites
                 appHost = new AppHost();
 
             if (assemblies.Count > 0)
-                appHost.ServiceAssemblies.AddRange(assemblies);
+                assemblies.Each(x => appHost.ServiceAssemblies.AddIfNotExists(x));
 
             if (vfs != null)
                 appHost.AddVirtualFileSources.Add(vfs);
@@ -135,9 +138,16 @@ namespace TemplateWebsites
         {
             appHost.Config.DebugMode = "debug".GetAppSetting(true);
 
-            var feature = nameof(TemplatePagesFeature).GetAppSetting() != null
-                ? (TemplatePagesFeature)typeof(TemplatePagesFeature).CreatePlugin()
-                : new TemplatePagesFeature();
+            var feature = appHost.GetPlugin<TemplatePagesFeature>();
+            if (feature != null)
+                "Using existing TemplatePagesFeature from appHost".Print();
+
+            if (feature == null)
+            {
+                feature = (nameof(TemplatePagesFeature).GetAppSetting() != null
+                    ? (TemplatePagesFeature)typeof(TemplatePagesFeature).CreatePlugin()
+                    : new TemplatePagesFeature { ApiPath = "apiPath".GetAppSetting() ?? "/api" });
+            }
 
             var dbFactory = "db".GetAppSetting().GetDbFactory(connectionString:"db.connection".GetAppSetting());
             if (dbFactory != null)
@@ -264,6 +274,33 @@ namespace TemplateWebsites
         public string Path { get; set; }
     }
 
+    public class WebAppFilters : TemplateFilter
+    {
+        public string dirPath(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath) || filePath[filePath.Length - 1] == '/')
+                return null;
+
+            var lastDirPos = filePath.LastIndexOf('/');
+            return lastDirPos >= 0
+                ? filePath.Substring(0, lastDirPos)
+                : null;
+        }
+
+        public string resolveAsset(TemplateScopeContext scope, string virtualPath)
+        {
+            if (string.IsNullOrEmpty(virtualPath))
+                return string.Empty;
+
+            if (!scope.Context.Args.TryGetValue("assetsBase", out object assetsBase))
+                return virtualPath;
+
+            return virtualPath[0] == '/'
+                ? assetsBase.ToString().CombineWith(virtualPath).ResolvePaths()
+                : assetsBase.ToString().CombineWith(dirPath(scope.Page.VirtualPath), virtualPath).ResolvePaths();
+        }
+    }
+
     public static class WebTemplateUtils
     {
         public static IAppSettings AppSettings;
@@ -375,6 +412,7 @@ namespace TemplateWebsites
                 pluginConfig.ToStringSegment().ParseNextToken(out object value, out _);
                 if (value is Dictionary<string, object> objDictionary)
                 {
+                    $"Creating '{type.Name}' with: {pluginConfig}".Print();
                     var plugin = objDictionary.FromObjectDictionary(type);
                     return (IPlugin)plugin;
                 }
@@ -382,6 +420,7 @@ namespace TemplateWebsites
             }
             else
             {
+                $"Registering Plugin '{type.Name}'".Print();
                 var plugin = type.CreateInstance<IPlugin>();
                 return plugin;
             }
