@@ -1,5 +1,5 @@
 debug true
-name WebTemplate Plugins
+name Web App Plugins
 port 5000
 contentRoot ~/../web-plugins
 webRoot ~/../web-plugins/wwwroot

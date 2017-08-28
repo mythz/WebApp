@@ -1,2 +1,3 @@
-# TemplateWebsites
-Develop websites using ServiceStack Templates
+# Web Apps
+
+Web Apps developed using ServiceStack Templates

@@ -1,5 +1,5 @@
 language: csharp
-solution: src/TemplateWebsites/TemplateWebsites.csproj
+solution: src/WebApp/WebApp.csproj
 os: linux
 dist: trusty
 sudo: required

@@ -1,6 +1,6 @@
 # Note: values prefixed with '$' are resolved from Environment Variables
 debug false
-name AWS S3 PostgreSQL WebTemplate
+name AWS S3 PostgreSQL Web App
 bind *
 port 5000
 db postgres

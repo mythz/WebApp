@@ -1,5 +1,5 @@
 debug true
-name Rockwind VFS PostgreSQL WebTemplate
+name Rockwind VFS PostgreSQL Web App
 port 5000
 contentRoot ~/..
 webRoot ~/../rockwind-vfs

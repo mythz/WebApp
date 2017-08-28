@@ -22,7 +22,7 @@ using ServiceStack.Templates;
 using Amazon.S3;
 using Amazon;
 
-namespace WebTemplates
+namespace WebApp
 {
     public class Program
     {

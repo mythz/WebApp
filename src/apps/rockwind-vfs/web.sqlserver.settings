@@ -1,5 +1,5 @@
 debug true
-name Rockwind VFS SQL Server WebTemplate
+name Rockwind VFS SQL Server Web App
 port 5000
 contentRoot ~/..
 webRoot ~/../rockwind-vfs

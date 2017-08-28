@@ -1,1 +1,1 @@
-dotnet app/web.dll ../web-plugins/web.settings
+dotnet web/app.dll ../web-plugins/web.settings
