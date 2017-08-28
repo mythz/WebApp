@@ -73,12 +73,13 @@ namespace NorthwindData
                 return;
             }
 
+            var hasOrmLite = LicenseUtils.HasLicensedFeature(LicenseFeature.OrmLite);
+
             var dbFactory = new OrmLiteConnectionFactory("~/../../apps/northwind.sqlite".MapProjectPath(), SqliteDialect.Provider);
             var db = dbFactory.Open();
             var categories = db.Select<Category>();
             var customers = db.Select<Customer>();
             var employees = db.Select<Employee>();
-            var employeeTerritories = db.Select<EmployeeTerritory>();
             var orders = db.Select<Order>();
             var orderDetails = db.Select<OrderDetail>();
             var products = db.Select<Product>();
@@ -86,6 +87,9 @@ namespace NorthwindData
             var shippers = db.Select<Shipper>();
             var suppliers = db.Select<Supplier>();
             var territories = db.Select<Territory>();
+
+            var employeeTerritories = hasOrmLite ? db.Select<EmployeeTerritory>() : null;
+
             db.Dispose();
 
             var provider = ResolveValue(args[0]);
@@ -102,8 +106,6 @@ namespace NorthwindData
                     $"Created table {nameof(Customer)}".Print();
                     db.DropAndCreateTable<Employee>();
                     $"Created table {nameof(Employee)}".Print();
-                    db.DropAndCreateTable<EmployeeTerritory>();
-                    $"Created table {nameof(EmployeeTerritory)}".Print();
                     db.DropAndCreateTable<Order>();
                     $"Created table {nameof(Order)}".Print();
                     db.DropAndCreateTable<OrderDetail>();
@@ -119,6 +121,12 @@ namespace NorthwindData
                     db.DropAndCreateTable<Territory>();
                     $"Created table {nameof(Territory)}".Print();
 
+                    if (hasOrmLite)
+                    {
+                        db.DropAndCreateTable<EmployeeTerritory>();
+                        $"Created table {nameof(EmployeeTerritory)}".Print();
+                    }
+
                     "".Print();
 
                     db.InsertAll(categories);
@@ -127,8 +135,6 @@ namespace NorthwindData
                     $"Inserted {customers.Count} rows in {nameof(Customer)}".Print();
                     db.InsertAll(employees);
                     $"Inserted {employees.Count} rows in {nameof(Employee)}".Print();
-                    db.InsertAll(employeeTerritories);
-                    $"Inserted {employeeTerritories.Count} rows in {nameof(EmployeeTerritory)}".Print();
                     db.InsertAll(orders);
                     $"Inserted {orders.Count} rows in {nameof(Order)}".Print();
                     db.InsertAll(orderDetails);
@@ -143,6 +149,12 @@ namespace NorthwindData
                     $"Inserted {suppliers.Count} rows in {nameof(Supplier)}".Print();
                     db.InsertAll(territories);
                     $"Inserted {territories.Count} rows in {nameof(Territory)}".Print();
+
+                    if (hasOrmLite)
+                    {
+                        db.InsertAll(employeeTerritories);
+                        $"Inserted {employeeTerritories.Count} rows in {nameof(EmployeeTerritory)}".Print();
+                    }
                 }
             }
             else if (provider == "redis")
