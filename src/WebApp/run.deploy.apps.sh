@@ -6,7 +6,7 @@ cat ../apps/rockwind-vfs/web.sqlite.settings | sed "/debug/s/ .*/ false/" | sed 
 
 cat ../apps/redis/web.settings | sed "/debug/s/ .*/ false/" | sed "/port/s/ .*/ 5003/" > ../apps/web/web.redis.settings
 
-cat ../apps/web-plugins/web.settings | sed "/debug/s/ .*/ false/" | sed "/port/s/ .*/ 5004/" > ../apps/web/web.web-plugins.settings
+cat ../apps/plugins/web.settings | sed "/debug/s/ .*/ false/" | sed "/port/s/ .*/ 5004/" > ../apps/web/web.plugins.settings
 
 cat ../apps/chat/web.release.settings | sed "/port/s/ .*/ 5005/" > ../apps/web/web.chat.settings
 
