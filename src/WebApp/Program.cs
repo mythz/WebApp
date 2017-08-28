@@ -137,6 +137,7 @@ namespace WebApp
         public void ConfigureAppHost(ServiceStackHost appHost)
         {
             appHost.Config.DebugMode = "debug".GetAppSetting(true);
+            appHost.Config.ForbiddenPaths.Add("/plugins");
 
             var feature = appHost.GetPlugin<TemplatePagesFeature>();
             if (feature != null)
