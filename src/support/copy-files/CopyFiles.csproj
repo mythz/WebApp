@@ -20,6 +20,7 @@
     <PackageReference Include="ServiceStack.Redis.Core" Version="1.0.*" />
     <PackageReference Include="ServiceStack.Server.Core" Version="1.0.*" />
     <PackageReference Include="ServiceStack.Aws.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Azure.Core" Version="1.0.*" />
   </ItemGroup>
 
 </Project>

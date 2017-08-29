@@ -6,6 +6,8 @@ using ServiceStack.IO;
 using ServiceStack.Aws;
 using Amazon.S3;
 using Amazon;
+using Microsoft.WindowsAzure.Storage;
+using ServiceStack.Azure.Storage;
 
 namespace CopyFiles
 {
@@ -23,6 +25,7 @@ namespace CopyFiles
                 Console.WriteLine("\nVirtual File System Providers:");
                 Console.WriteLine(" - files [destination]");
                 Console.WriteLine(" - s3 {AccessKey:key,SecretKey:secretKey,Region:us-east-1,Bucket:s3Bucket}");
+                Console.WriteLine(" - azure {ConnectionString:connectionString,ContainerName:containerName}");
                 return;
             }
 
@@ -72,6 +75,12 @@ namespace CopyFiles
             public string Bucket { get; set; }
         }
 
+        public class AzureConfig
+        {
+            public string ConnectionString { get; set; }
+            public string ContainerName { get; set; }
+        }
+
         public static IVirtualPathProvider GetVirtualFiles(string provider, string config)
         {
             if (provider != null)
@@ -90,6 +99,13 @@ namespace CopyFiles
                             ResolveValue(s3Config.SecretKey), 
                             region);
                         return new S3VirtualFiles(awsClient, ResolveValue(s3Config.Bucket));
+                    case "azure":
+                    case "azureblobvirtualfiles":
+                        var azureConfig = config.FromJsv<AzureConfig>();
+                        var storageAccount = CloudStorageAccount.Parse(azureConfig.ConnectionString);
+                        var container = storageAccount.CreateCloudBlobClient().GetContainerReference(azureConfig.ContainerName);
+                        container.CreateIfNotExists();
+                        return new AzureBlobVirtualPathProvider(container);
                 }
             }
 
