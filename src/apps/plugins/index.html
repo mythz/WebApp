@@ -11,8 +11,8 @@ title: Web App Plugins
     Plugins allow "no touch" sharing of 
     <a href="http://docs.servicestack.net/create-your-first-webservice">ServiceStack Services</a>, 
     <a href="http://templates.servicestack.net/docs/filters">Template Filters</a>
-    or 
-    <a href="http://templates.servicestack.net/docs/code-pages">Template Code Pages</a>
+    <a href="http://templates.servicestack.net/docs/code-pages">Template Code Pages</a>,
+    <a href="http://docs.servicestack.net/validation">Validators</a>, etc.
     that are contained within <b>.dll's</b> or <b>.exe's</b> dropped in a Web App's 
     <a href="https://github.com/NetCoreApps/WebApp/tree/master/src/apps/plugins/plugins">/plugins</a> folder which are auto-registered 
     on startup. This source code for the plugins used in this App were built from the .NET Core 2.0 projects in the
@@ -365,16 +365,18 @@ function resetContacts(){ $.getJSON("/contacts/reset", fetchContacts) }
 </p>
 
 <pre class="settings"><code>debug true
-name WebTemplate Plugins
+name Web App Plugins
 port 5000
-contentRoot ~/
-webRoot ~/wwwroot
-features ValidationFeature, OpenApiFeature, PostmanFeature, CorsFeature
-ValidationFeature { ScanAppHostAssemblies: true }</code></pre>
+contentRoot ~/../plugins
+webRoot ~/../plugins
+features OpenApiFeature, PostmanFeature, CorsFeature, ValidationFeature
+ValidationFeature { ScanAppHostAssemblies: true }
+</code></pre>
 
 <p>
     All plugins listed in <em>features</em> will be added to your Web App's AppHost. They can further customized by adding a 
-    separate config entry with the Plugin Name and a JavaScript Object literal to populate the Plugin at registration with, e.g:
+    separate config entry with the Plugin Name and a JavaScript Object literal to populate the Plugin at registration, e.g
+    the config above is equivalent to:
 </p>
 
 <pre class="cs"><code>Plugins.Add(new ValidationFeature {
