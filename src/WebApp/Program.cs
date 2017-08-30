@@ -9,17 +9,16 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Funq;
 using ServiceStack;
+using ServiceStack.IO;
 using ServiceStack.Text;
-using ServiceStack.Configuration;
-using ServiceStack.OrmLite;
 using ServiceStack.Data;
 using ServiceStack.Redis;
-using ServiceStack.IO;
 using ServiceStack.Aws.S3;
-using ServiceStack.VirtualPath;
+using ServiceStack.OrmLite;
 using ServiceStack.Templates;
-using Amazon.S3;
-using Amazon;
+using ServiceStack.VirtualPath;
+using ServiceStack.Configuration;
+using ServiceStack.Azure.Storage;
 
 namespace WebApp
 {
@@ -245,12 +244,10 @@ namespace WebApp
         }
     }
 
-    public class MyServices : Service {}
-
     public class AppHost : AppHostBase
     {
         public AppHost()
-            : base("name".GetAppSetting("ServiceStack WebTemplate"), typeof(MyServices).GetAssembly()) {}
+            : base("name".GetAppSetting("ServiceStack WebTemplate"), typeof(AppHost).GetAssembly()) {}
 
         public override void Configure(Container container) {}
     }
@@ -267,10 +264,10 @@ namespace WebApp
         public string Bucket { get; set; }
     }
 
-    public class FileSystemMappingConfig
+    public class AzureConfig
     {
-        public string Alias { get; set; }
-        public string Path { get; set; }
+        public string ConnectionString { get; set; }
+        public string ContainerName { get; set; }
     }
 
     public static class WebTemplateUtils
@@ -316,15 +313,11 @@ namespace WebApp
                 case "s3":
                 case "s3virtualfiles":
                     var s3Config = config.FromJsv<S3Config>();
-                    var region = RegionEndpoint.GetBySystemName(s3Config.Region.ResolveValue());
+                    var region = Amazon.RegionEndpoint.GetBySystemName(s3Config.Region.ResolveValue());
                     s3Config.AccessKey = s3Config.AccessKey.ResolveValue();
                     s3Config.SecretKey = s3Config.SecretKey.ResolveValue();
-                    var awsClient = new AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
+                    var awsClient = new Amazon.S3.AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
                     return new S3VirtualFiles(awsClient, s3Config.Bucket.ResolveValue());
-                case "mapping":
-                case "filesystemmapping":
-                    var fsConfig = config.FromJsv<FileSystemMappingConfig>();
-                    return new FileSystemMapping(fsConfig.Alias.ResolveValue(), fsConfig.Path.ResolveValue());
             }
             throw new NotSupportedException($"Unknown VirtualFiles Provider '{provider}'");
         }
