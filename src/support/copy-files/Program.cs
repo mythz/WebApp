@@ -105,7 +105,7 @@ namespace CopyFiles
                         var storageAccount = CloudStorageAccount.Parse(azureConfig.ConnectionString);
                         var container = storageAccount.CreateCloudBlobClient().GetContainerReference(azureConfig.ContainerName);
                         container.CreateIfNotExists();
-                        return new AzureBlobVirtualPathProvider(container);
+                        return new AzureBlobVirtualFiles(container);
                 }
             }
 
