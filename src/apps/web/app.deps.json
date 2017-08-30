@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "cf13a6771733cc319cb5c29fe432ba227ffbceaf"
+    "signature": "32cfd586e9adb766ea3609bafcdf875d46dfa864"
   },
   "compilationOptions": {},
   "targets": {
@@ -14,6 +14,7 @@
           "Npgsql": "3.2.4.1",
           "ServiceStack.Api.OpenApi.Core": "1.0.44",
           "ServiceStack.Aws.Core": "1.0.44",
+          "ServiceStack.Azure.Core": "1.0.44",
           "ServiceStack.Client.Core": "1.0.44",
           "ServiceStack.Common.Core": "1.0.44",
           "ServiceStack.Core": "1.0.44",
@@ -559,7 +560,7 @@
       "Microsoft.AspNetCore.DataProtection.AzureStorage/2.0.0": {
         "dependencies": {
           "Microsoft.AspNetCore.DataProtection": "2.0.0",
-          "WindowsAzure.Storage": "8.1.4"
+          "WindowsAzure.Storage": "8.4.0"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.AspNetCore.DataProtection.AzureStorage.dll": {}
@@ -1163,6 +1164,11 @@
           "lib/netstandard2.0/Microsoft.AspNetCore.WebUtilities.dll": {}
         }
       },
+      "Microsoft.Azure.Amqp/2.1.0": {
+        "runtime": {
+          "lib/netstandard1.3/Microsoft.Azure.Amqp.dll": {}
+        }
+      },
       "Microsoft.Azure.KeyVault/2.3.2": {
         "dependencies": {
           "Microsoft.Azure.KeyVault.WebKey": "2.0.7",
@@ -1186,6 +1192,26 @@
         },
         "runtime": {
           "lib/netstandard1.4/Microsoft.Azure.KeyVault.WebKey.dll": {}
+        }
+      },
+      "Microsoft.Azure.Management.ServiceBus/1.0.0": {
+        "dependencies": {
+          "Microsoft.Rest.ClientRuntime": "2.3.8",
+          "Microsoft.Rest.ClientRuntime.Azure": "3.3.7",
+          "Newtonsoft.Json": "10.0.1",
+          "System.Net.Http": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.4/Microsoft.Azure.Management.ServiceBus.dll": {}
+        }
+      },
+      "Microsoft.Azure.ServiceBus/1.0.0": {
+        "dependencies": {
+          "Microsoft.Azure.Amqp": "2.1.0",
+          "System.Runtime.Serialization.Xml": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.3/Microsoft.Azure.ServiceBus.dll": {}
         }
       },
       "Microsoft.CodeAnalysis.Analyzers/1.1.0": {},
@@ -2206,6 +2232,21 @@
         },
         "runtime": {
           "lib/netstandard1.6/ServiceStack.Aws.dll": {}
+        }
+      },
+      "ServiceStack.Azure.Core/1.0.44": {
+        "dependencies": {
+          "Microsoft.Azure.Management.ServiceBus": "1.0.0",
+          "Microsoft.Azure.ServiceBus": "1.0.0",
+          "ServiceStack.Client.Core": "1.0.44",
+          "ServiceStack.Common.Core": "1.0.44",
+          "ServiceStack.Core": "1.0.44",
+          "ServiceStack.Interfaces.Core": "1.0.44",
+          "ServiceStack.Text.Core": "1.0.44",
+          "WindowsAzure.Storage": "8.4.0"
+        },
+        "runtime": {
+          "lib/netstandard1.6/ServiceStack.Azure.dll": {}
         }
       },
       "ServiceStack.Client.Core/1.0.44": {
@@ -3930,7 +3971,7 @@
           "System.Xml.XPath": "4.3.0"
         }
       },
-      "WindowsAzure.Storage/8.1.4": {
+      "WindowsAzure.Storage/8.4.0": {
         "dependencies": {
           "Microsoft.Data.OData": "5.8.2",
           "Newtonsoft.Json": "10.0.1",
@@ -4677,6 +4718,13 @@
       "hashPath": "microsoft.aspnetcore.webutilities.2.0.0.nupkg.sha512",
       "runtimeStoreManifestName": "aspnetcore-store-2.0.0-linux-x64.xml;aspnetcore-store-2.0.0-osx-x64.xml;aspnetcore-store-2.0.0-win7-x64.xml;aspnetcore-store-2.0.0-win7-x86.xml"
     },
+    "Microsoft.Azure.Amqp/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zqjOGGtYF4bX9U4i7QXoeDu8fO0kJhn+aA08O+Ckr9CkSrc6kC09n/M4RPU7kwh8fluaT3c4G0OTONXJ2lnzqw==",
+      "path": "microsoft.azure.amqp/2.1.0",
+      "hashPath": "microsoft.azure.amqp.2.1.0.nupkg.sha512"
+    },
     "Microsoft.Azure.KeyVault/2.3.2": {
       "type": "package",
       "serviceable": true,
@@ -4692,6 +4740,20 @@
       "path": "microsoft.azure.keyvault.webkey/2.0.7",
       "hashPath": "microsoft.azure.keyvault.webkey.2.0.7.nupkg.sha512",
       "runtimeStoreManifestName": "aspnetcore-store-2.0.0-linux-x64.xml;aspnetcore-store-2.0.0-osx-x64.xml;aspnetcore-store-2.0.0-win7-x64.xml;aspnetcore-store-2.0.0-win7-x86.xml"
+    },
+    "Microsoft.Azure.Management.ServiceBus/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NntUeN57QOy5/Xz5MqvflwDXVGiPyzOk6PO4hA0wSoAzo88KYnUlhwwz7zyOLjFWUKRB/TaFOnKGZIgp9cNadQ==",
+      "path": "microsoft.azure.management.servicebus/1.0.0",
+      "hashPath": "microsoft.azure.management.servicebus.1.0.0.nupkg.sha512"
+    },
+    "Microsoft.Azure.ServiceBus/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QfbXq87lvuNlwjXygwd+At9hyMXivX7RGAA2Ed8udyoL0nd0WEwScT+Xrp9D4UDo+53fiKv6E/dQCue3XYbb8A==",
+      "path": "microsoft.azure.servicebus/1.0.0",
+      "hashPath": "microsoft.azure.servicebus.1.0.0.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.Analyzers/1.1.0": {
       "type": "package",
@@ -5460,7 +5522,7 @@
     "ServiceStack.Api.OpenApi.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-G/pYhDQDWo1tNyepe2RINYIgrqSltFOml+0690aM3q7+R52lrS/BeT3XySPbpqKeCgeVLjm6WvyEWqcyTpZ4Bw==",
+      "sha512": "sha512-8w3tONGavlMYAU8f8RKK3BFiR8S7QWgyHV5CelHSyeEhFNlx20ah01ZfcCXv0pem4okn1roGGYAIcb5EnbqDXg==",
       "path": "servicestack.api.openapi.core/1.0.44",
       "hashPath": "servicestack.api.openapi.core.1.0.44.nupkg.sha512"
     },
@@ -5471,66 +5533,73 @@
       "path": "servicestack.aws.core/1.0.44",
       "hashPath": "servicestack.aws.core.1.0.44.nupkg.sha512"
     },
+    "ServiceStack.Azure.Core/1.0.44": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Ve5JPqCzC98Fby+Ay1KsuLG7nt3S/jTmkFFGcUiY6HJcQbVrDar875OsCG7pWxK69WBPqjAskjmWbx/eel+5/Q==",
+      "path": "servicestack.azure.core/1.0.44",
+      "hashPath": "servicestack.azure.core.1.0.44.nupkg.sha512"
+    },
     "ServiceStack.Client.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Up0yVerf0+0P+EUKtQXxo6vrw5YWE6t4wbHTZpAPEb75MRMkJWheCCLKM/vi8ZIOi6xmThvQ9EQnUh9RozSj3w==",
+      "sha512": "sha512-/5wTrDDq5kGwhrVtSvsUVSNUW8yRAcSMR2iYDAXFIWRlYoSmRuysZZ0aHEXnZkIkeZC82i+84eEc+U7DrrPd5w==",
       "path": "servicestack.client.core/1.0.44",
       "hashPath": "servicestack.client.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.Common.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Wvj9CpehhvtfSBP4vxXOPunCSvqAr+sGZoUXS5EzpHdgzAvQ3fhoIFxKxZWfsjk4wC9NOVTaLh/0mt5g5d2IFg==",
+      "sha512": "sha512-CNljFZB1WWnnqQxi81w8i1Xga/5am6r7LY5xBAfKMjmA2NysXzj1hO/levdCSF97wJRUmNyZeP05Vm6kznzzfA==",
       "path": "servicestack.common.core/1.0.44",
       "hashPath": "servicestack.common.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-lgPVu5jk7kUv0M3PBf9fXF0rW3fhWK6ndcspfG//fRyoQk4T7hfDv8m3cYey6DjjJg1DO47p9Ky+JPGRIow75w==",
+      "sha512": "sha512-3QVXhyyCqDlbNR8A+cK7/Lxna+f0rl7weQOR4bs/Yi+N42ScFZGvnuBtK34ZBeeGgysbEDZXpjsH7UzIHIkqvA==",
       "path": "servicestack.core/1.0.44",
       "hashPath": "servicestack.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.Interfaces.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-IytOOqdtyxtYn4cu/UOtzt7TYTtklTlLCvLUZ64y4qlNuphxHT/ZQ+SFI6SlykQwAX5/KxoO23zqsCBisOWcoA==",
+      "sha512": "sha512-I05d9W+FArZUfy/jfp1FKs38pQjR+MdWqS3oky4jgQcBiUl+8gnXDqkp3Cqs9RQO7Vr1KMF+nZ2qDr6cQxSnTw==",
       "path": "servicestack.interfaces.core/1.0.44",
       "hashPath": "servicestack.interfaces.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.OrmLite.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mSHFAyGumczzljE0ROC2c0ISjYcEb6B8xJn4GvETdneTT7Twtk5lv+swqdGbAcr6OVnxq4mcZGaSpn5m2Os18g==",
+      "sha512": "sha512-vqYoZNcKL/aBmDwlSWPq+z+Q0LXRImSFc7dlrNbiukHd9Nawsw/WI6oiZl1/cmMfrng/A4spqek4rbX47i+kpQ==",
       "path": "servicestack.ormlite.core/1.0.44",
       "hashPath": "servicestack.ormlite.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.OrmLite.MySql.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-20JemjtaMOH/U4MlBgw0p0shr1QRMiBg43o1sI/rHBxRrjwIbaqNYFD89CxM/aDHhAQKJ5jlUos3OqS8POzZwg==",
+      "sha512": "sha512-i+5PLTYRaJlBLAWQqckkEWYV2GnmZ9wa4H+0Tc1ZgotTp0PxJo0I0M8ff9yeE6B+scSUx7SFEljzk2mXRShcUw==",
       "path": "servicestack.ormlite.mysql.core/1.0.44",
       "hashPath": "servicestack.ormlite.mysql.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.OrmLite.PostgreSQL.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-00L1uUguLFG1QeeIl9bRZqKwGQtWAUmtzqwyYsjnlvQcN2s+1/LTW8w/8AzZ+7Xo6jzE+oUYjeVHICa4RcknFA==",
+      "sha512": "sha512-UxnD2dBhUVTYphB3gtgJl8pyJkzWSf4uytuWuzq7A/23Efr7IQ7JlPwzH25eUnMleSdMB0ERJIIKk63NfP2mxQ==",
       "path": "servicestack.ormlite.postgresql.core/1.0.44",
       "hashPath": "servicestack.ormlite.postgresql.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.OrmLite.Sqlite.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-26On47VBPhhA9N35NfCBGvxLBN21e4v3NiCKHdROzEBwRy/DKzeMANszCAbZEqhKlDMwiVkDn/XzIyLvdUbnHQ==",
+      "sha512": "sha512-Rknkqu/biCrwczB3IEBdGCnjdXsaKwcDbxzxjtt95pN4tDivpWdiG/aQF7FZ+ZvJhTZdpI1mfHnYvuqZD+YmrA==",
       "path": "servicestack.ormlite.sqlite.core/1.0.44",
       "hashPath": "servicestack.ormlite.sqlite.core.1.0.44.nupkg.sha512"
     },
     "ServiceStack.OrmLite.SqlServer.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-tUdhIgxOVWGBdcTZZBqyyq4jx54gdLVpvYdWAJiiF+kUgnwIqpla1esZ0//Lh9VLkGX02q2u8RAVKmHHaRQpTw==",
+      "sha512": "sha512-jZILglhfd3Jb50aC9RyzJLX3DBnfZpNH0u7YAXlEba76TzRPl68MN6xlq92OYVDWldGNNhPC/ghpcw2rXMGf7g==",
       "path": "servicestack.ormlite.sqlserver.core/1.0.44",
       "hashPath": "servicestack.ormlite.sqlserver.core.1.0.44.nupkg.sha512"
     },
@@ -5544,7 +5613,7 @@
     "ServiceStack.Server.Core/1.0.44": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-FfU1kfKGwS26Qx+2Zl6wZc0mnS/vd4JVq9LK3ZiunhiL+ZdmpO5+Ku7BwgjJoVsI/SFs2i2DMAIsYyC2af+3zQ==",
+      "sha512": "sha512-hmU3MVZiMJj/wxaqszlxSEvH2YbAsndBWScRBVDPR37n+nHO1McRIJX1Q53n6ZxQAlman2MONJV0B08dIaARdA==",
       "path": "servicestack.server.core/1.0.44",
       "hashPath": "servicestack.server.core.1.0.44.nupkg.sha512"
     },
@@ -6389,13 +6458,12 @@
       "path": "system.xml.xpath.xdocument/4.3.0",
       "hashPath": "system.xml.xpath.xdocument.4.3.0.nupkg.sha512"
     },
-    "WindowsAzure.Storage/8.1.4": {
+    "WindowsAzure.Storage/8.4.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-W6ZZ0/o7+3Qb77mRAQyLjPudHG3OMeeQ4p9yY13PUdJArmRCx2cLMm5F4tpIjJXxzHC0ew0oK7DMDGILMdfCnw==",
-      "path": "windowsazure.storage/8.1.4",
-      "hashPath": "windowsazure.storage.8.1.4.nupkg.sha512",
-      "runtimeStoreManifestName": "aspnetcore-store-2.0.0-linux-x64.xml;aspnetcore-store-2.0.0-osx-x64.xml;aspnetcore-store-2.0.0-win7-x64.xml;aspnetcore-store-2.0.0-win7-x86.xml"
+      "sha512": "sha512-2BzIL/b/2d86+kd74xRoNqz97VVnNv0+aaggSCR6k78nN2UVKWudMe2kxi6gmimGcJqq8BkFCavXhS8xF1INvg==",
+      "path": "windowsazure.storage/8.4.0",
+      "hashPath": "windowsazure.storage.8.4.0.nupkg.sha512"
     }
   }
 }
