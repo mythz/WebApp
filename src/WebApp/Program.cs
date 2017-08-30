@@ -18,7 +18,6 @@ using ServiceStack.IO;
 using ServiceStack.Aws.S3;
 using ServiceStack.VirtualPath;
 using ServiceStack.Templates;
-
 using Amazon.S3;
 using Amazon;
 
@@ -81,9 +80,8 @@ namespace WebApp
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            WebTemplateUtils.VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
-            
             AppHostBase appHost = null;
+            WebTemplateUtils.VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
 
             var assemblies = new List<Assembly>();
             var vfs = "files".GetAppSetting().GetVirtualFiles(config:"files.config".GetAppSetting());
@@ -285,8 +283,7 @@ namespace WebApp
             if (value?.StartsWith("$") == true)
             {
                 var envValue = Environment.GetEnvironmentVariable(value.Substring(1));
-                if (!string.IsNullOrEmpty(envValue))
-                    return envValue;
+                if (!string.IsNullOrEmpty(envValue)) return envValue;
             }
             return value;
         }
@@ -296,8 +293,7 @@ namespace WebApp
         public static T GetAppSetting<T>(this string name, T defaultValue)
         {
             var value = AppSettings.GetString(name);
-            if (value == null)
-                return defaultValue;
+            if (value == null) return defaultValue;
 
             var resolvedValue = ResolveValue(value);
             return resolvedValue.FromJsv<T>();
@@ -305,9 +301,7 @@ namespace WebApp
 
         public static IVirtualPathProvider GetVirtualFiles(this string provider, string config)
         {
-            if (provider == null)
-                return null;
-
+            if (provider == null) return null;
             switch (provider.ToLower())
             {
                 case "fs":
@@ -332,7 +326,6 @@ namespace WebApp
                     var fsConfig = config.FromJsv<FileSystemMappingConfig>();
                     return new FileSystemMapping(fsConfig.Alias.ResolveValue(), fsConfig.Path.ResolveValue());
             }
-
             throw new NotSupportedException($"Unknown VirtualFiles Provider '{provider}'");
         }
 
