@@ -120,7 +120,7 @@ $("#type-" + type).trigger('click')
 
 {{ ifHttpPost | use({ host, port, db, password }) | withoutEmptyValues | redisChangeConnection | end }}
 <h6 id="connection"><a href="?connection">@ {{ redisConnectionString }}</a></h6>
-{{ connection | onlyIfExists | selectPartial: connection-info }}
+{{ connection | onlyIfExists | use('connection-info') | partial({ redis: redisConnection }) }}
 
 {{ ['flush','monitor','brpop','blpop'] | ifNotEmpty(call) | any: contains(lower(call), it)
    | assignTo: illegalCommand }}
@@ -194,5 +194,5 @@ $("#type-" + type).trigger('click')
          | assignTo: searchResults }}
     {{ q | endIfEmpty  | select: <h3>Results for '{ it }'</h3> }}
     {{ searchResults   | useIf(isList(searchResults))    | htmlDump({ className: "table table-striped details auto-width" }) }}
-    {{ searchResults   | onlyIfEmpty | doIf(!isEmpty(q)) | select: Your search did not match any keys.. }}
+    {{ searchResults   | onlyIfEmpty | doIf(!isEmpty(q)) | show: Your search did not match any keys.. }}
 </div>
