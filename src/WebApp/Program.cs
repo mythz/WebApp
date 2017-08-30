@@ -318,6 +318,14 @@ namespace WebApp
                     s3Config.SecretKey = s3Config.SecretKey.ResolveValue();
                     var awsClient = new Amazon.S3.AmazonS3Client(s3Config.AccessKey, s3Config.SecretKey, region);
                     return new S3VirtualFiles(awsClient, s3Config.Bucket.ResolveValue());
+                case "azure":
+                case "azureblob":
+                case "azureblobvirtualfiles":
+                    var azureConfig = config.FromJsv<AzureConfig>();
+                    var storageAccount = Microsoft.WindowsAzure.Storage.CloudStorageAccount.Parse(ResolveValue(azureConfig.ConnectionString));
+                    var container = storageAccount.CreateCloudBlobClient().GetContainerReference(ResolveValue(azureConfig.ContainerName));
+                    container.CreateIfNotExists();
+                    return new AzureBlobVirtualFiles(container);
             }
             throw new NotSupportedException($"Unknown VirtualFiles Provider '{provider}'");
         }

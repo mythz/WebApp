@@ -102,8 +102,8 @@ namespace CopyFiles
                     case "azure":
                     case "azureblobvirtualfiles":
                         var azureConfig = config.FromJsv<AzureConfig>();
-                        var storageAccount = CloudStorageAccount.Parse(azureConfig.ConnectionString);
-                        var container = storageAccount.CreateCloudBlobClient().GetContainerReference(azureConfig.ContainerName);
+                        var storageAccount = CloudStorageAccount.Parse(ResolveValue(azureConfig.ConnectionString));
+                        var container = storageAccount.CreateCloudBlobClient().GetContainerReference(ResolveValue(azureConfig.ContainerName));
                         container.CreateIfNotExists();
                         return new AzureBlobVirtualFiles(container);
                 }

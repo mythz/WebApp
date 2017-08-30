@@ -28,6 +28,7 @@
     <PackageReference Include="ServiceStack.OrmLite.PostgreSQL.Core" Version="1.0.*" />
     <PackageReference Include="ServiceStack.Redis.Core" Version="1.0.*" />
     <PackageReference Include="ServiceStack.Aws.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Azure.Core" Version="1.0.*" />
     <PackageReference Include="ServiceStack.Api.OpenApi.Core" Version="1.0.*" />
 
     <!-- <Reference Include="..\..\..\..\ServiceStack\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
