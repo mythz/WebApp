@@ -36,11 +36,6 @@ namespace Chat
 
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddMvc();
-        }
-
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
@@ -51,12 +46,8 @@ namespace Chat
 
     public class AppHost : AppHostBase
     {
-        public AppHost() : base("Chat Web Template", typeof(ServerEventsServices).GetAssembly()) {}
-
-        public AppHost(IAppSettings appSettings) : this()
-        {
-            AppSettings = appSettings;
-        }
+        public AppHost() : base("Chat Web App", typeof(ServerEventsServices).GetAssembly()) {}
+        public AppHost(IAppSettings appSettings) : this() => AppSettings = appSettings;
 
         public override void Configure(Container container)
         {
@@ -84,9 +75,8 @@ namespace Chat
 
             container.RegisterAutoWiredAs<MemoryChatHistory, IChatHistory>();
 
-            // for lte IE 9 support + allow connections from local web dev apps
             Plugins.Add(new CorsFeature(
-                allowOriginWhitelist: new[] { "http://localhost", "http://127.0.0.1:8080", "http://localhost:8080", "http://localhost:8081", "http://null.jsbin.com" },
+                allowOriginWhitelist: new[] { "http://localhost", "http://null.jsbin.com" },
                 allowCredentials: true,
                 allowedHeaders: "Content-Type, Allow, Authorization"));
         }
