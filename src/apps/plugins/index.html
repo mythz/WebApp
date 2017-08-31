@@ -9,13 +9,14 @@ title: Web App Plugins
 
 <p>
     Plugins allow "no touch" sharing of 
-    <a href="http://docs.servicestack.net/create-your-first-webservice">ServiceStack Services</a>, 
+    <a href="http://docs.servicestack.net/plugins">ServiceStack Plugins</a>, 
+    <a href="http://docs.servicestack.net/create-your-first-webservice">Services</a>, 
     <a href="http://templates.servicestack.net/docs/filters">Template Filters</a>
     <a href="http://templates.servicestack.net/docs/code-pages">Template Code Pages</a>,
     <a href="http://docs.servicestack.net/validation">Validators</a>, etc.
-    that are contained within <b>.dll's</b> or <b>.exe's</b> dropped in a Web App's 
+    contained within <b>.dll's</b> or <b>.exe's</b> dropped in a Web App's 
     <a href="https://github.com/NetCoreApps/WebApp/tree/master/src/apps/plugins/plugins">/plugins</a> folder which are auto-registered 
-    on startup. This source code for the plugins used in this App were built from the .NET Core 2.0 projects in the
+    on startup. This source code for plugins used in this App were built from the .NET Core 2.0 projects in the
     <a href="https://github.com/NetCoreApps/WebApp/tree/master/src/example-plugins">/example-plugins</a> folder.
 </p>
 
@@ -369,22 +370,65 @@ name Web App Plugins
 port 5000
 contentRoot ~/../plugins
 webRoot ~/../plugins
-features OpenApiFeature, PostmanFeature, CorsFeature, ValidationFeature
+features CustomPlugin, OpenApiFeature, PostmanFeature, CorsFeature, ValidationFeature
+CustomPlugin { ShowProcessLinks: true }
 ValidationFeature { ScanAppHostAssemblies: true }
 </code></pre>
 
 <p>
-    All plugins listed in <em>features</em> will be added to your Web App's AppHost. They can further customized by adding a 
-    separate config entry with the Plugin Name and a JavaScript Object literal to populate the Plugin at registration, e.g
+    All plugins listed in <em>features</em> will be added to your Web App's AppHost in the order they're specified. They can further customized 
+    by adding a separate config entry with the Plugin Name and a JavaScript Object literal to populate the Plugin at registration, e.g
     the config above is equivalent to:
 </p>
 
-<pre class="cs"><code>Plugins.Add(new ValidationFeature {
-    ScanAppHostAssemblies = true
-});</code></pre>
+<pre class="cs"><code>Plugins.Add(new CustomPlugin { ShowProcessLinks = true });
+Plugins.Add(new OpenApiFeature());
+Plugins.Add(new PostmanFeature());
+Plugins.Add(new CorsFeature());
+Plugins.Add(new ValidationFeature { ScanAppHostAssemblies = true });</code></pre>
+
+<h4>Custom Plugin</h4>
 
 <p>
-    In this case it tells the <em>ValidationFeature</em> to scan all Service Assemblies for Validators and to automatically register them
+    In this case it tells our <a href="https://github.com/NetCoreApps/WebApp/blob/master/src/example-plugins/ServerInfo/CustomPlugin.cs">CustomPlugin</a>
+    to also show Process Links in our <a href="/metadata">/metadata</a> Page:
+</p>
+
+<pre class="cs"><code>public class CustomPlugin : IPlugin
+{
+    public bool ShowDrivesLinks { get; set; } = true;
+    
+    public bool ShowProcessLinks { get; set; }
+
+    public void Register(IAppHost appHost)
+    {
+        if (ShowDrivesLinks)
+        {
+            var diskFormat = Env.IsWindows ? "NTFS" : "ext2";
+            appHost.GetPlugin&lt;MetadataFeature&gt;()
+                .AddPluginLink("/drives", "All Disks")
+                .AddPluginLink($"/drives?DriveFormatIn={diskFormat}", $"{diskFormat} Disks");
+        }
+
+        if (ShowProcessLinks)
+        {
+            appHost.GetPlugin&lt;MetadataFeature&gt;()
+                .AddPluginLink("/processes", "All Processes")
+                .AddPluginLink("/process/current", "Current Process");
+        }
+    }
+}</code></pre>
+
+<p>
+    Where as it was first registered in the list will appear before any links registered by other plugins:
+</p>
+
+<img src="/assets/img/metadata-screenshot.png" alt="Metadata screenshot">
+
+<h4>Built-in Plugins</h4>
+
+<p>
+    It also tells the <em>ValidationFeature</em> to scan all Service Assemblies for Validators and to automatically register them
     which is how ServiceStack was able to find the
     <a href="https://github.com/NetCoreApps/WebApp/blob/master/src/example-plugins/ServerInfo/ContactServices.cs">ContactValidator</a>
     used to validate the <em>StoreContact</em> request.
