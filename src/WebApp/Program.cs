@@ -46,15 +46,15 @@ namespace WebApp
                     : new DictionarySettings(),
                 new EnvironmentVariableSettings());
 
-            var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            var webRoot = Directory.Exists(wwwrootPath)
-                ? wwwrootPath
-                : Directory.GetCurrentDirectory();
-
             var port = "port".GetAppSetting(defaultValue:"5000");
             var contentRoot = "contentRoot".GetAppSetting(defaultValue:Directory.GetCurrentDirectory());
             if (contentRoot.StartsWith("~/"))
                 contentRoot = contentRoot.MapAbsolutePath();
+
+            var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var webRoot = Directory.Exists(wwwrootPath)
+                ? wwwrootPath
+                : contentRoot;
 
             var useWebRoot = "webRoot".GetAppSetting(webRoot);
             if (useWebRoot.StartsWith("~/"))
@@ -247,7 +247,7 @@ namespace WebApp
     public class AppHost : AppHostBase
     {
         public AppHost()
-            : base("name".GetAppSetting("ServiceStack WebTemplate"), typeof(AppHost).GetAssembly()) {}
+            : base("name".GetAppSetting("ServiceStack Web App"), typeof(AppHost).GetAssembly()) {}
 
         public override void Configure(Container container) {}
     }
