@@ -7,7 +7,6 @@ db sqlserver
 db.connection $AZURE_SQL_CONNECTION_STRING
 files azure
 files.config {ConnectionString:$AZURE_BLOB_CONNECTION_STRING,ContainerName:rockwind-fs}
-args.assetsBase https://servicestack.blob.core.windows.net/rockwind-fs/
 
 # Reduces an S3 API call, but takes longer for modified pages to appear
 checkForModifiedPagesAfterSecs 60
