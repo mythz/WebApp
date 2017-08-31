@@ -190,6 +190,8 @@ namespace WebApp
             {
                 var featureTypes = features.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
                 featureTypes.Remove(nameof(TemplatePagesFeature)); //already added
+                var featureIndex = featureTypes.ToArray();
+                var registerPlugins = new IPlugin[featureTypes.Count];
 
                 var externalPlugins = new[] {
                     typeof(ServiceStack.Api.OpenApi.OpenApiFeature),
@@ -200,13 +202,10 @@ namespace WebApp
                 {
                     if (featureTypes.Contains(type.Name))
                     {
-                        var plugin = type.CreatePlugin();
-                        appHost.Plugins.RemoveAll(x => x.GetType() == type);
-                        appHost.Plugins.Add(plugin);
+                        registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
                         featureTypes.Remove(type.Name);
                     }
                 }
-
                 foreach (var type in typeof(ServiceStackHost).GetAssembly().GetTypes())
                 {
                     if (featureTypes.Count == 0)
@@ -214,13 +213,10 @@ namespace WebApp
 
                     if (featureTypes.Contains(type.Name))
                     {
-                        var plugin = type.CreatePlugin();
-                        appHost.Plugins.RemoveAll(x => x.GetType() == type);
-                        appHost.Plugins.Add(plugin);
+                        registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
                         featureTypes.Remove(type.Name);
                     }
                 }
-
                 foreach (var type in appHost.ServiceAssemblies.SelectMany(x => x.GetTypes()))
                 {
                     if (featureTypes.Count == 0)
@@ -228,9 +224,7 @@ namespace WebApp
 
                     if (featureTypes.Contains(type.Name))
                     {
-                        var plugin = type.CreatePlugin();
-                        appHost.Plugins.RemoveAll(x => x.GetType() == type);
-                        appHost.Plugins.Add(plugin);
+                        registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
                         featureTypes.Remove(type.Name);
                     }
                 }
@@ -239,6 +233,11 @@ namespace WebApp
                 {
                     var plural = featureTypes.Count > 1 ? "s" : "";
                     throw new NotSupportedException($"Unable to locate plugin{plural}: " + string.Join(", ", featureTypes));
+                }
+                foreach (var plugin in registerPlugins)
+                {
+                    appHost.Plugins.RemoveAll(x => x.GetType() == plugin.GetType());
+                    appHost.Plugins.Add(plugin);
                 }
             }
         }
