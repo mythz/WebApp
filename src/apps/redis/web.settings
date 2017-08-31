@@ -1,6 +1,6 @@
 debug true
 name Redis Web App
 port 5000
-contentRoot ~/..
+contentRoot ~/../redis
 webRoot ~/../redis
 redis.connection localhost:6379

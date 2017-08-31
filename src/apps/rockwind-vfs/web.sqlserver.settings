@@ -1,7 +1,7 @@
 debug true
 name Rockwind VFS SQL Server Web App
 port 5000
-contentRoot ~/..
+contentRoot ~/../rockwind-vfs
 webRoot ~/../rockwind-vfs
 db sqlserver
 db.connection Server=localhost;Database=northwind;User Id=test;Password=test;MultipleActiveResultSets=True;

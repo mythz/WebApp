@@ -99,3 +99,6 @@ pre {
     padding: 10px;
     color: #2c3e50;
 }
+#content img {
+    max-width: 1000px;
+}
