@@ -14,4 +14,4 @@ cat ../apps/chat/web.release.settings | sed "/port/s/ .*/ 5006/" > ../apps/web/w
 
 rsync -avz -e 'ssh' ../apps deploy@gistlyn.com:/home/deploy
 
-ssh root@gistlyn.com  "supervisorctl restart all"
+ssh deploy@gistlyn.com  "sudo supervisorctl restart all"
