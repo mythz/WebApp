@@ -8,6 +8,6 @@ db.connection $AZURE_SQL_CONNECTION_STRING
 files azure
 files.config {ConnectionString:$AZURE_BLOB_CONNECTION_STRING,ContainerName:rockwind-fs}
 
-# Reduces an S3 API call, but takes longer for modified pages to appear
+# Reduces a Blob Storage API call, but takes longer for modified pages to appear
 checkForModifiedPagesAfterSecs 60
 defaultFileCacheExpirySecs     60
