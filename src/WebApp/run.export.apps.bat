@@ -1,3 +1,5 @@
+DEL ..\apps\web\web.*.settings
+
 RMDIR ..\..\..\WebAppStarter\app /s /q
 XCOPY /E ..\apps\bare ..\..\..\WebAppStarter\app\
 
