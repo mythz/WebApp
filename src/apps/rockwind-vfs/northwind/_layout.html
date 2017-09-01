@@ -30,7 +30,7 @@
     <script src="{{ '../assets/js/bootstrap.min.js' | resolveAsset }}"></script>
     <script src="{{ '../assets/js/default.js' | resolveAsset }}"></script>
 
-    {{ scripts | ifExists }}
+    {{ scripts | raw }}
 
 </body>
 
