@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../deploy-envs.sh
+source ./deploy-envs.sh
 
 docker login $AZURE_REGISTRY -u $AZURE_REGISTRY_LOGIN -p $AZURE_REGISTRY_PASSWORD
 
