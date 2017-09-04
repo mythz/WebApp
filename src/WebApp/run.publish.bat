@@ -1,4 +1,5 @@
 dotnet build -c Release
+REM dotnet publish -c Release
 dotnet publish -c Release /p:MvcRazorCompileOnPublish=false
 
 RMDIR ..\apps\web\ /s /q
