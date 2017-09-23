@@ -12,6 +12,8 @@ cat ../apps/plugins/web.settings | sed "/debug/s/ .*/ false/" | sed "/port/s/ .*
 
 cat ../apps/chat/web.release.settings | sed "/port/s/ .*/ 5006/" > ../apps/web/web.chat.settings
 
+cat ../apps/redis-html/web.settings | sed "/debug/s/ .*/ false/" | sed "/port/s/ .*/ 5007/" > ../apps/web/web.redis-html.settings
+
 rsync -avz -e 'ssh' ../apps deploy@web-app.io:/home/deploy
 
 ssh deploy@web-app.io  "sudo supervisorctl restart all"

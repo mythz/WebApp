@@ -10,29 +10,36 @@ XCOPY /E ..\apps\web ..\..\..\WebAppStarter\web\
 RMDIR ..\..\..\Chat\app /s /q
 XCOPY /E ..\apps\chat ..\..\..\Chat\app\
 
-RMDIR ..\..\..\chat\web /s /q
-XCOPY /E ..\apps\web ..\..\..\chat\web\
+RMDIR ..\..\..\Chat\web /s /q
+XCOPY /E ..\apps\web ..\..\..\Chat\web\
 
 
 RMDIR ..\..\..\Plugins\app /s /q
 XCOPY /E ..\apps\plugins ..\..\..\Plugins\app\
 
-RMDIR ..\..\..\plugins\web /s /q
-XCOPY /E ..\apps\web ..\..\..\plugins\web\
+RMDIR ..\..\..\Plugins\web /s /q
+XCOPY /E ..\apps\web ..\..\..\Plugins\web\
 
 
 RMDIR ..\..\..\Redis\app /s /q
 XCOPY /E ..\apps\redis ..\..\..\Redis\app\
 
-RMDIR ..\..\..\redis\web /s /q
-XCOPY /E ..\apps\web ..\..\..\redis\web\
+RMDIR ..\..\..\Redis\web /s /q
+XCOPY /E ..\apps\web ..\..\..\Redis\web\
+
+
+RMDIR ..\..\..\RedisHtml\app /s /q
+XCOPY /E ..\apps\redis-html ..\..\..\RedisHtml\app\
+
+RMDIR ..\..\..\RedisHtml\web /s /q
+XCOPY /E ..\apps\web ..\..\..\RedisHtml\web\
 
 
 RMDIR ..\..\..\Rockwind\app /s /q
 XCOPY /E ..\apps\rockwind ..\..\..\Rockwind\app\
 
-RMDIR ..\..\..\rockwind\web /s /q
-XCOPY /E ..\apps\web ..\..\..\rockwind\web\
+RMDIR ..\..\..\Rockwind\web /s /q
+XCOPY /E ..\apps\web ..\..\..\Rockwind\web\
 COPY ..\apps\northwind.sqlite ..\..\..\Rockwind\app\
 
 
