@@ -21,6 +21,11 @@
     -replace 'webRoot ~/../redis', 'webRoot ~/../app' `
     | Set-Content ..\..\..\Redis\app\web.settings
 
+(Get-Content ..\apps\redis-html\web.settings) `
+    -replace 'contentRoot ~/../redis-html', 'contentRoot ~/../app' `
+    -replace 'webRoot ~/../redis-html', 'webRoot ~/../app' `
+    | Set-Content ..\..\..\RedisHtml\app\web.settings
+
 (Get-Content ..\apps\rockwind\web.sqlite.settings) `
     -replace 'contentRoot ~/..', 'contentRoot ~/../app' `
     -replace 'webRoot ~/../rockwind', 'webRoot ~/../app' `
