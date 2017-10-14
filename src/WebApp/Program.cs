@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,8 +62,7 @@ namespace WebApp
                 useWebRoot = useWebRoot.MapAbsolutePath();
 
             var bind = "bind".GetAppSetting("localhost");
-            var host = new WebHostBuilder()
-                .UseKestrel()
+            var host = WebHost.CreateDefaultBuilder(args)
                 .UseContentRoot(contentRoot)
                 .UseWebRoot(useWebRoot)
                 .UseStartup<Startup>()
