@@ -27,9 +27,13 @@ namespace WebApp
     {
         public static void Main(string[] args)
         {
-            var webSettings = args.Length > 0 
-                ? args[0]
-                : "web.settings";
+            var dotnetArgs = args;
+            var webSettings = "web.settings";
+            if (args.Length == 1)
+            {
+                webSettings = args[0];
+                dotnetArgs = dotnetArgs.Skip(1).ToArray();
+            }
 
             var appSettingsPath = $"~/{webSettings}".MapAbsolutePath();
             if (args.Length > 0 && !File.Exists(appSettingsPath))
@@ -62,7 +66,7 @@ namespace WebApp
                 useWebRoot = useWebRoot.MapAbsolutePath();
 
             var bind = "bind".GetAppSetting("localhost");
-            var host = WebHost.CreateDefaultBuilder(args)
+            var host = WebHost.CreateDefaultBuilder(dotnetArgs)
                 .UseContentRoot(contentRoot)
                 .UseWebRoot(useWebRoot)
                 .UseStartup<Startup>()
