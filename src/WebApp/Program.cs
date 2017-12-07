@@ -66,13 +66,15 @@ namespace WebApp
                 useWebRoot = useWebRoot.MapAbsolutePath();
 
             var bind = "bind".GetAppSetting("localhost");
-            var host = WebHost.CreateDefaultBuilder(dotnetArgs)
+            var builder = WebHost.CreateDefaultBuilder(dotnetArgs)
                 .UseContentRoot(contentRoot)
                 .UseWebRoot(useWebRoot)
-                .UseStartup<Startup>()
-                .UseUrls($"http://{bind}:{port}/")
-                .Build();
+                .UseStartup<Startup>();
 
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_URLS") == null)
+                builder.UseUrls($"http://{bind}:{port}/");
+
+            var host = builder.Build();
             host.Run();
         }
     }
@@ -106,7 +108,7 @@ namespace WebApp
                     {
                         foreach (var type in asm.GetTypes())
                         {
-                            if (typeof(AppHostBase).IsAssignableFromType(type))
+                            if (typeof(AppHostBase).IsAssignableFrom(type))
                             {
                                 $"Using AppHost from Plugin '{plugin.VirtualPath}'".Print();
                                 appHost = type.CreateInstance<AppHostBase>();
@@ -137,7 +139,7 @@ namespace WebApp
 
         public void ConfigureAppHost(ServiceStackHost appHost)
         {
-            appHost.Config.DebugMode = "debug".GetAppSetting(true);
+            appHost.Config.DebugMode = "debug".GetAppSetting(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production");
             appHost.Config.ForbiddenPaths.Add("/plugins");
 
             var feature = appHost.GetPlugin<TemplatePagesFeature>();
