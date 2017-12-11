@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
     <PackageReference Include="Mysql.Data" Version="8.0.9-dmr" />
-    <PackageReference Include="Npgsql" Version="3.2.5" />
+    <PackageReference Include="Npgsql" Version="3.2.6" />
 
     <PackageReference Include="ServiceStack.Interfaces" Version="5.*" />
     <PackageReference Include="ServiceStack.Text" Version="5.*" />

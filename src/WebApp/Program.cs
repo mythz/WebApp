@@ -212,7 +212,7 @@ namespace WebApp
                         featureTypes.Remove(type.Name);
                     }
                 }
-                foreach (var type in typeof(ServiceStackHost).GetAssembly().GetTypes())
+                foreach (var type in typeof(ServiceStackHost).Assembly.GetTypes())
                 {
                     if (featureTypes.Count == 0)
                         break;
@@ -252,7 +252,7 @@ namespace WebApp
     public class AppHost : AppHostBase
     {
         public AppHost()
-            : base("name".GetAppSetting("ServiceStack Web App"), typeof(AppHost).GetAssembly()) {}
+            : base("name".GetAppSetting("ServiceStack Web App"), typeof(AppHost).Assembly) {}
 
         public override void Configure(Container container) {}
     }

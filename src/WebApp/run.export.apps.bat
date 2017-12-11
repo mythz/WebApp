@@ -1,5 +1,8 @@
 DEL ..\apps\web\web.*.settings
 
+RMDIR ..\..\..\..\NetCoreTemplates\templates-webapp\web /s /q
+XCOPY /E ..\apps\web ..\..\..\..\NetCoreTemplates\templates-webapp\web\
+
 RMDIR ..\..\..\WebAppStarter\app /s /q
 XCOPY /E ..\apps\bare ..\..\..\WebAppStarter\app\
 
