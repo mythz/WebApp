@@ -81,56 +81,172 @@ namespace WebApp
 
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services) {}
+        IHostingEnvironment env;
+        public Startup(IHostingEnvironment env) => this.env = env;
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        IPlugin[] plugins;
+        IPlugin[] Plugins 
         {
-            AppHostBase appHost = null;
-            WebTemplateUtils.VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
-
-            var assemblies = new List<Assembly>();
-            var vfs = "files".GetAppSetting().GetVirtualFiles(config:"files.config".GetAppSetting());
-            var pluginsDir = (vfs ?? WebTemplateUtils.VirtualFiles).GetDirectory("plugins");
-            if (pluginsDir != null)
+            get
             {
-                var plugins = pluginsDir.GetFiles();
-                foreach (var plugin in plugins)
+                if (plugins != null)
+                    return plugins;
+
+                var features = "features".GetAppSetting();
+                if (features != null)
                 {
-                    if (plugin.Extension != "dll" && plugin.Extension != "exe")
-                        continue;
+                    var featureTypes = features.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                    featureTypes.Remove(nameof(TemplatePagesFeature)); //already added
+                    var featureIndex = featureTypes.ToArray();
+                    var registerPlugins = new IPlugin[featureTypes.Count];
 
-                    var dllBytes = plugin.ReadAllBytes();
-                    $"Attempting to load plugin '{plugin.VirtualPath}', size: {dllBytes.Length} bytes".Print();
-                    var asm = Assembly.Load(dllBytes);
-                    assemblies.Add(asm);
+                    var externalPlugins = new[] {
+                        typeof(ServiceStack.Api.OpenApi.OpenApiFeature),
+                        typeof(ServiceStack.AutoQueryFeature), 
+                    };
 
-                    if (appHost == null)
+                    foreach (var type in externalPlugins)
                     {
-                        foreach (var type in asm.GetTypes())
+                        if (featureTypes.Contains(type.Name))
                         {
-                            if (typeof(AppHostBase).IsAssignableFrom(type))
+                            registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
+                            featureTypes.Remove(type.Name);
+                        }
+                    }
+                    foreach (var type in typeof(ServiceStackHost).Assembly.GetTypes())
+                    {
+                        if (featureTypes.Count == 0)
+                            break;
+
+                        if (featureTypes.Contains(type.Name))
+                        {
+                            registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
+                            featureTypes.Remove(type.Name);
+                        }
+                    }
+                    var asmTypes = appHost.ServiceAssemblies.SelectMany(x => x.GetTypes());
+                    foreach (var type in asmTypes)
+                    {
+                        if (featureTypes.Count == 0)
+                            break;
+
+                        if (featureTypes.Contains(type.Name))
+                        {
+                            registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
+                            featureTypes.Remove(type.Name);
+                        }
+                    }
+
+                    //Register any wildcard plugins at end
+                    const string AllRemainingPlugins = "plugins/*";
+                    if (featureTypes.Count == 1 && featureTypes[0] == AllRemainingPlugins)
+                    {
+                        var remainingPlugins = new List<IPlugin>();
+                        foreach (var type in asmTypes)
+                        {
+                            if (type.HasInterface(typeof(IPlugin)) && !registerPlugins.Any(x => x?.GetType() == type))
                             {
-                                $"Using AppHost from Plugin '{plugin.VirtualPath}'".Print();
-                                appHost = type.CreateInstance<AppHostBase>();
-                                appHost.AppSettings = WebTemplateUtils.AppSettings;
-                                break;
+                                var plugin = type.CreatePlugin();
+                                remainingPlugins.Add(plugin);
+                            }
+                        }
+                        $"Registering wildcard plugins: {remainingPlugins.Map(x => x.GetType().Name).Join(", ")}".Print(); 
+                        featureTypes.Remove(AllRemainingPlugins);
+                        if (remainingPlugins.Count > 0)
+                        {
+                            var mergedPlugins = new List<IPlugin>(registerPlugins.Where(x => x != null));
+                            mergedPlugins.AddRange(remainingPlugins);
+                            registerPlugins = mergedPlugins.ToArray();
+                        }
+                    }
+
+                    if (featureTypes.Count > 0)
+                    {
+                        var plural = featureTypes.Count > 1 ? "s" : "";
+                        throw new NotSupportedException($"Unable to locate plugin{plural}: " + string.Join(", ", featureTypes));
+                    }
+
+                    return plugins = registerPlugins;
+                }
+
+                return null;
+            }
+        }
+
+        AppHostBase appHost;
+        AppHostBase AppHost
+        {
+            get
+            {
+                if (appHost != null)
+                    return appHost;
+
+                WebTemplateUtils.VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
+
+                var assemblies = new List<Assembly>();
+                var vfs = "files".GetAppSetting().GetVirtualFiles(config:"files.config".GetAppSetting());
+                var pluginsDir = (vfs ?? WebTemplateUtils.VirtualFiles).GetDirectory("plugins");
+                if (pluginsDir != null)
+                {
+                    var plugins = pluginsDir.GetFiles();
+                    foreach (var plugin in plugins)
+                    {
+                        if (plugin.Extension != "dll" && plugin.Extension != "exe")
+                            continue;
+
+                        var dllBytes = plugin.ReadAllBytes();
+                        $"Attempting to load plugin '{plugin.VirtualPath}', size: {dllBytes.Length} bytes".Print();
+                        var asm = Assembly.Load(dllBytes);
+                        assemblies.Add(asm);
+
+                        if (appHost == null)
+                        {
+                            foreach (var type in asm.GetTypes())
+                            {
+                                if (typeof(AppHostBase).IsAssignableFrom(type))
+                                {
+                                    $"Using AppHost from Plugin '{plugin.VirtualPath}'".Print();
+                                    appHost = type.CreateInstance<AppHostBase>();
+                                    appHost.AppSettings = WebTemplateUtils.AppSettings;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
+
+                if (appHost == null)
+                    appHost = new AppHost();
+
+                if (assemblies.Count > 0)
+                    assemblies.Each(x => appHost.ServiceAssemblies.AddIfNotExists(x));
+
+                if (vfs != null)
+                    appHost.AddVirtualFileSources.Add(vfs);
+
+                if (vfs is IVirtualFiles writableFs)
+                    appHost.VirtualFiles = writableFs;
+                    
+                return appHost;
             }
+        }
 
-            if (appHost == null)
-                appHost = new AppHost();
+        public void ConfigureServices(IServiceCollection services) 
+        {
+            var appHost = AppHost;
+            var plugins = Plugins;
+            plugins?.Each(x => services.AddSingleton(x.GetType(), x));
 
-            if (assemblies.Count > 0)
-                assemblies.Each(x => appHost.ServiceAssemblies.AddIfNotExists(x));
+            services.AddSingleton<ServiceStackHost>(appHost);
 
-            if (vfs != null)
-                appHost.AddVirtualFileSources.Add(vfs);
+            plugins?.OfType<IStartup>().Each(x => x.ConfigureServices(services));
 
-            if (vfs is IVirtualFiles writableFs)
-                appHost.VirtualFiles = writableFs;
+            (appHost as IStartup)?.ConfigureServices(services);
+        }
+
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            plugins?.OfType<IStartup>().Each(x => x.Configure(app));
 
             appHost.BeforeConfigure.Add(ConfigureAppHost);
 
@@ -191,55 +307,9 @@ namespace WebApp
 
             appHost.Plugins.Add(feature);
 
-            var features = "features".GetAppSetting();
-            if (features != null)
+            IPlugin[] registerPlugins = Plugins;
+            if (registerPlugins != null)
             {
-                var featureTypes = features.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
-                featureTypes.Remove(nameof(TemplatePagesFeature)); //already added
-                var featureIndex = featureTypes.ToArray();
-                var registerPlugins = new IPlugin[featureTypes.Count];
-
-                var externalPlugins = new[] {
-                    typeof(ServiceStack.Api.OpenApi.OpenApiFeature),
-                    typeof(ServiceStack.AutoQueryFeature), 
-                };
-
-                foreach (var type in externalPlugins)
-                {
-                    if (featureTypes.Contains(type.Name))
-                    {
-                        registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
-                        featureTypes.Remove(type.Name);
-                    }
-                }
-                foreach (var type in typeof(ServiceStackHost).Assembly.GetTypes())
-                {
-                    if (featureTypes.Count == 0)
-                        break;
-
-                    if (featureTypes.Contains(type.Name))
-                    {
-                        registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
-                        featureTypes.Remove(type.Name);
-                    }
-                }
-                foreach (var type in appHost.ServiceAssemblies.SelectMany(x => x.GetTypes()))
-                {
-                    if (featureTypes.Count == 0)
-                        break;
-
-                    if (featureTypes.Contains(type.Name))
-                    {
-                        registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
-                        featureTypes.Remove(type.Name);
-                    }
-                }
-
-                if (featureTypes.Count > 0)
-                {
-                    var plural = featureTypes.Count > 1 ? "s" : "";
-                    throw new NotSupportedException($"Unable to locate plugin{plural}: " + string.Join(", ", featureTypes));
-                }
                 foreach (var plugin in registerPlugins)
                 {
                     appHost.Plugins.RemoveAll(x => x.GetType() == plugin.GetType());
