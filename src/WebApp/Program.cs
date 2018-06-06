@@ -452,7 +452,7 @@ namespace WebApp
             var pluginConfig = type.Name.GetAppSetting();
             if (pluginConfig != null)
             {
-                pluginConfig.ToStringSegment().ParseNextToken(out object value, out _);
+                var value = JS.eval(pluginConfig);
                 if (value is Dictionary<string, object> objDictionary)
                 {
                     $"Creating '{type.Name}' with: {pluginConfig}".Print();
