@@ -1,7 +1,7 @@
 <html>
 <head>
-<title>{{ title | default('Redis HTML WebApp') }}</title>
-{{ ifDebug | select: <script>{ '/js/hot-loader.js' | includeFile }</script> }}
+<title>{{ title ?? 'Redis HTML WebApp' }}</title>
+{{#if debug}}<script>{{ '/js/hot-loader.js' | includeFile }}</script>{{/if}}
 
 <link href="/assets/img/redis-logo.png" rel="icon">
 <link rel="stylesheet" href="/assets/css/bootstrap.css">
