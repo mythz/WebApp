@@ -120,10 +120,13 @@ $("#type-" + type).trigger('click')
     </div>
 </form>
 
-{{ ifHttpPost | use({ host, port, db, password }) | withoutEmptyValues | redisChangeConnection | end }}
+{{#if Request.Verb == "POST" }}
+    {{ { host, port, db, password } | withoutEmptyValues | redisChangeConnection | end }}
+{{/if}}
+
 <h6 id="connection"><a href="?connection">@ {{ redisConnectionString }}</a></h6>
 
-{{#if connection != null}}
+{{#if connection != null }}
 {{#with redisConnection}}
 <div class="container" style="position:absolute;max-width:440px;margin:65px 0 0 0">
     <form action="/" method="POST">
@@ -165,7 +168,7 @@ $("#type-" + type).trigger('click')
 {{ ['flush','monitor','brpop','blpop'] | ifNotEmpty(call) | any: contains(lower(call), it)
    | assignTo: illegalCommand }}
 
-{{#if call and !illegalCommand}}
+{{#if call and !illegalCommand }}
     {{ call | redisCall | assignTo: json }}
     {{ parseJson(json) ?? json | assignTo: obj }}
 {{/if}}
@@ -175,26 +178,26 @@ $("#type-" + type).trigger('click')
 <div id="details">
     <table class="table table-bordered auto-width">
         <caption>
-        {{#if key}}
+        {{#if key }}
             {{ key | split(':') | assignTo: parts }}
-            {{#if parts.Length >= 2}}
+            {{#if parts.Length >= 2 }}
                 {{#each parts}}{{#if index > 0}}&gt;{{/if}}<span class="action q" data-pos="{{index}}">{{it}}</span>{{/each}}
             {{/if}}
         {{/if}}
         </caption>
 
-        {{#if !isEmpty(obj)}}
+        {{#if !isEmpty(obj) }}
             {{ obj | htmlDump({ className: "table table-striped" }) | assignTo: html }}
             {{#if html}}<tr><td>{{html}}</td></tr>{{/if}}
 
             {{#if obj and isViewCommand}} {{ 'delete' | addTo: actions }} {{/if}}
         {{/if}}
 
-        {{#if actions}}
-            {{#if type == 'string'}}
+        {{#if actions }}
+            {{#if type == 'string' }}
                 {{ 'edit' | addTo: actions }}
             {{/if}}
-            {{#if actions}}
+            {{#if actions }}
                 <tr>
                     <td colspan="2" style="text-align:right">
                     {{#each actions}}<span class="action {{it}}">{{it}}</span>{{/each}}
@@ -243,7 +246,7 @@ $("#type-" + type).trigger('click')
 
 <div id="search-results">
     {{#if !q}}
-        {{#if !connection}}
+        {{#if connection == null }}
             <table class="table table-striped" style="width:450px">
                 <tbody>
                 {{#each toList(redisInfo) }}
