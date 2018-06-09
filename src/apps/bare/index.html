@@ -7,10 +7,12 @@ title: Web App Starter Template
 </p>
 <ul class="list-unstyled">
   <li><a href="http://templates.servicestack.net/docs/web-apps">ServiceStack Web Apps</a></li>
-  <li>Bootstrap 4.0.0-beta</li>
-  <li>jQuery 3.2.1</li>
+  <li>Bootstrap v4.1.1</li>
+  <li>jQuery 3.3.1 slim</li>
 </ul>
 
-{{ `<script>
-// Add JavaScript to render at the bottom of the page
-</script>` | appendTo: scripts }}
+{{#raw appendTo scripts}}
+<script>
+  // Add JavaScript to render at the bottom of the page
+</script>
+{{/raw}}
