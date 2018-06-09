@@ -1,4 +1,4 @@
-{{ limit | default(100) | assignTo: limit }}
+{{ limit ?? 100 | assignTo: limit }}
 
 {{ `select p.Id, 
            ProductName,
@@ -24,8 +24,10 @@
 {{#if nameContains}} {{ 'ProductName LIKE @name'     | addTo: filters }} {{/if}}
 
 {{#if !isEmpty(filters)}}
-  {{ `${sql} and ${join(filters, ' and ')} ORDER BY CompanyName ${sqlLimit(limit)}` | assignTo: sql }}
+  {{ `${sql} and ${join(filters, ' and ')}` | assignTo: sql }}
 {{/if}}
+
+{{ `${sql} ORDER BY CompanyName ${sqlLimit(limit)}` | assignTo: sql }}
 
 {{ sql | dbSelect({ id, category, supplier, name: `%${nameContains}%` }) 
        | return }}

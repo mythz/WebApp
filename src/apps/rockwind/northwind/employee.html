@@ -12,7 +12,7 @@ title: Employee Details
     {{#if employee}}
         <table class="table table-bordered auto-width">
             {{#tr {each:toList(employee)} }}
-                <tr><th>{{Key}}</th><td>{{Value ?? ""}}</td>
+                <tr><th>{{Key}}</th><td>{{Value}}</td>
             {{/tr}}
         </table>
 

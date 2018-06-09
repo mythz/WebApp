@@ -14,14 +14,22 @@ title: Products
       from Product p
            inner join Category c on p.CategoryId = c.Id
            inner join Supplier s on p.SupplierId = s.Id
-     where Discontinued = 0` 
+     where Discontinued = 0`
   | assignTo: sql }}
 
-{{ id           | endIfEmpty | use('p.Id = @id')                      | addTo: filters }}
-{{ category     | endIfEmpty | use('c.CategoryName = @category')      | addTo: filters }}
-{{ supplier     | endIfEmpty | use('s.CompanyName = @supplier')       | addTo: filters }}
-{{ nameContains | endIfEmpty | use('ProductName LIKE @name')          | addTo: filters }}
-{{#if filters}} {{ `${sql} and ${join(filters, ' and ')}` | assignTo: sql }} {{/if}}
+{{#if !isEmpty(PathArgs)}}
+  {{ `${sql} and p.Id = @id` | dbSingle({ id: PathArgs[0] }) 
+     | return }}
+{{/if}}
 
-{{ sql          | dbSelect({ id, category, supplier, name: `%${nameContains}%` }) 
-                | htmlDump({ className: "table table-striped" }) }}
+{{#if id}}           {{ 'p.Id = @id'                 | addTo: filters }} {{/if}}
+{{#if category}}     {{ 'c.CategoryName = @category' | addTo: filters }} {{/if}}
+{{#if supplier}}     {{ 's.CompanyName = @supplier'  | addTo: filters }} {{/if}}
+{{#if nameContains}} {{ 'ProductName LIKE @name'     | addTo: filters }} {{/if}}
+
+{{#if !isEmpty(filters)}}
+  {{ `${sql} and ${join(filters, ' and ')} ORDER BY CompanyName ${sqlLimit(limit)}` | assignTo: sql }}
+{{/if}}
+
+{{ sql  | dbSelect({ id, category, supplier, name: `%${nameContains}%` }) 
+        | htmlDump({ className: "table table-striped" }) }}

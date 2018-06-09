@@ -7,7 +7,8 @@ title: Order Details
 {{#if id}}
 
   {{ `select o.Id, OrderDate, CustomerId, Freight, 
-          ${sqlConcat(["e.FirstName", "' '", "e.LastName"])} as Employee, e.Id as EmployeeId,
+          ${sqlConcat(["e.FirstName", "' '", "e.LastName"])} as Employee, 
+          e.Id as EmployeeId,
           s.CompanyName as ShipVia, 
           ShipAddress, ShipCity, ShipPostalCode, ShipCountry
       from ${sqlQuote("Order")} o
