@@ -4,7 +4,7 @@
     <title>{{ title }}</title>
     <link href="/assets/img/favicon.png" rel="icon">
     <link href="/assets/css/default.css" rel="stylesheet" />
-    {{ ifDebug | select: <script>{ '/js/hot-loader.js' | includeFile }</script> }}
+    {{#if debug}}<script>{{ '/js/hot-loader.js' | includeFile }}</script>{{/if}}
 
     <script src="/assets/js/jquery-3.2.1.min.js"></script>
     <script src="/js/ss-utils.js"></script>
