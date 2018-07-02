@@ -2,14 +2,16 @@
 title: Chat Web App
 -->
 
-{{ channels | default('home') | assignTo: channels }}
+{{ channels ?? 'home' | assignTo: channels }}
 <div id="top">
     <a href="http://templates.servicestack.net/usecases/web-templates">
         <img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-32-inverted.png" style="height:28px; padding: 10px 0 0 0" />
     </a>
     <div id="social">
         <div id="welcome"></div>
-        {{ ['twitter', 'facebook', 'github'] | endIfAuthenticated | select: <a href="/auth/{ it }" class="{ it }"></a> }}
+        {{#if !isAuthenticated}}
+            {{#each ['twitter', 'facebook', 'github']}}<a href="/auth/{{it}}" class="{{it}}"></a>{{/each}}
+        {{/if}}
     </div>
     <ul id="channels" style="margin: 0 0 0 30px">
         <li style="background: none; padding: 0 0 0 5px;">
@@ -24,13 +26,14 @@ title: Chat Web App
 <div id="tv"></div>
 <div id="right">
     <div id="users"></div>
+    {{#raw}}
     <div id="examples" data-click="sendCommand">
         <span style="position:absolute; top: 2px; right:7px" data-click="toggleExamples">hide</span>
         <h4><a href="http://templates.servicestack.net/docs/syntax">Example Templates</a></h4>
-        <div>{{ pass: 'Cool' | padRight(7,'.') | repeat(3) }}</div>
-        <div>{{ pass: 17 | times | map('pow(2,it)') | join }}</div>
-        <div>My UserAgent: {{ pass: Request.UserAgent }}</div>
-        <div>@me What's my IP? {{ pass: Request.RemoteIP }}</div>
+        <div>{{ 'Cool' | padRight(7,'.') | repeat(3) }}</div>
+        <div>{{#each range(17)}}{{it * it}} {{/each}}</div>
+        <div>My UserAgent: {{ Request.UserAgent }}</div>
+        <div>@me What's my IP? {{ Request.RemoteIP }}</div>
         <h4><a href="https://github.com/NetCoreApps/Chat#global-event-handlers">Example Commands</a></h4>
         <div>/cmd.announce This is your captain speaking ...</div>
         <div>/cmd.toggle$#channels</div>
@@ -47,6 +50,7 @@ title: Chat Web App
         <div>@me /tv.off</div>
         <div>/document.title New Window Title</div>
     </div>
+    {{/raw}}
 </div>
 
 <div id="logs"></div>
