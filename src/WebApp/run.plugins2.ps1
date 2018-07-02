@@ -7,6 +7,6 @@ copy ..\example-plugins\ServerInfo\bin\Debug\netcoreapp2.0\ServerInfo.dll ..\app
 (Get-Content ..\apps\plugins2\web.settings) `
     -replace 'contentRoot ~/../plugins2', 'contentRoot ~/../../../../apps/plugins2' `
     -replace 'webRoot ~/../plugins2', 'webRoot ~/../../../../apps/plugins2' `
-    | Set-Content bin\Debug\netcoreapp2.0\web.settings
+    | Set-Content bin\Debug\netcoreapp2.1\web.settings
 
 dotnet run
