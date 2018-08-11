@@ -874,14 +874,14 @@
     "ServiceStack/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-xj2gAegdQ1tnO1UtK9g4n9xi5ydHeZJe4UdIM9QnflbasCWgTsCz3n/Ct3TUyfB9Y9w7p/ViV0lWEdYEy4en6Q==",
+      "sha512": "sha512-Rw9MfTamSZWMrQdMogc9tqRTH2eV7F20U0LVcpSaOvQ1WlQTAtQR4udY0Kn5YZflgfE5UxOGL+FzNcT3bOCzkQ==",
       "path": "servicestack/5.1.1",
       "hashPath": "servicestack.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Api.OpenApi/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Dzg978gXjk7Uol/pGM96kcOdAwp3bK9cXkBLdvNW2A+7H4JrvJ+ezbopUenk2tWglN78WQWt4TW4BJn5PAM+dg==",
+      "sha512": "sha512-lE3jEa6XXzjGz5LyI3dkPawyTXw90bXFUtm+GQY6dXeoq9RfCYEuuW60SkkJl+jGGCA3cYMBimbAMPnLof4SEw==",
       "path": "servicestack.api.openapi/5.1.1",
       "hashPath": "servicestack.api.openapi.5.1.1.nupkg.sha512"
     },
@@ -902,56 +902,56 @@
     "ServiceStack.Client/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-aOm9D8pAyBb4IF6appf8ShsUjzIepZIupUfwVjre9vhzSzbTB3kXLLPWHVddXwG+Z64Isca9TgZQo+5R0ZgLyQ==",
+      "sha512": "sha512-iBKYOA3jy/qpzsQfUdhN/2GTSJ8x80Ngeepl7SLzrSC8+t31YSX47UQNjIXL1LOFKTZA25fB8vuVbyAStl17Kw==",
       "path": "servicestack.client/5.1.1",
       "hashPath": "servicestack.client.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Common/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-IGLu74QROafApJqe4s9BLL4tMo3yHKtZlUdGTlz01mZWoBPXKUBVYJpRcFQHDhIoqWXLVAa4u9MXxgYjECpz3Q==",
+      "sha512": "sha512-u3h7q5iUdfQ550D13GcntFqBC8Z1JaFdSXRBCcYB8fEbiVPeNL6vjdXNP10N3tVWozQv6o09DwA5XmQ5iq+Fzw==",
       "path": "servicestack.common/5.1.1",
       "hashPath": "servicestack.common.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Interfaces/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-IFCWtB3/Et0AYI2qYbBSAajDwCN6DpvOBXLL8Vh0Sxev7JtssF7kGfhwX6+Y0QDMkwgeVmH/uwlBTx+jR9DaQA==",
+      "sha512": "sha512-BpEjqDJ3wa/lsHk5GC9UYJ/MXL3vTGbZI+LDn2lVGSzcgdS1TKN83Ar1S/K9QoE5RHh7/ZgwxZlD2umCn8P4fw==",
       "path": "servicestack.interfaces/5.1.1",
       "hashPath": "servicestack.interfaces.5.1.1.nupkg.sha512"
     },
     "ServiceStack.OrmLite/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-he0EFOvlfDJ4ul9gzT0dqucGep27bWqOS1LZY0RuxQx5B01tsYDtkU6V1wumw8kdd90TeIPV2+i9lcXnVtXZyg==",
+      "sha512": "sha512-23TL+Ow2m/MjEirUaYmI7eG433slOZkdTrtu5RgLLl8aN543wKnidb99LAayJk7CkCdqEF9Ns5dCh8YIcpADGg==",
       "path": "servicestack.ormlite/5.1.1",
       "hashPath": "servicestack.ormlite.5.1.1.nupkg.sha512"
     },
     "ServiceStack.OrmLite.MySql/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-YR4g879ZCLndptzm93EUcsiCzX5uC282RoFV7YrNNRxfPyAudIOWwLElVyxYdiQs/Rpeyx9asX5Q6vdZVsvOUA==",
+      "sha512": "sha512-F7sz6SFU5V7CjBItkNBoFXfOW8aWoRRHBeVCa4ibNS5x6ki0QX8FjT328KCntDy7n1xtFqfF0mQvz7uiSQvvHw==",
       "path": "servicestack.ormlite.mysql/5.1.1",
       "hashPath": "servicestack.ormlite.mysql.5.1.1.nupkg.sha512"
     },
     "ServiceStack.OrmLite.PostgreSQL/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-XTOcCTRUC2MJaqWXnUIHGr1LIt73vKN8+1Jg8aDpSxpmdTSfXasAZdbWnhNF/X/jxEfDjhBsO1wX3RxjEbzCxQ==",
+      "sha512": "sha512-qcLu94YeTorZgW/pHuO5ur/oyGQ4cFOdFhuiErj9yWWOehCBx7VKEqLeTLaXNdzOQeYhSUcGzGN+ohKbeQUzlA==",
       "path": "servicestack.ormlite.postgresql/5.1.1",
       "hashPath": "servicestack.ormlite.postgresql.5.1.1.nupkg.sha512"
     },
     "ServiceStack.OrmLite.Sqlite/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-YsuLPsUIwwYBohg4zEeniYR8HXJjfN+iJw8SHemPrRBktnabszunoVZJblNadjPyduwW4LkgPcSVMSHva+di3Q==",
+      "sha512": "sha512-yuVt89QzZqQMaGTNuBlP7YkCVBGru55/yOkTU6fOuDsrNNHF7Yl5q/2ghP5tCdFNauDabtvpNid4LQ+ZhxT5XA==",
       "path": "servicestack.ormlite.sqlite/5.1.1",
       "hashPath": "servicestack.ormlite.sqlite.5.1.1.nupkg.sha512"
     },
     "ServiceStack.OrmLite.SqlServer/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-/18izk6PqopALnVMiuwldt+feHs9CmNxJ5pQhthT65r8lau2RRdyh0vbxrL7W6kx0VNCXqlSr08E2kb1KXE33g==",
+      "sha512": "sha512-lT6tC4F/Zwjc6fUMd4A4yuwdspiCmjBIOvFE/O0lXX3DhN7CouIAcmvbDId17fjKCAX2l0Az/hDCiPD9f7uYwA==",
       "path": "servicestack.ormlite.sqlserver/5.1.1",
       "hashPath": "servicestack.ormlite.sqlserver.5.1.1.nupkg.sha512"
     },
@@ -965,14 +965,14 @@
     "ServiceStack.Server/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-rL8uIxZBWhyzGn5u2J95tXBywm2L8On4HkF49zcsZffojNWh9y7qoYowW7CyDupgcyM/KCMDBMZfDmw21sDBbA==",
+      "sha512": "sha512-rYC08iLZR14dSAPj/Ym7RfXyYNG3YE73PPfLLKXZ53lnIEOoLFiVaMLsqmKQiujw95NoiHKF9wkaxjtRa0vHzA==",
       "path": "servicestack.server/5.1.1",
       "hashPath": "servicestack.server.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Text/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-lBKlzYvC+cMDVp8b9/bAuXsFLkkeslaoEe7G8oBWlKWqlEmcKnubXpqQsU1JEfYkxxBLaDy84ZnGX2xeq2DPxQ==",
+      "sha512": "sha512-GwM1zlVO7TJilPiI673JFeHLEMSXTMkwR3xyTt4jFBXdod2eVfAKcJS5OO0oB1KVOsyw354NLg9tiG2c8Q/REg==",
       "path": "servicestack.text/5.1.1",
       "hashPath": "servicestack.text.5.1.1.nupkg.sha512"
     },
