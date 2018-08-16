@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Funq;
 using ServiceStack;
 using ServiceStack.IO;
+using ServiceStack.Auth;
 using ServiceStack.Text;
 using ServiceStack.Data;
 using ServiceStack.Redis;
@@ -96,36 +97,12 @@ namespace WebApp
                 if (features != null)
                 {
                     var featureTypes = features.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+
                     featureTypes.Remove(nameof(TemplatePagesFeature)); //already added
                     var featureIndex = featureTypes.ToArray();
                     var registerPlugins = new IPlugin[featureTypes.Count];
 
-                    var externalPlugins = new[] {
-                        typeof(ServiceStack.Api.OpenApi.OpenApiFeature),
-                        typeof(ServiceStack.AutoQueryFeature), 
-                    };
-
-                    foreach (var type in externalPlugins)
-                    {
-                        if (featureTypes.Contains(type.Name))
-                        {
-                            registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
-                            featureTypes.Remove(type.Name);
-                        }
-                    }
-                    foreach (var type in typeof(ServiceStackHost).Assembly.GetTypes())
-                    {
-                        if (featureTypes.Count == 0)
-                            break;
-
-                        if (featureTypes.Contains(type.Name))
-                        {
-                            registerPlugins[Array.IndexOf(featureIndex, type.Name)] = type.CreatePlugin();
-                            featureTypes.Remove(type.Name);
-                        }
-                    }
-                    var asmTypes = appHost.ServiceAssemblies.SelectMany(x => x.GetTypes());
-                    foreach (var type in asmTypes)
+                    foreach (var type in appHost.ScanAllTypes())
                     {
                         if (featureTypes.Count == 0)
                             break;
@@ -142,7 +119,7 @@ namespace WebApp
                     if (featureTypes.Count == 1 && featureTypes[0] == AllRemainingPlugins)
                     {
                         var remainingPlugins = new List<IPlugin>();
-                        foreach (var type in asmTypes)
+                        foreach (var type in typeof(ServiceStackHost).Assembly.GetTypes())
                         {
                             if (type.HasInterface(typeof(IPlugin)) && !registerPlugins.Any(x => x?.GetType() == type))
                             {
@@ -217,6 +194,8 @@ namespace WebApp
 
                 if (appHost == null)
                     appHost = new AppHost();
+
+                WebTemplateUtils.AppHost = appHost;
 
                 if (assemblies.Count > 0)
                     assemblies.Each(x => appHost.ServiceAssemblies.AddIfNotExists(x));
@@ -347,6 +326,7 @@ namespace WebApp
 
     public static class WebTemplateUtils
     {
+        public static AppHostBase AppHost;
         public static IAppSettings AppSettings;
         public static IVirtualFiles VirtualFiles;
 
@@ -417,10 +397,19 @@ namespace WebApp
                     {
                         var file = VirtualFiles.GetFile(connectionString.Substring(2));
                         if (file != null)
+                        {
                             connectionString = file.RealPath;
+                        }
+                        else
+                        {
+                            connectionString = AppHost.MapProjectPath(connectionString);
+                            if (!File.Exists(connectionString))
+                            {
+                                var fs = File.Create(connectionString);
+                                fs.Close();
+                            }
+                        }
                     }
-                    if (!File.Exists(connectionString))
-                        throw new FileNotFoundException($"SQLite database not found at '{connectionString}'");
                     return new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
                 case "mssql":
                 case "sqlserver":
@@ -444,29 +433,107 @@ namespace WebApp
             throw new NotSupportedException($"Unknown DB Provider '{dbProvider}'");
         }
 
+        public static IEnumerable<Type> ScanAllTypes(this ServiceStackHost appHost)
+        {
+            var externalPlugins = new[] {
+                typeof(ServiceStack.Api.OpenApi.OpenApiFeature),
+                typeof(ServiceStack.AutoQueryFeature), 
+            };
+
+            foreach (var type in externalPlugins)
+                yield return type;
+            foreach (var type in typeof(ServiceStackHost).Assembly.GetTypes())
+                yield return type;
+            foreach (var type in appHost.ServiceAssemblies.SelectMany(x => x.GetTypes()))
+                yield return type;
+        }
+
         public static IPlugin CreatePlugin(this Type type)
         {
             if (!type.HasInterface(typeof(IPlugin)))
                 throw new NotSupportedException($"'{type.Name}' is not a ServiceStack IPlugin");
             
+            IPlugin plugin = null;
             var pluginConfig = type.Name.GetAppSetting();
+
+            if (type.Name == nameof(AuthFeature))
+            {
+                var authProviders = new List<IAuthProvider>();
+                var authProviderNames = "AuthFeature.AuthProviders".GetAppSetting();
+                var authProviderTypes = authProviderNames != null
+                    ? authProviderNames.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
+                    : new List<string>();
+
+                foreach (var t in AppHost.ScanAllTypes())
+                {
+                    if (authProviderTypes.Count == 0)
+                        break;
+
+                    if (authProviderTypes.Contains(t.Name))
+                    {
+                        authProviders.Add(t.CreateAuthProvider());
+                        authProviderTypes.Remove(t.Name);
+                    }
+                }
+
+                if (authProviderTypes.Count > 0)
+                {
+                    var plural = authProviderTypes.Count > 1 ? "s" : "";
+                    throw new NotSupportedException($"Unable to locate AuthProvider{plural}: " + string.Join(", ", authProviderTypes));
+                }
+
+                $"Creating AuthFeature".Print();
+                if (authProviders.Count == 0)
+                    throw new NotSupportedException($"List of 'AuthFeature.AuthProviders' required for feature 'AuthFeature', e.g: AuthFeature.AuthProviders TwitterAuthProvider, FacebookAuthProvider");
+
+                plugin = new AuthFeature(() => new AuthUserSession(), authProviders.ToArray());
+            }
+            else
+            {
+                $"Creating plugin '{type.Name}'".Print();
+                plugin = type.CreateInstance<IPlugin>();
+            }
+
             if (pluginConfig != null)
             {
                 var value = JS.eval(pluginConfig);
                 if (value is Dictionary<string, object> objDictionary)
                 {
-                    $"Creating '{type.Name}' with: {pluginConfig}".Print();
-                    var plugin = objDictionary.FromObjectDictionary(type);
-                    return (IPlugin)plugin;
+                    $"Populating '{type.Name}' with: {pluginConfig}".Print();
+                    objDictionary.PopulateInstance(plugin);
                 }
                 else throw new NotSupportedException($"'{pluginConfig}' is not an Object Dictionary");
             }
-            else
+
+            return plugin;
+        }
+
+        public static IAuthProvider CreateAuthProvider(this Type type)
+        {
+            var ctorWithAppSettings = type.GetConstructors()
+                .FirstOrDefault(x => x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == typeof(IAppSettings));
+
+            var ctorDefault = type.GetConstructors().FirstOrDefault(x => x.GetParameters().Length == 0);
+
+            if (ctorWithAppSettings == null && ctorDefault == null)
+                throw new NotSupportedException($"No IAppSettings or default Constructor found for Type '{type.Name}'");
+
+            $"Creating Auth Provider '{type.Name}'".Print();
+            var authProvider = ctorWithAppSettings != null
+                ? (IAuthProvider)ctorWithAppSettings.Invoke(new object[]{ WebTemplateUtils.AppSettings })
+                : (IAuthProvider)ctorDefault.Invoke(new object[]{ WebTemplateUtils.AppSettings });
+
+            var authProviderConfig = type.Name.GetAppSetting();
+            if (authProviderConfig != null)
             {
-                $"Registering Plugin '{type.Name}'".Print();
-                var plugin = type.CreateInstance<IPlugin>();
-                return plugin;
+                var value = JS.eval(authProviderConfig);
+                if (value is Dictionary<string, object> objDictionary)
+                {
+                    objDictionary.PopulateInstance(authProvider);
+                }
             }
+
+            return authProvider;
         }
     }
 }
