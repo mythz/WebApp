@@ -1,0 +1,27 @@
+<div class="page">
+
+{{ `SELECT * from Post p INNER JOIN UserInfo u on p.CreatedBy = u.UserName WHERE Slug = @slug ORDER BY p.Created DESC` 
+   | dbSingle({ slug })
+   | assignTo: post }}
+
+{{ 'posts' | partial({ posts: [post] } )}}
+
+<div class="content-src">
+    <h3>Content Source</h3>
+
+    <textarea data-autogrow>{{ post.Content }}</textarea>        
+</div>
+
+<style>
+.content-src {
+    border-top: 1px solid #eee;
+}
+.content-src h3 {
+    text-align: center;
+}
+.content-src textarea {
+    min-height: 20em;
+}
+</style>
+
+</div>

@@ -1,0 +1,115 @@
+{{  `CREATE TABLE IF NOT EXISTS "Post" 
+    (
+        "Id" INTEGER PRIMARY KEY AUTOINCREMENT, 
+        "Slug" VARCHAR(8000) NULL, 
+        "Title" VARCHAR(8000) NULL, 
+        "Content" VARCHAR(8000) NULL, 
+        "Created" VARCHAR(8000) NOT NULL, 
+        "CreatedBy" VARCHAR(8000) NOT NULL, 
+        "Modified" VARCHAR(8000) NOT NULL,
+        "ModifiedBy" VARCHAR(8000) NOT NULL 
+    );
+    
+    CREATE TABLE IF NOT EXISTS "UserInfo" 
+    (
+        "UserName" VARCHAR(8000) PRIMARY KEY, 
+        "DisplayName" VARCHAR(8000) NULL, 
+        "AvatarUrl" VARCHAR(8000) NULL, 
+        "AvatarUrlLarge" VARCHAR(8000) NULL, 
+        "Created" VARCHAR(8000) NOT NULL,
+        "Modified" VARCHAR(8000) NOT NULL
+    );` 
+    
+    | dbExec
+}}
+
+{{ dbScalar(`SELECT COUNT(*) FROM Post`) | assignTo: postsCount }}
+
+{{#if postsCount == 0 }}
+
+    {{#raw postTitle}}Live Document Example{{/raw}}
+
+{{#raw content}}<pre>
+{{ 11200 | assignTo: balance }}
+{{ 10    | assignTo: projectedMonths }}
+{{'
+Salary:        4000
+App Royalties: 200
+'| trim | parseKeyValueText(':') | assignTo: monthlyRevenues }}
+{{'
+Rent      1000
+Internet  50
+Mobile    50
+Food      400
+Misc      200
+'| trim | parseKeyValueText | assignTo: monthlyExpenses }}
+{{ monthlyRevenues | values | sum | assignTo: totalRevenues }}
+{{ monthlyExpenses | values | sum | assignTo: totalExpenses }}
+{{ subtract(totalRevenues, totalExpenses) | assignTo: totalSavings }}
+
+Current Balance:              <b>{{ balance | currency }}</b>
+
+Monthly Revenues:
+{{ monthlyRevenues | toList | select: { it.Key | padRight(30) }{ it.Value | currency }\n }}
+Total                         <b>{{ totalRevenues | currency }}</b>
+
+Monthly Expenses:
+{{ monthlyExpenses | toList | select: { it.Key | padRight(30) }{ it.Value | currency }\n }}
+Total                         <b>{{ totalExpenses | currency }}</b>
+
+Monthly Savings:              <b>{{ totalSavings | currency }}</b>
+
+Projected Cash Position:
+{{ projectedMonths | times | map => index + 1
+ | select: { now | addMonths(it) | dateFormat }                    <b>{ totalSavings | multiply(it) | add(balance) | currency }</b>\n }}
+</pre>{{/raw}}
+
+    {{ `datetime(CURRENT_TIMESTAMP,'localtime')` | assignTo: sqlNow }}
+
+    {{ `INSERT INTO UserInfo (UserName, DisplayName, AvatarUrl, AvatarUrlLarge, Created, Modified) 
+                      VALUES (@user, @user, @avatarUrl, @avatarUrlLarge, ${sqlNow}, ${sqlNow})`
+        | dbExec({ 
+            user: 'ServiceStack', 
+            avatarUrl: 'https://pbs.twimg.com/profile_images/876249730078056448/JuTVEkWX_normal.jpg',
+            avatarUrlLarge: 'https://pbs.twimg.com/profile_images/876249730078056448/JuTVEkWX.jpg'
+          }) 
+    }}
+
+    {{ `INSERT INTO Post (Slug, Title, Content, Created, CreatedBy, Modified, ModifiedBy) VALUES (@slug, @title, @content, ${sqlNow}, @user, ${sqlNow}, @user)` 
+        | dbExec({ title: postTitle, content, slug: generateSlug(postTitle), user: 'ServiceStack' }) }}
+
+{{#raw postTitle}}Markdown Example{{/raw}}
+{{#raw content}}{{#markdown}}
+# Headings can start with 1-6 hashes
+
+Markdown follows plain text conventions when rendering HTML.
+
+So paragraphs separated by multiple lines are rendered as separate paragraphs.
+
+### Use more hashes to create nested sub headings
+
+> Text pre-fixed with '>' are treated as block quotes
+
+Use a dash, asterisk or plus to create an ordered list:
+
+ - List Item
+ * List Item
+ + List Item
+
+Whilst you can use numbers for ordered lists:
+
+ 1. Step 1
+ 2. Step 2
+ 3. Step 3
+
+Indent lines by 4 spaces to create pre-formatted code blocks in monospace font:
+
+    $ cd /Users/Guest
+
+Follow [link to markdown block docs](http://templates.servicestack.net/docs/blocks#markdown) for more info.
+{{/markdown}}{{/raw}}
+
+    {{ `INSERT INTO Post (Slug, Title, Content, Created, CreatedBy, Modified, ModifiedBy) VALUES (@slug, @title, @content, ${sqlNow}, @user, ${sqlNow}, @user)` 
+        | dbExec({ slug: generateSlug(postTitle), title: postTitle, content, user: 'demisbellot' }) }}
+
+{{/if}}

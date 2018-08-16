@@ -1,0 +1,5 @@
+{{#capture response}}
+    {{#eval {htmlDecode:true} }}{{ content }}{{/eval}}
+{{/capture}}
+
+{{ { response, contentType:'text/plain' } | httpResult | return }}
