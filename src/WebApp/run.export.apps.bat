@@ -13,6 +13,13 @@ RMDIR ..\..\..\WebAppStarter\web /s /q
 XCOPY /E ..\apps\web ..\..\..\WebAppStarter\web\
 
 
+RMDIR ..\..\..\Blog\app /s /q
+XCOPY /E ..\apps\blog ..\..\..\Blog\app\
+
+RMDIR ..\..\..\Blog\web /s /q
+XCOPY /E ..\apps\web ..\..\..\Blog\web\
+
+
 RMDIR ..\..\..\Chat\app /s /q
 XCOPY /E ..\apps\chat ..\..\..\Chat\app\
 

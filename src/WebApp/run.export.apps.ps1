@@ -2,6 +2,12 @@
     -replace 'contentRoot ~/../bare', 'contentRoot ~/../app' `
     -replace 'webRoot ~/../bare', 'webRoot ~/../app' `
     | Set-Content ..\..\..\WebAppStarter\app\web.settings
+
+(Get-Content ..\apps\blog\web.settings) `
+    -replace 'contentRoot ~/../blog', 'contentRoot ~/../app' `
+    -replace 'webRoot ~/../blog', 'webRoot ~/../app' `
+    | Set-Content ..\..\..\Blog\app\web.settings
+
 (Get-Content ..\apps\bare\web.min.settings) `
     -replace 'contentRoot ~/../bare', 'contentRoot ~/../app' `
     | Set-Content ..\..\..\WebAppStarter\app\web.min.settings
