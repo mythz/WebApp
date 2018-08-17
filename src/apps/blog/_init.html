@@ -110,6 +110,6 @@ Follow [link to markdown block docs](http://templates.servicestack.net/docs/bloc
 {{/markdown}}{{/raw}}
 
     {{ `INSERT INTO Post (Slug, Title, Content, Created, CreatedBy, Modified, ModifiedBy) VALUES (@slug, @title, @content, ${sqlNow}, @user, ${sqlNow}, @user)` 
-        | dbExec({ slug: generateSlug(postTitle), title: postTitle, content, user: 'demisbellot' }) }}
+        | dbExec({ slug: generateSlug(postTitle), title: postTitle, content, user: 'ServiceStack' }) }}
 
 {{/if}}
