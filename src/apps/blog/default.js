@@ -1,34 +1,56 @@
-function autogrow(e) {
-    var el = e.target;
-    el.style.height = "5px";
-    el.style.height = (el.scrollHeight)+"px";
+// Enable autogrowing textareas
+let textAreas = document.querySelectorAll("textarea[data-autogrow]");
+for (let i = 0; i < textAreas.length; i++) {
+  textAreas[i].addEventListener("input", autogrow);
+  autogrow({ target: textAreas[i] });
 }
 
-var textAreas = document.querySelectorAll("textarea[data-autogrow]");
-for (var i = 0; i < textAreas.length; i++) {
-    textAreas[i].addEventListener('input', autogrow);        
-    autogrow({ target: textAreas[i] });
+function autogrow(e) {
+  let el = e.target;
+  let minHeignt = 150;
+  el.style.height = "5px";
+  el.style.height = Math.max(el.scrollHeight, minHeignt) + "px";
+}
+
+// Enable Live Preview of new Content
+textAreas = document.querySelectorAll("textarea[data-livepreview]");
+for (let i = 0; i < textAreas.length; i++) {
+  textAreas[i].addEventListener("input", livepreview);
+  livepreview({ target: textAreas[i] });
 }
 
 function livepreview(e) {
-    var el  = e.target;
-    var sel = el.getAttribute("data-livepreview");
-    
-    var formData = new FormData();
-    formData.append('content', el.value);
+  let el = e.target;
+  let sel = el.getAttribute("data-livepreview");
 
-    fetch("/preview", {
-        method: 'post',
-        body: formData,
-    }).then(function(r){
-        return r.text();
-    }).then(function(r) {
-        document.querySelector(sel).innerHTML = r;
+  if (el.value.trim() == "") {
+    document.querySelector(sel).innerHTML = "<div style='text-align:center;padding-top:20px;color:#999'>Live Preview</div>";
+    return;
+  }
+
+  let formData = new FormData();
+  formData.append("content", el.value);
+
+  fetch("/preview", {
+    method: "post",
+    body: formData
+  })
+    .then(function(r) {
+      return r.text();
+    })
+    .then(function(r) {
+      document.querySelector(sel).innerHTML = r;
     });
 }
 
-textAreas = document.querySelectorAll("textarea[data-livepreview]");
-for (var i = 0; i < textAreas.length; i++) {
-    textAreas[i].addEventListener('input', livepreview);
-    livepreview({ target: textAreas[i] });
+// Ctrl + Click on page to edit
+let posts = document.querySelectorAll("[data-edit-path]");
+for (let i = 0; i < posts.length; i++) {
+  let el = posts[i];
+  let url = el.getAttribute("data-edit-path");
+  el.addEventListener("click", function(e) {
+      if (e.ctrlKey) {
+          location.href = url;
+      }
+  });
 }

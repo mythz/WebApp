@@ -32,7 +32,9 @@
         {{ Created | toDateTime | dateFormat('dddd, dd MMMM') }}
     </div>
     
-    <div class="post-content">{{#eval}}{{Content | raw}}{{/eval}}</div>
+    {{ { 'data-edit-path': `/posts/${Slug}/edit`} | if(isAuthenticated and userName = CreatedBy) | assignTo: attrs }}
+
+    <div class="post-content" {{ attrs | htmlAttrs }}>{{#eval}}{{Content | raw}}{{/eval}}</div>
 
 {{#if hidePostInfo}}
     {{ 'contentActions' | partial({ Slug }) }}
