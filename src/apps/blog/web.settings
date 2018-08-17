@@ -1,6 +1,5 @@
 debug true
 name Blog App
-port 5000
 contentRoot ~/../blog
 webRoot ~/../blog
 db sqlite

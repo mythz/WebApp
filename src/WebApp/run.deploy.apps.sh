@@ -2,6 +2,8 @@
 
 cat ../apps/bare/web.settings | sed "/debug/s/ .*/ false/" > ../apps/web/web.bare.settings
 
+cat ../apps/blog/web.release.settings > ../apps/web/web.blog.settings
+
 cat ../apps/redis/web.settings | sed "/debug/s/ .*/ false/" > ../apps/web/web.redis.settings
 
 cat ../apps/rockwind/web.sqlite.settings | sed "/debug/s/ .*/ false/" > ../apps/web/web.rockwind-sqlite.settings

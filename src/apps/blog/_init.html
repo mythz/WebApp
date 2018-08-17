@@ -1,3 +1,7 @@
+================================
+Create blog.sqlite if not exists
+================================
+
 {{  `CREATE TABLE IF NOT EXISTS "Post" 
     (
         "Id" INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -25,8 +29,30 @@
 
 {{ dbScalar(`SELECT COUNT(*) FROM Post`) | assignTo: postsCount }}
 
+=================================
+Populate with seed posts if empty
+=================================
+
 {{#if postsCount == 0 }}
 
+    ========================
+    Create ServiceStack User - Contains same info as if @ServiceStack authenticated via Twitter
+    ========================
+
+    {{ `INSERT INTO UserInfo (UserName, DisplayName, AvatarUrl, AvatarUrlLarge, Created, Modified) 
+                      VALUES (@user, @user, @avatarUrl, @avatarUrlLarge, ${sqlNow}, ${sqlNow})`
+        | dbExec({ 
+            user: 'ServiceStack', 
+            avatarUrl: 'https://pbs.twimg.com/profile_images/876249730078056448/JuTVEkWX_normal.jpg',
+            avatarUrlLarge: 'https://pbs.twimg.com/profile_images/876249730078056448/JuTVEkWX.jpg'
+          }) 
+    }}
+
+
+    ==========================
+    Live Document Example Post
+    ==========================
+        
     {{#raw postTitle}}Live Document Example{{/raw}}
 
 {{#raw content}}<pre>
@@ -66,19 +92,16 @@ Projected Cash Position:
 
     {{ `datetime(CURRENT_TIMESTAMP,'localtime')` | assignTo: sqlNow }}
 
-    {{ `INSERT INTO UserInfo (UserName, DisplayName, AvatarUrl, AvatarUrlLarge, Created, Modified) 
-                      VALUES (@user, @user, @avatarUrl, @avatarUrlLarge, ${sqlNow}, ${sqlNow})`
-        | dbExec({ 
-            user: 'ServiceStack', 
-            avatarUrl: 'https://pbs.twimg.com/profile_images/876249730078056448/JuTVEkWX_normal.jpg',
-            avatarUrlLarge: 'https://pbs.twimg.com/profile_images/876249730078056448/JuTVEkWX.jpg'
-          }) 
-    }}
-
     {{ `INSERT INTO Post (Slug, Title, Content, Created, CreatedBy, Modified, ModifiedBy) VALUES (@slug, @title, @content, ${sqlNow}, @user, ${sqlNow}, @user)` 
         | dbExec({ title: postTitle, content, slug: generateSlug(postTitle), user: 'ServiceStack' }) }}
 
-{{#raw postTitle}}Markdown Example{{/raw}}
+
+    =====================
+    Markdown Example Post
+    =====================
+
+    {{#raw postTitle}}Markdown Example{{/raw}}
+
 {{#raw content}}{{#markdown}}
 # Headings can start with 1-6 hashes
 
