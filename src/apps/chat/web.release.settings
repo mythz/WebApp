@@ -1,6 +1,5 @@
 debug false
 name Chat Web App
-port 5000
 contentRoot ~/../chat
 webRoot ~/../chat
 

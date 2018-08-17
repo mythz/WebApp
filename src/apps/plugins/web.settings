@@ -1,6 +1,5 @@
 debug true
 name Web App Plugins
-port 5000
 contentRoot ~/../plugins
 webRoot ~/../plugins
 features CustomPlugin, OpenApiFeature, PostmanFeature, CorsFeature, ValidationFeature
