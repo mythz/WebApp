@@ -16,7 +16,7 @@ function Editor($editor, opt) {
         this.target.dispatchEvent(event);
       }
       if (opt[evt]) {
-        opt[evt](this, value);
+        opt[evt].call(this, value);
       }
     },
     $nextTick(fn) {

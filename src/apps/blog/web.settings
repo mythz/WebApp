@@ -1,5 +1,5 @@
 debug true
-name Blog App
+name Blog Web App
 contentRoot ~/../blog
 webRoot ~/../blog
 db sqlite
@@ -12,3 +12,5 @@ oauth.RedirectUrl http://127.0.0.1:5000/
 oauth.CallbackUrl http://127.0.0.1:5000/auth/{0}
 oauth.twitter.ConsumerKey JvWZokH73rdghDdCFCFkJtCEU
 oauth.twitter.ConsumerSecret WNeOT6YalxXDR4iWZjc4jVjFaydoDcY8jgRrGc5FVLjsVlY2Y8
+
+args.blog { name:'blog.web-app.io', href:'/' }
