@@ -281,7 +281,10 @@ namespace WebApp
             {
                 var name = key.RightPart('.');
                 var value = key.GetAppSetting();
-                feature.Args[name] = value;
+
+                feature.Args[name] = value.StartsWith("{") || value.StartsWith("[")
+                    ? JS.eval(value)
+                    : value;
             }
 
             appHost.Plugins.Add(feature);

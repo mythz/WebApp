@@ -17,7 +17,7 @@ Then copy all contents into the `web` folder next to where all your Web Apps are
 
 ## Usage
 
-To run install [.NET Core 2.0 for your platform](https://www.microsoft.com/net/download/core) then for Linux, OSX and Windows, run:
+To run install [.NET Core 2.1 for your platform](https://www.microsoft.com/net/download/core) then for Linux, OSX and Windows, run:
 
     dotnet web/app.dll ../<app name>/web.settings
 
