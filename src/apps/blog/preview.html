@@ -1,5 +1,8 @@
+API /preview
+  - content : string - ServiceStack Templates to evaluate
+
 {{#capture response}}
     {{#eval {htmlDecode:true} }}{{ content }}{{/eval}}
 {{/capture}}
 
-{{ { response, contentType:'text/plain' } | httpResult | return }}
+{{ response | return({ contentType:'text/plain' }) }}
