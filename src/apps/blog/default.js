@@ -12,10 +12,33 @@ function autogrow(e) {
   el.style.height = Math.max(el.scrollHeight, minHeignt) + "px";
 }
 
+// Save content to local storage to preserve state across page reloads
+let forms = document.querySelectorAll('form[data-save-drafts]');
+for (let i = 0; i < forms.length; i++) {
+    let form = forms[i];
+    let monitorInputs = form.querySelectorAll('input[type=text],textarea');
+    let keys = [];
+    for (let j=0; j < monitorInputs.length; j++) {
+        let input = monitorInputs[j];
+        let key = 'drafts.' + location.pathname + '.' + (input.getAttribute('name') || input.id);
+        keys.push(key);
+        let draftValue = localStorage.getItem(key);
+        if (draftValue) {
+            input.value = draftValue;
+        }
+        input.addEventListener('input', function(e){
+            localStorage.setItem(key, this.value);
+        }, false);
+    }
+    form.addEventListener('submit', function(e) {
+        keys.forEach(key => localStorage.removeItem(key));
+    });
+}
+
 // Enable Live Preview of new Content
 textAreas = document.querySelectorAll("textarea[data-livepreview]");
 for (let i = 0; i < textAreas.length; i++) {
-  textAreas[i].addEventListener("input", livepreview);
+  textAreas[i].addEventListener("input", livepreview, false);
   livepreview({ target: textAreas[i] });
 }
 

@@ -32,7 +32,7 @@ title: New post
 {{#if success}}
     {{ httpResult({ status:301, Location: `/${userName}` }) | return }}
 {{else}}
-    <form method="POST">
+    <form method="POST" data-save-drafts>
         {{#if ex}}<div class="error-summary">{{ex.message}}</div>{{/if}}
         <div class="row">
             <input name="postTitle" type="text" placeholder="title" autocomplete="off" value="{{postTitle}}">
