@@ -1,17 +1,3 @@
-// Enable autogrowing textareas
-let textAreas = document.querySelectorAll("textarea[data-autogrow]");
-for (let i = 0; i < textAreas.length; i++) {
-  textAreas[i].addEventListener("input", autogrow);
-  autogrow({ target: textAreas[i] });
-}
-
-function autogrow(e) {
-  let el = e.target;
-  let minHeignt = 150;
-  el.style.height = "5px";
-  el.style.height = Math.max(el.scrollHeight, minHeignt) + "px";
-}
-
 // Save content to local storage to preserve state across page reloads
 let forms = document.querySelectorAll('form[data-save-drafts]');
 for (let i = 0; i < forms.length; i++) {
@@ -33,6 +19,20 @@ for (let i = 0; i < forms.length; i++) {
     form.addEventListener('submit', function(e) {
         keys.forEach(key => localStorage.removeItem(key));
     });
+}
+
+// Enable autogrowing textareas
+let textAreas = document.querySelectorAll("textarea[data-autogrow]");
+for (let i = 0; i < textAreas.length; i++) {
+  textAreas[i].addEventListener("input", autogrow);
+  autogrow({ target: textAreas[i] });
+}
+
+function autogrow(e) {
+  let el = e.target;
+  let minHeignt = 150;
+  el.style.height = "5px";
+  el.style.height = Math.max(el.scrollHeight, minHeignt) + "px";
 }
 
 // Enable Live Preview of new Content
