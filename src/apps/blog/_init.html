@@ -202,7 +202,7 @@ public class HelloService : Service
 
 ### /hello API Page
 
-> Usage: /hello/{name}
+> Usage: /hello/\{name}
 
 An API which returns the same wire response as above can be implemented in API Pages by creating a page at 
 [/hello/_name/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/hello/_name/index.html) 
@@ -230,7 +230,7 @@ Alternatively you can force a JSON Response by specifying it with:
 
 ### /preview API Page
 
-> Usage: /preview?content={templates}
+> Usage: /preview?content=\{templates}
 
 The [/preview.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/preview.html) page uses this to force a plain-text response with:
 
@@ -251,7 +251,7 @@ Which renders the plain text response:
 
 ### /_user/api Page
 
-> Usage: /{user}/api
+> Usage: /\{user}/api
 
 The [/_user/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/_user/api.html) API page shows an example of how easy it is to create data-driven APIs where you can literally return the response of an SQL query by calling the `dbSelect` filter and returning the results with:
 
@@ -279,7 +279,7 @@ Which thanks to the live development workflow provides the most productive devel
 
 ### /posts/_slug/api Page
 
-> Usage:  /posts/{slug}/api
+> Usage:  /posts/\{slug}/api
 
 The [/posts/_slug/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/api.html) page shows an example of using the `httpResult` filter to return a custom HTTP Response where if the post with the specified slug does not exist it will return a `404 Post was not found` HTTP Response:
 
