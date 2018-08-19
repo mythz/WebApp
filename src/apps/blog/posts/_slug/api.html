@@ -1,5 +1,5 @@
 API /posts/{slug}/api
-  - slug : string - Return post with this slug name
+  * slug : string - Return post with this slug name
 
 {{ `SELECT * 
       FROM Post p INNER JOIN UserInfo u on p.CreatedBy = u.UserName 
