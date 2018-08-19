@@ -10,6 +10,7 @@
 *.azure
 *.gcloud
 **/web/web.*.settings
+*.xml
 
 # User-specific files
 *.suo
