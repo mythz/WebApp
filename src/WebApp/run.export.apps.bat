@@ -15,6 +15,7 @@ XCOPY /E ..\apps\web ..\..\..\WebAppStarter\web\
 
 RMDIR ..\..\..\Blog\app /s /q
 XCOPY /E ..\apps\blog ..\..\..\Blog\app\
+DEL ..\..\..\Blog\app\web.release.settings
 
 RMDIR ..\..\..\Blog\web /s /q
 XCOPY /E ..\apps\web ..\..\..\Blog\web\
