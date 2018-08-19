@@ -1120,14 +1120,14 @@
     "ServiceStack/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-YJ+h9k8skq28fQewIt9OWDxS7a5xq1bvhCikeFPvsbd6rcD7arFqljQtkGH3iWneQBMbfJvBo+fFgnfaVRYyiw==",
+      "sha512": "sha512-obVXgPimKZu+7ZA+0xrFONT4htX+WZP3Bf0siaufejtsgTZrcrNdNjwM8MnX7D1johdNjf69FU0iFMXotVRBPA==",
       "path": "servicestack/5.1.1",
       "hashPath": "servicestack.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Api.OpenApi/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-5XFVvY3uydiLtqyCQp9hhgd15SUqjYUGxLL+SVNJ0i8cxVI7pWQiHOZKrMvdAdPBA14b6R/a1EeIPgeiLwHmCQ==",
+      "sha512": "sha512-jid9UiV0AAM6e5fV4sJaEBSDJIQfy5XKDFpKlmVL6PIl1I0ZLeWvjf3V476MIN2M8w87lDyxyoYGoO9eVwc95g==",
       "path": "servicestack.api.openapi/5.1.1",
       "hashPath": "servicestack.api.openapi.5.1.1.nupkg.sha512"
     },
@@ -1148,49 +1148,49 @@
     "ServiceStack.Client/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-POP7cYEuHU50iFkgxRDzU6CwNwc157DHDCE9FVJJTPz2YfEH7lIarwRAQvO3o4BKTZVoCDRgpNab8p1Ujp0hhQ==",
+      "sha512": "sha512-EF1Sdz95nznTlolGAiJPCncNDwwrt+hp2IDIOhUtru0F0LirYLunK4NDvcjnMEuv2td7KtAli4qmYo7/yU9F5w==",
       "path": "servicestack.client/5.1.1",
       "hashPath": "servicestack.client.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Client.Core/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1g/QPc6fV5Ijs2WXd4wX7QWiUxSvWXnCtIAAmvhUjfR6GBiYhR9qnU2MxDCrUsKd+8Gczpn8DdzuiJpbar2UeA==",
+      "sha512": "sha512-mXD1MwHruB9qqpnVkOen/MQWhYIjlx7AksEc+qdxr04L9FZT09CAR6oEe0fTcgLSHp4T0lUCj5PSww+g+sYDRA==",
       "path": "servicestack.client.core/5.1.1",
       "hashPath": "servicestack.client.core.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Common/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-f9TzHLeT+ZqJ/tTU6Em8Wb8LyjpxGHDu6DdN7AW/j0otyncDm3gqUwg/ry770yjfOY9ZVe4Sdr9ZspMsxWiYKg==",
+      "sha512": "sha512-O3T6MulKKBXn3AOxOacrIXYbYstGhoPPPmClUy2mDztTtc9oqqnBiyBUS63W/6nlLBmeG7n+r3Xu/TdzFn3SEA==",
       "path": "servicestack.common/5.1.1",
       "hashPath": "servicestack.common.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Common.Core/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-CgBm5/+PeKnEJDRoZx7Zfd6SxHP3Q/6aNCjUj/P2gfT2CioP/F9m6nP75CtoQlc+uoyaPQ+ClTueZDZ8U8hx4Q==",
+      "sha512": "sha512-eVKA7lDC/A7tSyWw+WhOWUQDSb3E8tQFK3LanN7xww8nqgVxCA9PtluPuCWokIe6xqKIb3s6O61gY/n49kFgxQ==",
       "path": "servicestack.common.core/5.1.1",
       "hashPath": "servicestack.common.core.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Core/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-fewogs0+SpN9XH8SEP3zCz1vHoX8Wp2snHz6ihVhfkpdIiP2xQcgKBByjgzc5RqpxonEgYrACT2yEAIUoN6wfw==",
+      "sha512": "sha512-FgPeYnGO8sJFW/nIGm7jh4qBEXMtwNstI3u5PwA9+mONj1yKrdiaBbMXqdX+/WruO7GCq1iMwG/uyN71ErBIhw==",
       "path": "servicestack.core/5.1.1",
       "hashPath": "servicestack.core.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Interfaces/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-SL0Bv5tAla5W5uiOqNsuChLkiQuS+4qnDds33y+x1c3wVk0jrB8BkPUaQSJA9hAnNer8hgPmxIJSs281okh+Sw==",
+      "sha512": "sha512-urorTSBin1VG/DzHnNLvkzsGzZYWhu/I++SpblOznlFMcEearjc46CkPYPKAOtxYJlYupdUUkydPUl8MWqwckg==",
       "path": "servicestack.interfaces/5.1.1",
       "hashPath": "servicestack.interfaces.5.1.1.nupkg.sha512"
     },
     "ServiceStack.Interfaces.Core/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-nP7Cp7jdPyDX2KNKAXDWT23HAtu4coGEK2eX/4ChwKlJLdqI5a130v3CbrZvgn0etAblv7BS+r51cG3c896lfQ==",
+      "sha512": "sha512-skE6Xc7lj4QE8mNZl8hZ9J0L4slbcVeAnbqUccYlro2e1p7yPFYIVlPnBn3yLrTk6pctqJSU7A4r5oM0Yc6FFA==",
       "path": "servicestack.interfaces.core/5.1.1",
       "hashPath": "servicestack.interfaces.core.5.1.1.nupkg.sha512"
     },
@@ -1239,7 +1239,7 @@
     "ServiceStack.Server/5.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-uRLEal4CG6bKxML+tAyNm17H5L+FInpU/FaykeNA727OxyARNj/B/Rs9gmBVQ7/K1j05Fg3bnmAowfyTnpwEVw==",
+      "sha512": "sha512-0UlnoCYaG0lZSH1YwcwQ1z2qMTEpkdAiUYdvkZmHtQ5aoMUkRdyyEhPP6fl5VvKLmIv4CCnN6dJfPC1FS3luKA==",
       "path": "servicestack.server/5.1.1",
       "hashPath": "servicestack.server.5.1.1.nupkg.sha512"
     },
