@@ -2,6 +2,8 @@ API /preview
   * content : string - ServiceStack Templates to evaluate
 
 {{#capture response}}
-{{#eval {htmlDecode:true} }}{{ content }}{{/eval}}
+{{#eval {use:{plugins:['MarkdownTemplatePlugin']},htmlDecode:true} }}{{ content }}{{/eval}}
 {{/capture}}
 {{ response | return({ contentType:'text/plain' }) }}
+
+//TODO: opt-in safe plugins/features in new context

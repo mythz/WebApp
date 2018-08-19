@@ -180,7 +180,8 @@ This is used in this Blog's [_init.html](https://github.com/NetCoreWebApps/Blog/
 {{ htmlError }}
 ```
 
-The output of the `_init` page is captured in the `initout` argument which can be inspected as a template argument as done in [log.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/log.html):
+The output of the `_init` page is captured in the `initout` argument which can be inspected as a template argument as done in 
+[log.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/log.html):
 
 ```
 <div>
@@ -190,11 +191,14 @@ The output of the `_init` page is captured in the `initout` argument which can b
 </div>
 ```
 
-If there was an Exception with any of the SQL Statements it will be displayed in the `{{ htmlError }}` filter which can be later viewed in the [/log](/log) page above.
+If there was an Exception with any of the SQL Statements it will be displayed in the `{{ htmlError }}` filter which can be later viewed 
+in the [/log](/log) page above.
 
 ## Customizable Auth Providers
 
-Auth Providers can be configured in the same way [Web App Plugins can be registered](http://templates.servicestack.net/docs/web-apps#registering-servicestack-plugins) by first specifying you want to register the `AuthFeature` plugin with:
+Auth Providers can be configured in the same way 
+[Web App Plugins can be registered](http://templates.servicestack.net/docs/web-apps#registering-servicestack-plugins) by first specifying 
+you want to register the `AuthFeature` plugin with:
 
 ```
 features AuthFeature
@@ -206,7 +210,8 @@ Then using `AuthFeature.AuthProviders` to specify which Auth Providers you want 
 AuthFeature.AuthProviders TwitterAuthProvider, GithubAuthProvider
 ```
 
-Each Auth Provider checks the Web Apps `web.settings` for its Auth Provider specific configuration it needs, e.g. to configure both Twitter and GitHub Auth Providers you would populate it with your OAuth Apps details:
+Each Auth Provider checks the Web Apps `web.settings` for its Auth Provider specific configuration it needs, e.g. to configure both 
+Twitter and GitHub Auth Providers you would populate it with your OAuth Apps details:
 
 ```
 oauth.RedirectUrl http://127.0.0.1:5000/
@@ -222,7 +227,8 @@ oauth.github.Scopes {GitHub Auth Scopes}
 
 ## Customizable Markdown Providers
 
-By default Web Apps utilize [Markdig](https://github.com/lunet-io/markdig) implementation to render its Markdown. You can switch it back to the built-in Markdown provider that ServiceStack uses with:
+By default Web Apps utilize [Markdig](https://github.com/lunet-io/markdig) implementation to render its Markdown. You can switch it back to 
+the built-in Markdown provider that ServiceStack uses with:
 
 ```
 markdownProvider MarkdownDeep
@@ -230,7 +236,8 @@ markdownProvider MarkdownDeep
 
 ## Rich Template Config Arguments
 
-Any `web.settings` configs that are prefixed with `args.` are made available to Template Pages. Any arguments which start with `{` or `[` are automatically converted into a JS object:
+Any `web.settings` configs that are prefixed with `args.` are made available to Template Pages. Any arguments which start with 
+`{` or `[` are automatically converted into a JS object:
 
 ```
 args.blog { name:'blog.web-app.io', href:'/' }
@@ -287,7 +294,8 @@ prefixed with an _ **underscore** allows for dynamic wildcard paths with the mat
 
 ### Layout and partial recommended naming conventions
 
-As the **_ underscore** prefix for declaring wildcard pages is also what is used to declare "hidden" pages, to disambiguate them from hidden partials and layouts, the recommendation is to have them include `layout` and `partial` their name, i.e:
+As the **_ underscore** prefix for declaring wildcard pages is also what is used to declare "hidden" pages, to disambiguate them from hidden 
+partials and layouts, the recommendation is to have them include `layout` and `partial` their name, i.e:
 
  - _layout.html
  - _alt-layout.html
@@ -311,9 +319,12 @@ If you follow the recommended `_{name}-partial.html` naming convention you will 
     ============================================
 
 {{#raw content}}{{#markdown}}
-In addition to providing a productive dynamic language for generating HTML pages, Template Pages can also be used to rapidly develop Web APIs which can utilize [dynamic page routing](/posts/page-based-routing) to easily create data-driven JSON APIs using optimal pretty URLs, in real-time without any C# classes or compilation in sight!
+In addition to providing a productive dynamic language for generating HTML pages, Template Pages can also be used to rapidly develop Web APIs 
+which can utilize [dynamic page routing](/posts/page-based-routing) to easily create data-driven JSON APIs using optimal pretty URLs, in 
+real-time without any C# classes or compilation in sight!
 
-The only difference between a Template Page that generates HTML or a Template Page that returns an API Response is that API pages use the **return** filter to return a value. 
+The only difference between a Template Page that generates HTML or a Template Page that returns an API Response is that API pages use the 
+**return** filter to return a value. 
 
 E.g. To create a **Hello World** C# ServiceStack Service you would typically create a Request DTO, Response DTO and a Service implementation:
 
@@ -346,11 +357,13 @@ with the contents:
 {{ { result: `Hello, ${name}!` } | return }}
 ```
 
-Which supports the same content negotiation as a ServiceStack Service where calling it in a browser will generate a [human-friendly HTML Page](http://docs.servicestack.net/html5reportformat):
+Which supports the same content negotiation as a ServiceStack Service where calling it in a browser will generate a 
+[human-friendly HTML Page](http://docs.servicestack.net/html5reportformat):
 
  - [/hello/World](/hello/World)
 
-Where as calling it with a JSON HTTP client containing `Accept: application/json` HTTP Header or with a `?format=json` query string will return the API response in the JSON Format:
+Where as calling it with a JSON HTTP client containing `Accept: application/json` HTTP Header or with a `?format=json` query string will 
+return the API response in the JSON Format:
 
  - [/hello/World?format=json](/hello/World?format=json)
 
@@ -370,12 +383,13 @@ The [/preview.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/previ
 
 ```
 {{#capture response}}
-{{#eval {htmlDecode:true} }}{{ content }}{{/eval}}
+{{#eval {use:{plugins:['MarkdownTemplatePlugin']},htmlDecode:true} }}{{ content }}{{/eval}}
 {{/capture}}
 {{ response | return({ contentType:'text/plain' }) }}
 ```
 
-The preview API above is what provides this Blog's Live Preview feature where it will render any ServiceStack Templates provided in the **content** Query String or HTTP Post Form Data, e.g:
+The preview API above is what provides this Blog's Live Preview feature where it will render any ServiceStack Templates provided in the 
+**content** Query String or HTTP Post Form Data, e.g:
 
  - [/preview?content={{10|times|select:{pow(index,2)},}}](/preview?content={{10|times|select:{pow(index,2)},}})
 
@@ -387,7 +401,8 @@ Which renders the plain text response:
 
 > Usage: /\{user}/api
 
-The [/_user/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/_user/api.html) API page shows an example of how easy it is to create data-driven APIs where you can literally return the response of an SQL query by calling the `dbSelect` filter and returning the results with:
+The [/_user/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/_user/api.html) API page shows an example of how easy it is to 
+create data-driven APIs where you can literally return the response of an SQL query by calling the `dbSelect` filter and returning the results with:
 
 ```
 {{ `SELECT * 
@@ -398,7 +413,8 @@ The [/_user/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/_us
    | return }}
 ```
 
-The **user** argument is populated as a result of dynamic route from the `_user` directory name which will let you view all [@ServiceStack](/ServiceStack) posts with:
+The **user** argument is populated as a result of dynamic route from the `_user` directory name which will let you view all 
+[@ServiceStack](/ServiceStack) posts with:
 
  - [/ServiceStack/api](/ServiceStack/api)
 
@@ -409,13 +425,17 @@ Which also benefits from ServiceStack's multiple formats where the same API can 
  - [/ServiceStack/api?format=xml](/ServiceStack/api?format=xml)
  - [/ServiceStack/api?format=jsv](/ServiceStack/api?format=jsv)
 
-Which thanks to the live development workflow provides the most productive development experience to rapidly develop Web APIs or perform common tasks like viewing adhoc SQL queries in Excel which can be further manipulated using the [LINQ-like expressiveness](http://templates.servicestack.net/linq/restriction-operators) and wrist-friendly filters available in Templates.
+Which thanks to the live development workflow provides the most productive development experience to rapidly develop Web APIs or perform common 
+tasks like viewing adhoc SQL queries in Excel which can be further manipulated using the 
+[LINQ-like expressiveness](http://templates.servicestack.net/linq/restriction-operators) and wrist-friendly filters available in Templates.
 
 ### /posts/_slug/api Page
 
 > Usage:  /posts/\{slug}/api
 
-The [/posts/_slug/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/api.html) page shows an example of using the `httpResult` filter to return a custom HTTP Response where if the post with the specified slug does not exist it will return a `404 Post was not found` HTTP Response:
+The [/posts/_slug/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/api.html) page shows an example of using the 
+`httpResult` filter to return a custom HTTP Response where if the post with the specified slug does not exist it will return a 
+`404 Post was not found` HTTP Response:
 
 ```
 {{ `SELECT * 
@@ -451,7 +471,10 @@ This behaves similarly to customizing a response with return arguments:
 {{ post | return({ format:'json', 'X-Powered-By':'ServiceStack Templates' }) }}
 ```
 
-Using the explicit httpResult filter is useful for returning a custom HTTP Response that doesn't have a Response Body, e.g. the **New Post** page uses `httpFilter` to [redirect back to the Users posts page](https://github.com/NetCoreWebApps/Blog/blob/e8bb7249192c5797348ced091ad5fd434db9a619/app/posts/new.html#L33) after they've successfully created a new Post:
+Using the explicit httpResult filter is useful for returning a custom HTTP Response that doesn't have a Response Body, e.g. the **New Post** page 
+uses `httpFilter` to 
+[redirect back to the Users posts page](https://github.com/NetCoreWebApps/Blog/blob/e8bb7249192c5797348ced091ad5fd434db9a619/app/posts/new.html#L33) 
+after they've successfully created a new Post:
 
 ```
 {{#if success}}
@@ -471,29 +494,49 @@ For more examples and info on API Pages checkout to the [API Pages docs](http://
     ===============================
 
 {{#raw content}}{{#markdown}}
-This Blog App demonstrates some of the capabilities in [ServiceStack Web Apps](http://templates.servicestack.net/docs/web-apps) - an exciting real-time development model for developing .NET Core Apps where entire Web Apps can be developed within a live hot-reload experience without any compilation, build tools, dependencies, IDEs or any C# source code necessary by using the powerful and user-friendly [ServiceStack Templates language](http://templates.servicestack.net/) and its comprehensive built-in functionality.
+This Blog App demonstrates some of the capabilities in [ServiceStack Web Apps](http://templates.servicestack.net/docs/web-apps) - an exciting real-time 
+development model for developing .NET Core Apps where entire Web Apps can be developed within a live hot-reload experience without any compilation, 
+build tools, dependencies, IDEs or any C# source code necessary by using the powerful and user-friendly 
+[ServiceStack Templates language](http://templates.servicestack.net/) and its comprehensive built-in functionality.
 
-### Web Apps Simplicity
+### Ultimate Simplicity
 
-This eliminates much of the complexity inherent in developing .NET Web Applications which by their nature results in highly customizable Web Apps where their entire functionality can be modified in real-time whilst the App is running, which is simple enough to be enhanced by non-developers like Designers and Content Creators courtesy of its approachable [Handlebars-like](http://templates.servicestack.net/docs/blocks) and familiar [JavaScript syntax](http://templates.servicestack.net/docs/expression-viewer#expression=map(range(1%2Ccount)%2C%20x%20%3D%3E%20x%20*%20x)&count=5).
+This eliminates much of the complexity inherent in developing .NET Web Applications which by their nature results in highly customizable Web Apps 
+where their entire functionality can be modified in real-time whilst the App is running, which is simple enough to be enhanced by non-developers 
+like Designers and Content Creators courtesy of its approachable [Handlebars-like](http://templates.servicestack.net/docs/blocks) and familiar 
+[JavaScript syntax](http://templates.servicestack.net/docs/expression-viewer#expression=map(range(1%2Ccount)%2C%20x%20%3D%3E%20x%20*%20x)&count=5).
 
-Compiled Apps can have a prohibitively large barrier to entry where any modification often requires downloading source code separately, setting up a matching development environment with appropriate extensions and correct versions and non cursory level of experience with their chosen language, frameworks, build tools and idiosyncrasies. 
+Compiled Apps can have a prohibitively large barrier to entry where any modification often requires downloading source code separately, setting 
+up a matching development environment with appropriate extensions and correct versions and non cursory level of experience with their chosen 
+language, frameworks, build tools and idiosyncrasies. 
 
-By contrast Web Apps require no development environment, no IDE's or build tools with all source code already included as part of the App which can be modified in real-time by any text editor to instantly view changes as their made. So Apps like http://redis.web-app.io which provide a rich Admin UI for searching, browsing and modifying Redis's core data structures, can be easily enhanced by modifying a single [index.html](https://github.com/NetCoreWebApps/Redis/blob/master/app/index.html) whilst the App is being used.
+By contrast Web Apps require no development environment, no IDE's or build tools with all source code already included as part of the App which 
+can be modified in real-time by any text editor to instantly view changes as their made. So Apps like http://redis.web-app.io which provide a 
+rich Admin UI for searching, browsing and modifying Redis's core data structures, can be easily enhanced by modifying a single 
+[index.html](https://github.com/NetCoreWebApps/Redis/blob/master/app/index.html) whilst the App is being used.
 
 ## Blog App Features
 
-This [/Blog](https://github.com/NetCoreWebApps/Blog/tree/master/app) Web App is another example of encapsulating useful functionality in a highly customizable .NET Core Web App which for maximum approachability has no C# source code and uses no JavaScript or CSS frameworks.
+This [/Blog](https://github.com/NetCoreWebApps/Blog/tree/master/app) Web App is another example of encapsulating useful functionality in a 
+highly customizable .NET Core Web App which for maximum approachability has no C# source code and uses no JavaScript or CSS frameworks.
 
-It also doesn't have any infrastructure dependencies as it uses SQLite by default which is [automatically created an populated on first run](/posts/web-app-customizations) if no database exists, or if preferred can be [changed to use one of the other popular RDBMS's](http://templates.servicestack.net/docs/web-apps#multi-platform-configurations) with just config.
+It also doesn't have any infrastructure dependencies as it uses SQLite by default which is 
+[automatically created an populated on first run](/posts/web-app-customizations) if no database exists, or if preferred can be 
+[changed to use one of the other popular RDBMS's](http://templates.servicestack.net/docs/web-apps#multi-platform-configurations) with just config.
 
 ### Multi User Blogging Platform
 
-Any number of users can Sign In via Twitter and publish content under their Twitter Username where only they will be able to modify their own Content. Setting up Twitter is as easy as it can be which just requires modifying the [Twitter Auth Config in web.settings](http://localhost:5000/posts/web-app-customizations#customizable-auth-providers) with the URL where the blog is hosted and the Twitter OAuth App created at https://apps.twitter.com
+Any number of users can Sign In via Twitter and publish content under their Twitter Username where only they will be able to modify their own Content. 
+Setting up Twitter is as easy as it can be which just requires modifying the 
+[Twitter Auth Config in web.settings](http://localhost:5000/posts/web-app-customizations#customizable-auth-providers) with the URL where the blog 
+is hosted and the Twitter OAuth App created at https://apps.twitter.com
 
 ### Rich Content
 
-Whilst most blogging platforms just edit static text, each Post content has access to the powerful and [Sandboxed](http://templates.servicestack.net/docs/sandbox) features in http://templates.servicestack.net which can be used to create [Live Documents](/posts/live-document-example) or [Render Markdown](/posts/markdown-example) which is itself just [one of the available blocks](http://templates.servicestack.net/docs/blocks#markdown) which will render any content between the `markdown` blocks to HTML:
+Whilst most blogging platforms just edit static text, each Post content has access to the powerful and 
+[Sandboxed](http://templates.servicestack.net/docs/sandbox) features in http://templates.servicestack.net which can be used to create 
+[Live Documents](/posts/live-document-example) or [Render Markdown](/posts/markdown-example) which is itself just 
+[one of the available blocks](http://templates.servicestack.net/docs/blocks#markdown) which will render any content between the `markdown` blocks to HTML:
 {{/markdown}}
 
 <pre><code>{​{#markdown}}
@@ -502,23 +545,28 @@ Whilst most blogging platforms just edit static text, each Post content has acce
 
 
 {{#markdown}}
-By default the [Markdig](https://github.com/lunet-io/markdig) implementation is used to render Markdown but can also be configured to use an [alternate Markdown provider](http://localhost:5000/posts/web-app-customizations#customizable-markdown-providers).
+By default the [Markdig](https://github.com/lunet-io/markdig) implementation is used to render Markdown but can also be configured to use an 
+[alternate Markdown provider](http://localhost:5000/posts/web-app-customizations#customizable-markdown-providers).
 
 ### Rich Markdown Editor
 
-To make it easy to recall Markdown features, each Content is equipped with a Rich Text editor containing the most popular formatting controls along with common short-cuts for each feature, discoverable by hovering over each button:
+To make it easy to recall Markdown features, each Content is equipped with a Rich Text editor containing the most popular formatting controls 
+along with common short-cuts for each feature, discoverable by hovering over each button:
 
 ![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/blog/editor.png)
 
-It also adopts popular behavior in IDEs where `Tab` and `SHIFT+Tab` can be used to indent blocks of text and lines can be commented with `Ctrl+/` or blocks with `CTRL+SHIFT+/`.
+It also adopts popular behavior in IDEs where `Tab` and `SHIFT+Tab` can be used to indent blocks of text and lines can be commented with 
+`Ctrl+/` or blocks with `CTRL+SHIFT+/`.
 
 Another nice productivity win is being able to `CTRL+CLICK` on any Content you created to navigate to its Edit page.
 
 ### Auto saved drafts
 
-The content in each Text `input` and `textarea` is saved to `localStorage` on each key-press so you can freely reload pages and navigate around the site where all unpublished content will be preserved upon return. 
+The content in each Text `input` and `textarea` is saved to `localStorage` on each key-press so you can freely reload pages and navigate 
+around the site where all unpublished content will be preserved upon return. 
 
-When you want to revert back to the original published content you can clear the text boxes and reload the page which will load content from the database instead of localStorage.
+When you want to revert back to the original published content you can clear the text boxes and reload the page which will load content from 
+the database instead of localStorage.
 
 ### Server Validation
 
@@ -543,12 +591,14 @@ See the docs for more info on [Error Handling](http://templates.servicestack.net
 
 Creating and Posting content benefit from Live Previews where its rendered output can be visualized in real-time before it's published. 
 
-Any textarea can easily be enhanced to enable Live Preview by including the `data-livepreview` attribute with the element where the output should be rendered in, e.g:
+Any textarea can easily be enhanced to enable Live Preview by including the `data-livepreview` attribute with the element where the output 
+should be rendered in, e.g:
 
     <textarea data-livepreview=".preview"></textarea>
     <div class="preview"></div>
 
-The implementation of which is surprisingly simple where the JavaScript snippet in [default.js](https://github.com/NetCoreWebApps/Blog/blob/master/app/default.js) below is used to send the content on each change:
+The implementation of which is surprisingly simple where the JavaScript snippet in 
+[default.js](https://github.com/NetCoreWebApps/Blog/blob/master/app/default.js) below is used to send the content on each change:
 
 
 ```
@@ -579,11 +629,12 @@ function livepreview(e) {
 }
 ```
 
-To the [/preview.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/preview.html) API Page which just renders and captures any Template Content its sent and returns the output:
+To the [/preview.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/preview.html) API Page which just renders and captures any 
+Template Content its sent and returns the output:
 
 ```
 {{#capture response}}
-{{#eval {htmlDecode:true} }}{{ content }}{{/eval}}
+{{#eval {use:{plugins:['MarkdownTemplatePlugin']},htmlDecode:true} }}{{ content }}{{/eval}}
 {{/capture}}
 {{ response | return({ contentType:'text/plain' }) }}
 ```
