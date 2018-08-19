@@ -1,3 +1,7 @@
+<!--
+layout: none
+-->
+
 ================================
 Create blog.sqlite if not exists
 ================================
@@ -35,8 +39,11 @@ Populate with seed posts if empty
 
 {{#if postsCount == 0 }}
 
+    {{ `datetime(CURRENT_TIMESTAMP,'localtime')` | assignTo: sqlNow }}
+    {{ `ServiceStack`                            | assignTo: user }}
+
     ========================
-    Create ServiceStack User - Contains same info as if @ServiceStack authenticated via Twitter
+    Create ServiceStack User - Contains same info as if was @ServiceStack authenticated via Twitter
     ========================
 
     {{ `INSERT INTO UserInfo (UserName, DisplayName, AvatarUrl, AvatarUrlLarge, Created, Modified) 
@@ -49,13 +56,17 @@ Populate with seed posts if empty
     }}
 
 
-    ==========================
-    Live Document Example Post
-    ==========================
-        
-    {{#raw postTitle}}Live Document Example{{/raw}}
+    ===============================================
+    {{ 'Live Document Example' | assignTo: title }}
+    ===============================================
 
-{{#raw content}}<pre>
+{{#raw content}}{{#markdown}}
+All Blog posts have access to [ServiceStack Templates](http://templates.servicestack.net) features which enables they to use a highly-productive, 
+easy to use [sandboxed](http://templates.servicestack.net/docs/sandbox) dynamic templating language which lets you easily create live documents 
+[like this one](/posts/live-document-example):
+{{/markdown}}
+
+<pre>
 {{ 11200 | assignTo: balance }}
 {{ 10    | assignTo: projectedMonths }}
 {{'
@@ -90,17 +101,11 @@ Projected Cash Position:
  | select: { now | addMonths(it) | dateFormat }                    <b>{ totalSavings | multiply(it) | add(balance) | currency }</b>\n }}
 </pre>{{/raw}}
 
-    {{ `datetime(CURRENT_TIMESTAMP,'localtime')` | assignTo: sqlNow }}
+    {{ { title, content } | addTo: initialPosts }}
 
-    {{ `INSERT INTO Post (Slug, Title, Content, Created, CreatedBy, Modified, ModifiedBy) VALUES (@slug, @title, @content, ${sqlNow}, @user, ${sqlNow}, @user)` 
-        | dbExec({ title: postTitle, content, slug: generateSlug(postTitle), user: 'ServiceStack' }) }}
-
-
-    =====================
-    Markdown Example Post
-    =====================
-
-    {{#raw postTitle}}Markdown Example{{/raw}}
+    ==========================================
+    {{ 'Markdown Example' | assignTo: title }}
+    ==========================================
 
 {{#raw content}}{{#markdown}}
 # Headings can start with 1-6 hashes
@@ -132,7 +137,210 @@ Indent lines by 4 spaces to create pre-formatted code blocks in monospace font:
 Follow [link to markdown block docs](http://templates.servicestack.net/docs/blocks#markdown) for more info.
 {{/markdown}}{{/raw}}
 
-    {{ `INSERT INTO Post (Slug, Title, Content, Created, CreatedBy, Modified, ModifiedBy) VALUES (@slug, @title, @content, ${sqlNow}, @user, ${sqlNow}, @user)` 
-        | dbExec({ slug: generateSlug(postTitle), title: postTitle, content, user: 'ServiceStack' }) }}
+    {{ { title, content } | addTo: initialPosts }}
+
+    ============================================
+    {{ 'Page based routing' | assignTo: title }}
+    ============================================
+
+{{#raw content}}{{#markdown}}
+Template Pages supports conventional page-based routes where the name of each page can be requested with or without its **.html** extension:
+
+| path | page |
+------ | ---- |
+[/db](/db) |  |
+[/db.html](/db.html) | [/db.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/db.html) |
+[/posts/new](/posts/new) | |
+[/posts/new.html](/posts/new.html) | [/posts/new.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/new.html)
+
+and the default route **/** maps to the `index.html` in each directory if it exists, e.g:
+
+| path | page |
+------ | ---- |
+[/](/) | [/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/index.html) |
+
+Nuxt-like [Dynamic Routes](https://nuxtjs.org/guide/routing#dynamic-routes) can also be used where any **file** or **directory** names 
+prefixed with an _ **underscore** allows for dynamic wildcard paths with the matching path component also assigned to the arguments name:
+
+| path | page | arguments |
+------ | ---- | --------- |
+[/ServiceStack](/) | [/_user/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/_user/index.html) | user=ServiceStack |
+[/posts/markdown-example](/posts/markdown-example) | [/posts/_slug/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/index.html) | slug=markdown-example |
+[/posts/markdown-example/edit](/posts/markdown-example/edit) | [/posts/_slug/edit.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/edit.html) | slug=markdown-example |
+
+{{/markdown}}{{/raw}}
+
+    {{ { title, content } | addTo: initialPosts }}
+
+    ============================================
+    {{ 'Dynamic API Pages' | assignTo: title }}
+    ============================================
+
+{{#raw content}}{{#markdown}}
+In addition to providing a productive dynamic language for generating HTML pages, Template Pages can also be used to rapidly develop Web APIs which can utilize [dynamic page routing](/posts/page-based-routing) to easily create data-driven JSON APIs using optimal pretty URLs, in real-time without any C# classes or compilation in sight!
+
+The only difference between a Template Page that generates HTML or a Template Page that returns an API Response is that API pages use the **return** filter to return a value. 
+
+E.g. To create a **Hello World** C# ServiceStack Service you would typically create a Request DTO, Response DTO and a Service implementation:
+
+
+```
+[Route("/hello/{Name}")]
+public class Hello : IReturn<HelloResponse>
+{
+    public string Name { get; set; }
+}
+public class HelloResponse
+{
+    public string Result { get; set; }
+}
+public class HelloService : Service
+{
+    public object Any(Hello request) => $"Hello, {request.Name}!";
+}
+```
+
+### /hello API Page
+
+> Usage: /hello/{name}
+
+An API which returns the same wire response as above can be implemented in API Pages by creating a page at 
+[/hello/_name/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/hello/_name/index.html) 
+with the contents:
+
+```
+{{ { result: `Hello, ${name}!` } | return }}
+```
+
+Which supports the same content negotiation as a ServiceStack Service where calling it in a browser will generate a [human-friendly HTML Page](http://docs.servicestack.net/html5reportformat):
+
+ - [/hello/World](/hello/World)
+
+Where as calling it with a JSON HTTP client containing `Accept: application/json` HTTP Header or with a `?format=json` query string will return the API response in the JSON Format:
+
+ - [/hello/World?format=json](/hello/World?format=json)
+
+Alternatively you can force a JSON Response by specifying it with:
+
+```
+{{ { result: `Hello, ${name}!` } | return({ format: 'json' }) }} 
+// Equivalent to:
+{{ { result: `Hello, ${name}!` } | return({ contentType: 'application/json' }) }}
+```
+
+### /preview API Page
+
+> Usage: /preview?content={templates}
+
+The [/preview.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/preview.html) page uses this to force a plain-text response with:
+
+```
+{{#capture response}}
+{{#eval {htmlDecode:true} }}{{ content }}{{/eval}}
+{{/capture}}
+{{ response | return({ contentType:'text/plain' }) }}
+```
+
+The preview API above is what provides this Blog's Live Preview feature where it will render any ServiceStack Templates provided in the **content** Query String or HTTP Post Form Data, e.g:
+
+ - [/preview?content={{10|times|select:{pow(index,2)},}}](/preview?content={{10|times|select:{pow(index,2)},}})
+
+Which renders the plain text response:
+
+    0,1,4,9,16,25,36,49,64,81,
+
+### /_user/api Page
+
+> Usage: /{user}/api
+
+The [/_user/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/_user/api.html) API page shows an example of how easy it is to create data-driven APIs where you can literally return the response of an SQL query by calling the `dbSelect` filter and returning the results with:
+
+```
+{{ `SELECT * 
+      FROM Post p INNER JOIN UserInfo u on p.CreatedBy = u.UserName 
+     WHERE UserName = @user 
+    ORDER BY p.Created DESC` 
+   | dbSelect({ user })
+   | return }}
+```
+
+The **user** argument is populated as a result of dynamic route from the `_user` directory name which will let you view all [@ServiceStack](/ServiceStack) posts with:
+
+ - [/ServiceStack/api](/ServiceStack/api)
+
+Which also benefits from ServiceStack's multiple formats where the same API can be returned in:
+
+ - [/ServiceStack/api?format=json](/ServiceStack/api?format=json)
+ - [/ServiceStack/api?format=csv](/ServiceStack/api?format=csv)
+ - [/ServiceStack/api?format=xml](/ServiceStack/api?format=xml)
+ - [/ServiceStack/api?format=jsv](/ServiceStack/api?format=jsv)
+
+Which thanks to the live development workflow provides the most productive development experience to rapidly develop Web APIs or perform common tasks like viewing adhoc SQL queries in Excel which can be further manipulated using the [LINQ-like expressiveness](http://templates.servicestack.net/linq/restriction-operators) and wrist-friendly filters available in Templates.
+
+### /posts/_slug/api Page
+
+> Usage:  /posts/{slug}/api
+
+The [/posts/_slug/api.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/api.html) page shows an example of using the `httpResult` filter to return a custom HTTP Response where if the post with the specified slug does not exist it will return a `404 Post was not found` HTTP Response:
+
+```
+{{ `SELECT * 
+      FROM Post p INNER JOIN UserInfo u on p.CreatedBy = u.UserName 
+     WHERE Slug = @slug 
+     ORDER BY p.Created DESC` 
+   | dbSingle({ slug })
+   | assignTo: post 
+}}
+{{ post ?? httpResult({ status:404, statusDescription:'Post was not found' }) 
+   | return }}
+```
+
+The **httpResult** filter returns a ServiceStack `HttpResult` which allows for the following customization's:
+
+```csharp
+httpResult({ 
+  status:            404,
+  status:            'NotFound' // can also use .NET HttpStatusCode enum name
+  statusDescription: 'Post was not found',
+  response:          post,
+  format:            'json',
+  contentType:       'application/json',
+  'X-Powered-By':    'ServiceStack Templates',
+}) 
+```
+
+Any other arguments like 'X-Powered-By' are returned as HTTP Response Headers. 
+
+This behaves similarly to customizing a response with return arguments:
+
+```
+{{ post | return({ format:'json', 'X-Powered-By':'ServiceStack Templates' }) }}
+```
+
+Using the explicit httpResult filter is useful for returning a custom HTTP Response that doesn't have a Response Body, e.g. the **New Post** page uses `httpFilter` to [redirect back to the Users posts page](https://github.com/NetCoreWebApps/Blog/blob/e8bb7249192c5797348ced091ad5fd434db9a619/app/posts/new.html#L33) after they've successfully created a new Post:
+
+```
+{{#if success}}
+    {{ httpResult({ status:301, Location:`/${userName}` }) | return }}
+{{/if}}
+```
+
+For more examples and info on API Pages checkout to the [API Pages docs](http://templates.servicestack.net/docs/api-pages).
+
+{{/markdown}}{{/raw}}
+
+    {{ { title, content } | addTo: initialPosts }}
+
+    ======================
+    Populate initial posts
+    ======================
+
+    {{#each initialPosts}}
+        {{ `INSERT INTO Post (Slug, Title, Content, Created, CreatedBy, Modified, ModifiedBy) 
+                      VALUES (@slug, @title, @content, ${sqlNow}, @user, ${sqlNow}, @user)`
+           | dbExec({ slug: generateSlug(title), title, content, user }) }}
+    {{/each}}
 
 {{/if}}
+
+{{ htmlError }}
