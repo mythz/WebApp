@@ -1,3 +1,4 @@
+<div class="page">
 
 {{ `SELECT * from UserInfo WHERE UserName = @user` | dbSingle({ user }) | assignTo: userInfo }}
 {{#with userInfo}}
@@ -24,9 +25,12 @@
 </div>
 
 <div>
-    {{ `SELECT * from Post p INNER JOIN UserInfo u on p.CreatedBy = u.UserName WHERE UserName = @user ORDER BY p.Created DESC` 
-        | dbSelect({ user })
-        | assignTo: posts }}
+    {{ `SELECT * 
+          FROM Post p INNER JOIN UserInfo u on p.CreatedBy = u.UserName 
+         WHERE UserName = @user 
+         ORDER BY p.Created DESC, Id DESC` 
+       | dbSelect({ user })
+       | assignTo: posts }}
     
     {{ 'posts' | partial({ posts, hidePostInfo: true } )}}
 </div>
@@ -58,3 +62,5 @@
     {{ 'error' | partial({ error: `User ${user} does not exist` }) }}
 
 {{/with}}
+
+</div>
