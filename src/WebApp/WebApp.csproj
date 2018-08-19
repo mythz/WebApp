@@ -14,6 +14,7 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <PackageReference Include="Mysql.Data" Version="8.0.11" />
     <PackageReference Include="Npgsql" Version="4.0.1" />
+    <PackageReference Include="Markdig" Version="0.15.1" />
 
     <PackageReference Include="ServiceStack.Interfaces" Version="5.*" />
     <PackageReference Include="ServiceStack.Text" Version="5.*" />

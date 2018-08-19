@@ -276,6 +276,14 @@ namespace WebApp
             if (defaultUrlCacheExpirySecs != null)
                 feature.Args[TemplateConstants.DefaultUrlCacheExpiry] = TimeSpan.FromSeconds(defaultUrlCacheExpirySecs.ConvertTo<int>());
 
+            var markdownProvider = "markdownProvider".GetAppSetting();
+            var useMarkdownDeep = markdownProvider?.EqualsIgnoreCase("MarkdownDeep") == true;
+            MarkdownConfig.Transformer = useMarkdownDeep
+                ? new MarkdownDeep.MarkdownDeepTransformer()
+                : (IMarkdownTransformer) new MarkdigTransformer();
+            if (markdownProvider != null)
+                ("Using markdown provider " + (useMarkdownDeep ? "MarkdownDeep" : "Markdig")).Print();
+
             var contextArgKeys = WebTemplateUtils.AppSettings.GetAllKeys().Where(x => x.StartsWith("args."));
             foreach (var key in contextArgKeys)
             {
@@ -325,6 +333,13 @@ namespace WebApp
     {
         public string ConnectionString { get; set; }
         public string ContainerName { get; set; }
+    }
+
+    public class MarkdigTransformer : IMarkdownTransformer
+    {
+        private Markdig.MarkdownPipeline Pipeline { get; } = 
+            Markdig.MarkdownExtensions.UseAdvancedExtensions(new Markdig.MarkdownPipelineBuilder()).Build();
+        public string Transform(string markdown) => Markdig.Markdown.ToHtml(markdown, Pipeline);
     }
 
     public static class WebTemplateUtils
