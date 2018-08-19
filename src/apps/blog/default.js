@@ -57,13 +57,8 @@ function livepreview(e) {
   fetch("/preview", {
     method: "post",
     body: formData
-  })
-    .then(function(r) {
-      return r.text();
-    })
-    .then(function(r) {
-      document.querySelector(sel).innerHTML = r;
-    });
+  }).then(function(r) { return r.text(); })
+    .then(function(r) { document.querySelector(sel).innerHTML = r; });
 }
 
 // Ctrl + Click on page to edit
@@ -75,5 +70,14 @@ for (let i = 0; i < posts.length; i++) {
       if (e.ctrlKey) {
           location.href = url;
       }
+  });
+}
+
+// Auto Link Headings with id attributes
+var headings = document.querySelectorAll(".post-content h2[id],.post-content h3[id],.post-content h4[id],.post-content h5[id]");
+for (let i = 0; i < headings.length; i++) {
+  let el = headings[i];
+  el.addEventListener("click", function(e) {
+      location.href = "#" + this.id;
   });
 }

@@ -274,6 +274,10 @@ blockquote {
 blockquote>p {
     margin: .5em;
 }
+
+.post-content img {
+    max-width: 880px;
+}
 .post-content table, .preview table {
     border-collapse: collapse;
     min-width: 50%;
@@ -287,4 +291,11 @@ blockquote>p {
 .post-content table td, .preview table td {
     text-align: left;
     padding: .2em .5em;
+}
+
+.post-content h2[id], .post-content h3[id], .post-content h4[id], .post-content h5[id] {
+    cursor: pointer;
+}
+.post-content h2[id]:hover:after, .post-content h3[id]:hover:after, .post-content h4[id]:hover:after, .post-content h5[id]:hover:after {
+    content: " \00B6";
 }
