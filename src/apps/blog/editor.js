@@ -457,7 +457,7 @@ function Editor($editor, opt) {
       }
   };
 
-  let ACTIVE_KEYS = '\t,z,b,n,h,i,q,l,k,<,>,s,/,?,1,0'.split(',');
+  let ACTIVE_KEYS = '\t,b,n,h,i,q,l,k,<,>,/,?,1,0'.split(',');
   ops.target.addEventListener('keydown', function(e){
     var isActiveKey = ACTIVE_KEYS.indexOf(e.key) >= 0;
     if (isActiveKey && (e.ctrlKey || e.altKey)) {
@@ -472,7 +472,9 @@ function Editor($editor, opt) {
     let cmd = el.getAttribute("data-cmd");
     el.addEventListener("click", function(e) {
       if (ops[cmd]) {
-        ops.ensureMarkdownBlock();
+        if (['save','undo','redo'].indexOf(cmd) === -1) {
+          ops.ensureMarkdownBlock();
+        }
         ops[cmd](e);
       }
     });
