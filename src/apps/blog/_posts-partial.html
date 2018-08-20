@@ -35,7 +35,7 @@
     {{ { 'data-edit-path': `/posts/${Slug}/edit`} | if(isAuthenticated and userName = CreatedBy) | assignTo: attrs }}
 
     <div class="post-content" {{ attrs | htmlAttrs }}>
-        {{#eval {use:{plugins:'MarkdownTemplatePlugin'} }}{{Content | raw}}{{/eval}}
+        {{ Content | evalTemplate({use:{plugins:'MarkdownTemplatePlugin'}}) | raw }}
     </div>
 
 {{#if hidePostInfo}}

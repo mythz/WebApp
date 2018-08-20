@@ -331,9 +331,7 @@ Alternatively you can force a JSON Response by specifying it with:
 The [/preview.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/preview.html) page uses this to force a plain-text response with:
 
 ```
-{{#capture response}}
-{{#eval {use:{plugins:['MarkdownTemplatePlugin']},htmlDecode:true} }}{{ content }}{{/eval}}
-{{/capture}}
+{{ content  | evalTemplate({use:{plugins:'MarkdownTemplatePlugin'}}) | assignTo:response }}
 {{ response | return({ contentType:'text/plain' }) }}
 ```
 
@@ -509,10 +507,10 @@ like Designers and Content Creators courtesy of its approachable [Handlebars-lik
 
 Compiled Apps can have a prohibitively large barrier to entry where any modification often requires downloading source code separately, setting 
 up a matching development environment with appropriate extensions and correct versions and non cursory level of experience with their chosen 
-language, frameworks, build tools and idiosyncrasies. 
+language, frameworks, build tools and other platform idiosyncrasies. 
 
 By contrast Web Apps require no development environment, no IDE's or build tools with all source code already included as part of the App which 
-can be modified in real-time by any text editor to instantly view changes as their made. So Apps like http://redis.web-app.io which provide a 
+can be modified in real-time by any text editor to instantly view changes as they're made. So Apps like http://redis.web-app.io which provide a 
 rich Admin UI for searching, browsing and modifying Redis's core data structures, can be easily enhanced by modifying a single 
 [index.html](https://github.com/NetCoreWebApps/Redis/blob/master/app/index.html) at the same time as using the App.
 
@@ -633,9 +631,7 @@ To the [/preview.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/pr
 Template Content its sent and returns the output:
 
 ```
-{{#capture response}}
-{{#eval {use:{plugins:['MarkdownTemplatePlugin']},htmlDecode:true} }}{{ content }}{{/eval}}
-{{/capture}}
+{{ content  | evalTemplate({use:{plugins:'MarkdownTemplatePlugin'}}) | assignTo:response }}
 {{ response | return({ contentType:'text/plain' }) }}
 ```
 

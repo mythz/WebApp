@@ -1,9 +1,7 @@
 API /preview
   * content : string - ServiceStack Templates to evaluate
 
-{{#capture response}}
-{{#eval {use:{plugins:['MarkdownTemplatePlugin']},htmlDecode:true} }}{{ content }}{{/eval}}
-{{/capture}}
+{{ content  | evalTemplate({use:{plugins:'MarkdownTemplatePlugin'}}) | assignTo:response }}
 {{ response | return({ contentType:'text/plain' }) }}
-
+  
 //TODO: opt-in safe plugins/features in new context
