@@ -46,7 +46,7 @@ namespace Chat
 
     public class AppHost : AppHostBase
     {
-        public AppHost() : base("Chat Web App", typeof(ServerEventsServices).GetAssembly()) {}
+        public AppHost() : base("Chat Web App", typeof(ServerEventsServices).Assembly) {}
         public AppHost(IAppSettings appSettings) : this() => AppSettings = appSettings;
 
         public override void Configure(Container container)
