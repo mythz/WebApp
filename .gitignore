@@ -11,6 +11,7 @@
 *.gcloud
 **/web/web.*.settings
 *.xml
+blog.sqlite
 
 # User-specific files
 *.suo
