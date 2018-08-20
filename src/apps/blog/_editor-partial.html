@@ -116,8 +116,8 @@
 <script src="/editor.js"></script>
 <script>
 var editor = new Editor(document.querySelector(".editor"), {
-    save(e) {
-        let form = e.target.closest('form');
+    save() {
+        let form = this.target.closest('form');
         form.submit();
     }
 })

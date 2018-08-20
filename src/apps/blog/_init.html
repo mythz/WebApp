@@ -264,57 +264,6 @@ args.blogHref /
 {{ { title, content } | addTo: initialPosts }}
 
     ============================================
-    {{ 'Page based routing' | assignTo: title }}
-    ============================================
-
-{{#raw content}}{{#markdown}}
-Template Pages supports conventional page-based routes where the name of each page can be requested with or without its **.html** extension:
-
-| path | page |
------- | ---- |
-[/db](/db) |  |
-[/db.html](/db.html) | [/db.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/db.html) |
-[/posts/new](/posts/new) | |
-[/posts/new.html](/posts/new.html) | [/posts/new.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/new.html)
-
-and the default route **/** maps to the `index.html` in each directory if it exists, e.g:
-
-| path | page |
------- | ---- |
-[/](/) | [/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/index.html) |
-
-Nuxt-like [Dynamic Routes](https://nuxtjs.org/guide/routing#dynamic-routes) can also be used where any **file** or **directory** names 
-prefixed with an _ **underscore** allows for dynamic wildcard paths with the matching path component also assigned to the arguments name:
-
-| path | page | arguments |
------- | ---- | --------- |
-[/ServiceStack](/) | [/_user/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/_user/index.html) | user=ServiceStack |
-[/posts/markdown-example](/posts/markdown-example) | [/posts/_slug/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/index.html) | slug=markdown-example |
-[/posts/markdown-example/edit](/posts/markdown-example/edit) | [/posts/_slug/edit.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/edit.html) | slug=markdown-example |
-
-### Layout and partial recommended naming conventions
-
-As the **_ underscore** prefix for declaring wildcard pages is also what is used to declare "hidden" pages, to disambiguate them from hidden 
-partials and layouts, the recommendation is to have them include `layout` and `partial` their name, i.e:
-
- - _layout.html
- - _alt-layout.html
- - _menu-partial.html
-
-Pages with `layout` or `partial` in their name are hidden and ignored in wildcard path resolution.
-
-If you follow the recommended `_{name}-partial.html` naming convention you will also be able to reference partials using just their name, i.e:
-
-```
-{{ 'menu' | partial }}          // Equivalent to:
-{{ '_menu-partial' | partial }}
-```
-
-{{/markdown}}{{/raw}}
-
-    {{ { title, content } | addTo: initialPosts }}
-
-    ============================================
     {{ 'Dynamic API Pages' | assignTo: title }}
     ============================================
 
@@ -488,6 +437,58 @@ For more examples and info on API Pages checkout to the [API Pages docs](http://
 
     {{ { title, content } | addTo: initialPosts }}
 
+    
+    ============================================
+    {{ 'Page based routing' | assignTo: title }}
+    ============================================
+
+{{#raw content}}{{#markdown}}
+Template Pages supports conventional page-based routes where the name of each page can be requested with or without its **.html** extension:
+
+| path | page |
+------ | ---- |
+[/db](/db) |  |
+[/db.html](/db.html) | [/db.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/db.html) |
+[/posts/new](/posts/new) | |
+[/posts/new.html](/posts/new.html) | [/posts/new.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/new.html)
+
+and the default route **/** maps to the `index.html` in each directory if it exists, e.g:
+
+| path | page |
+------ | ---- |
+[/](/) | [/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/index.html) |
+
+Nuxt-like [Dynamic Routes](https://nuxtjs.org/guide/routing#dynamic-routes) can also be used where any **file** or **directory** names 
+prefixed with an _ **underscore** allows for dynamic wildcard paths with the matching path component also assigned to the arguments name:
+
+| path | page | arguments |
+------ | ---- | --------- |
+[/ServiceStack](/) | [/_user/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/_user/index.html) | user=ServiceStack |
+[/posts/markdown-example](/posts/markdown-example) | [/posts/_slug/index.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/index.html) | slug=markdown-example |
+[/posts/markdown-example/edit](/posts/markdown-example/edit) | [/posts/_slug/edit.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/_slug/edit.html) | slug=markdown-example |
+
+### Layout and partial recommended naming conventions
+
+As the **_ underscore** prefix for declaring wildcard pages is also what is used to declare "hidden" pages, to disambiguate them from hidden 
+partials and layouts, the recommendation is to have them include `layout` and `partial` their name, i.e:
+
+ - _layout.html
+ - _alt-layout.html
+ - _menu-partial.html
+
+Pages with `layout` or `partial` in their name are hidden and ignored in wildcard path resolution.
+
+If you follow the recommended `_{name}-partial.html` naming convention you will also be able to reference partials using just their name, i.e:
+
+```
+{{ 'menu' | partial }}          // Equivalent to:
+{{ '_menu-partial' | partial }}
+```
+
+{{/markdown}}{{/raw}}
+
+    {{ { title, content } | addTo: initialPosts }}
+
 
     ===============================
     {{ 'About' | assignTo: title }}
@@ -513,30 +514,30 @@ language, frameworks, build tools and idiosyncrasies.
 By contrast Web Apps require no development environment, no IDE's or build tools with all source code already included as part of the App which 
 can be modified in real-time by any text editor to instantly view changes as their made. So Apps like http://redis.web-app.io which provide a 
 rich Admin UI for searching, browsing and modifying Redis's core data structures, can be easily enhanced by modifying a single 
-[index.html](https://github.com/NetCoreWebApps/Redis/blob/master/app/index.html) whilst the App is being used.
+[index.html](https://github.com/NetCoreWebApps/Redis/blob/master/app/index.html) at the same time as using the App.
 
 ## Blog App Features
 
 This [/Blog](https://github.com/NetCoreWebApps/Blog/tree/master/app) Web App is another example of encapsulating useful functionality in a 
-highly customizable .NET Core Web App which for maximum approachability has no C# source code and uses no JavaScript or CSS frameworks.
+highly customizable .NET Core Web App which to maximize approachability has no C# source code, plugins and uses no JavaScript or CSS frameworks.
 
 It also doesn't have any infrastructure dependencies as it uses SQLite by default which is 
 [automatically created an populated on first run](/posts/web-app-customizations) if no database exists, or if preferred can be 
-[changed to use one of the other popular RDBMS's](http://templates.servicestack.net/docs/web-apps#multi-platform-configurations) with just config.
+[changed to use any other popular RDBMS](http://templates.servicestack.net/docs/web-apps#multi-platform-configurations) using just config.
 
 ### Multi User Blogging Platform
 
-Any number of users can Sign In via Twitter and publish content under their Twitter Username where only they will be able to modify their own Content. 
+Any number of users can Sign In via Twitter and publish content under their Twitter Username where only they'll be able to modify their own Content. 
 Setting up Twitter is as easy as it can be which just requires modifying the 
-[Twitter Auth Config in web.settings](http://localhost:5000/posts/web-app-customizations#customizable-auth-providers) with the URL where the blog 
-is hosted and the Twitter OAuth App created at https://apps.twitter.com
+[Twitter Auth Config in web.settings](/posts/web-app-customizations#customizable-auth-providers) with the URL where the blog 
+is hosted and the OAuth Keys for the Twitter OAuth App created at https://apps.twitter.com
 
 ### Rich Content
 
 Whilst most blogging platforms just edit static text, each Post content has access to the powerful and 
 [Sandboxed](http://templates.servicestack.net/docs/sandbox) features in http://templates.servicestack.net which can be used to create 
 [Live Documents](/posts/live-document-example) or [Render Markdown](/posts/markdown-example) which is itself just 
-[one of the available blocks](http://templates.servicestack.net/docs/blocks#markdown) which will render any content between the `markdown` blocks to HTML:
+[one of the available blocks](http://templates.servicestack.net/docs/blocks#markdown) where it will render to HTML any content between the `markdown` blocks:
 {{/markdown}}
 
 <pre><code>{​{#markdown}}
@@ -546,7 +547,7 @@ Whilst most blogging platforms just edit static text, each Post content has acce
 
 {{#markdown}}
 By default the [Markdig](https://github.com/lunet-io/markdig) implementation is used to render Markdown but can also be configured to use an 
-[alternate Markdown provider](http://localhost:5000/posts/web-app-customizations#customizable-markdown-providers).
+[alternate Markdown provider](/posts/web-app-customizations#customizable-markdown-providers).
 
 ### Rich Markdown Editor
 
@@ -555,7 +556,7 @@ along with common short-cuts for each feature, discoverable by hovering over eac
 
 ![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/blog/editor.png)
 
-It also adopts popular behavior in IDEs where `Tab` and `SHIFT+Tab` can be used to indent blocks of text and lines can be commented with 
+The Editor also adopts popular behavior in IDEs where `Tab` and `SHIFT+Tab` can be used to indent blocks of text and lines can be commented with 
 `Ctrl+/` or blocks with `CTRL+SHIFT+/`.
 
 Another nice productivity win is being able to `CTRL+CLICK` on any Content you created to navigate to its Edit page.
@@ -566,7 +567,7 @@ The content in each Text `input` and `textarea` is saved to `localStorage` on ea
 around the site where all unpublished content will be preserved upon return. 
 
 When you want to revert back to the original published content you can clear the text boxes and reload the page which will load content from 
-the database instead of localStorage.
+the database instead of `localStorage`.
 
 ### Server Validation
 
@@ -585,7 +586,7 @@ The [new.html](https://github.com/NetCoreWebApps/Blog/blob/master/app/posts/new.
 
 ![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/blog/server-validation.png)
 
-See the docs for more info on [Error Handling](http://templates.servicestack.net/docs/error-handling).
+For more info see the docs on [Error Handling](http://templates.servicestack.net/docs/error-handling).
 
 ### Live Previews
 
@@ -598,8 +599,7 @@ should be rendered in, e.g:
     <div class="preview"></div>
 
 The implementation of which is surprisingly simple where the JavaScript snippet in 
-[default.js](https://github.com/NetCoreWebApps/Blog/blob/master/app/default.js) below is used to send the content on each change:
-
+[default.js](https://github.com/NetCoreWebApps/Blog/blob/master/app/default.js) below is used to send their content on each change:
 
 ```
 // Enable Live Preview of new Content
@@ -638,6 +638,10 @@ Template Content its sent and returns the output:
 {{/capture}}
 {{ response | return({ contentType:'text/plain' }) }}
 ```
+
+By default `eval` blocks are rendered in a new `TemplateContext` which can be customized to utilize any additional `plugins`, `filters` and `blocks`
+available in the configured [TemplatePagesFeature](http://templates.servicestack.net/docs/view-engine), or for full access you can use 
+`{use:{context:true}}` to evaluate any content under the same context as the `TemplatePagesFeature`.
 
 {{/markdown}}{{/raw}}
 

@@ -5,10 +5,10 @@ function Editor($editor, opt) {
   let ops = {
     lang: opt.lang || "",
     target: $editor.querySelector("textarea"),
-    $emit(evt, value) {
+    $emit(evt, arg) {
       // input or save
       if (evt === "input") {
-        this.target.value = value;
+        this.target.value = arg;
         var event = new Event("input", {
           bubbles: true,
           cancelable: true
@@ -16,7 +16,7 @@ function Editor($editor, opt) {
         this.target.dispatchEvent(event);
       }
       if (opt[evt]) {
-        opt[evt].call(this, value);
+        opt[evt].call(this,arg);
       }
     },
     $nextTick(fn) {
