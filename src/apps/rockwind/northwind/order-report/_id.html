@@ -20,7 +20,7 @@ title: Order Report
       {{ order | htmlDump({ caption: 'Order Details', className }) }}
       {{ `SELECT * FROM Customer WHERE Id = @CustomerId` 
          | dbSingle({ CustomerId }) | htmlDump({ caption: `Customer Details`, className }) }}
-      {{ `SELECT * FROM Employee WHERE Id = @EmployeeId` 
+      {{ `SELECT Id, LastName, FirstName, Title, City, Country, Extension FROM Employee WHERE Id = @EmployeeId` 
          | dbSingle({ EmployeeId }) | htmlDump({ caption: `Employee Details`, className }) }}
   </div>
 
