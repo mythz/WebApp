@@ -635,9 +635,9 @@ Template Content its sent and returns the output:
 {{ response | return({ contentType:'text/plain' }) }}
 ```
 
-By default `eval` blocks are rendered in a new `TemplateContext` which can be customized to utilize any additional `plugins`, `filters` and `blocks`
-available in the configured [TemplatePagesFeature](http://templates.servicestack.net/docs/view-engine), or for full access you can use 
-`{use:{context:true}}` to evaluate any content under the same context as the `TemplatePagesFeature`.
+By default the `evalTemplate` filter renders Templates in a new `TemplateContext` which can be customized to utilize any additional 
+`plugins`, `filters` and `blocks` available in the configured [TemplatePagesFeature](http://templates.servicestack.net/docs/view-engine), 
+or for full access you can use `{use:{context:true}}` to evaluate any Template content under the same context that `evalTemplate` is run on.
 
 {{/markdown}}{{/raw}}
 
