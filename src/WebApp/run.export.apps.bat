@@ -1,14 +1,24 @@
 DEL ..\apps\web\web.*.settings
 
-RMDIR ..\..\..\..\NetCoreTemplates\templates-webapp\web /s /q
-XCOPY /E ..\apps\web ..\..\..\..\NetCoreTemplates\templates-webapp\web\
+RMDIR ..\..\..\..\NetCoreTemplates\bare-webapp\web /s /q
+XCOPY /E ..\apps\web ..\..\..\..\NetCoreTemplates\bare-webapp\web\
+RMDIR ..\..\..\..\NetCoreTemplates\bare-webapp\app /s /q
+XCOPY /E ..\apps\bare ..\..\..\..\NetCoreTemplates\bare-webapp\app\
+DEL ..\..\..\..\NetCoreTemplates\bare-webapp\app\web.min.settings
 
 RMDIR ..\..\..\..\NetCoreTemplates\parcel-webapp\web /s /q
 XCOPY /E ..\apps\web ..\..\..\..\NetCoreTemplates\parcel-webapp\web\
 
+RMDIR ..\..\..\..\NetCoreTemplates\rockwind-webapp\web /s /q
+XCOPY /E ..\apps\web ..\..\..\..\NetCoreTemplates\rockwind-webapp\web\
+RMDIR ..\..\..\..\NetCoreTemplates\rockwind-webapp\app /s /q
+XCOPY /E ..\apps\rockwind ..\..\..\..\NetCoreTemplates\rockwind-webapp\app\
+DEL ..\..\..\..\NetCoreTemplates\rockwind-webapp\app\web.*
+COPY ..\apps\rockwind\web.template.settings ..\..\..\..\NetCoreTemplates\rockwind-webapp\app\web.settings
+COPY ..\apps\northwind.sqlite ..\..\..\..\NetCoreTemplates\rockwind-webapp\app\
+
 RMDIR ..\..\..\WebAppStarter\app /s /q
 XCOPY /E ..\apps\bare ..\..\..\WebAppStarter\app\
-
 RMDIR ..\..\..\WebAppStarter\web /s /q
 XCOPY /E ..\apps\web ..\..\..\WebAppStarter\web\
 

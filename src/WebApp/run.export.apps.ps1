@@ -1,6 +1,11 @@
 (Get-Content ..\apps\bare\web.settings) `
     -replace 'contentRoot ~/../bare', 'contentRoot ~/../app' `
     -replace 'webRoot ~/../bare', 'webRoot ~/../app' `
+    | Set-Content ..\..\..\..\NetCoreTemplates\bare-webapp\app\web.settings
+
+(Get-Content ..\apps\bare\web.settings) `
+    -replace 'contentRoot ~/../bare', 'contentRoot ~/../app' `
+    -replace 'webRoot ~/../bare', 'webRoot ~/../app' `
     | Set-Content ..\..\..\WebAppStarter\app\web.settings
 
 (Get-Content ..\apps\blog\web.settings) `
