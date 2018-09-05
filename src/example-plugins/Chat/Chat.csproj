@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.*" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.2" />
 
     <PackageReference Include="ServiceStack.Text.Core" Version="5.*" />
     <PackageReference Include="ServiceStack.Interfaces.Core" Version="5.*" />

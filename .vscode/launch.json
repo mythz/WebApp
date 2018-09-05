@@ -7,7 +7,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceRoot}/src/WebApp/bin/Debug/netcoreapp2.1/app.dll",
-            "args": [],
+            "args": ["..\\apps\\plugins2\\web.settings"],
             "cwd": "${workspaceRoot}/src/WebApp",
             "stopAtEntry": false,
             "console": "internalConsole"

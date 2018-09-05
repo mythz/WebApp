@@ -1,7 +1,5 @@
 debug true
 name Web App Plugins
-contentRoot ~/../plugins
-webRoot ~/../plugins
 features CustomPlugin, OpenApiFeature, PostmanFeature, CorsFeature, ValidationFeature
 CustomPlugin { ShowProcessLinks: true }
 ValidationFeature { ScanAppHostAssemblies: true }

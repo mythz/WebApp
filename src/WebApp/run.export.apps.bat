@@ -84,4 +84,4 @@ COPY ..\apps\rockwind-vfs\web.azure.settings ..\..\..\Rockwind.Azure\app\web.set
 RMDIR ..\..\..\Rockwind.Azure\web /s /q
 XCOPY /E ..\apps\web ..\..\..\Rockwind.Azure\web\
 
-Powershell.exe -executionpolicy remotesigned -File run.export.apps.ps1
+REM Powershell.exe -executionpolicy remotesigned -File run.export.apps.ps1

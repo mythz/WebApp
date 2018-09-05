@@ -4,9 +4,4 @@ copy ..\example-plugins\FilterInfo\bin\Debug\netcoreapp2.1\FilterInfo.dll ..\app
 dotnet build ..\example-plugins\ServerInfo
 copy ..\example-plugins\ServerInfo\bin\Debug\netcoreapp2.1\ServerInfo.dll ..\apps\plugins\plugins
 
-(Get-Content ..\apps\plugins\web.settings) `
-    -replace 'contentRoot ~/../plugins', 'contentRoot ~/../../../../apps/plugins' `
-    -replace 'webRoot ~/../plugins', 'webRoot ~/../../../../apps/plugins' `
-    | Set-Content bin\Debug\netcoreapp2.1\web.settings
-
-dotnet run
+dotnet run ..\apps\plugins\web.settings

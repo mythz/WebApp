@@ -12,6 +12,8 @@
 **/web/web.*.settings
 *.xml
 blog.sqlite
+GPUCache/
+blob_storage/
 
 # User-specific files
 *.suo
