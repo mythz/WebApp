@@ -1,6 +1,6 @@
 debug true
 name Redis Web App
 redis.connection localhost:6379
-icon ~/../redis/assets/img/redis.ico
+icon assets/img/redis.ico
 CefConfig { Width:1800, Height:1600 }
 CefConfig.CefSettings { LogSeverity:'Info' }
