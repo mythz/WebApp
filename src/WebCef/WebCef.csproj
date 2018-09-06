@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <RuntimeIdentifiers>win-x64;win-x32;ubuntu.16.10-x64</RuntimeIdentifiers>
     <Platforms>x64;x86</Platforms>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
@@ -14,7 +14,20 @@
     <TrimUnusedDependencies>true</TrimUnusedDependencies>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <RuntimeFrameworkVersion>2.1.2</RuntimeFrameworkVersion>
+    <Authors>ServiceStack</Authors>
+    <Company>ServiceStack</Company>
+    <Copyright>Copyright © 2008-present ServiceStack</Copyright>
+    <PackageTags>CEF ServiceStack .NET Core WebApps self-contained exe Chromium CefGlue</PackageTags>
+    <Description>Easily view and deploy any ServiceStack .NET Core Web App in a self-contained Chrome CEF Browser (Win64)</Description>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://servicestack.net/terms</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/NetCoreWebApps/WebApp</PackageProjectUrl>
+    <PackageIconUrl>https://servicestack.net/img/logo-32.png</PackageIconUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\WebApp\Startup.cs" Link="Startup.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="favicon.ico">
@@ -32,7 +45,7 @@
     <PackageReference Include="Npgsql" Version="4.0.2" />
     <PackageReference Include="Markdig" Version="0.15.1" />
 
-    <PackageReference Include="ServiceStack.Interfaces" Version="5.*" />
+    <!-- <PackageReference Include="ServiceStack.Interfaces" Version="5.*" />
     <PackageReference Include="ServiceStack.Text" Version="5.*" />
     <PackageReference Include="ServiceStack.Client" Version="5.*" />
     <PackageReference Include="ServiceStack.Common" Version="5.*" />
@@ -46,9 +59,9 @@
     <PackageReference Include="ServiceStack.Redis" Version="5.*" />
     <PackageReference Include="ServiceStack.Aws" Version="5.*" />
     <PackageReference Include="ServiceStack.Azure" Version="5.*" />
-    <PackageReference Include="ServiceStack.Api.OpenApi" Version="5.*" />
+    <PackageReference Include="ServiceStack.Api.OpenApi" Version="5.*" /> -->
 
-    <!-- <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -62,7 +75,7 @@
     <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
-    <ProjectReference Include="..\..\..\..\ServiceStack.Azure\src\ServiceStack.Azure\ServiceStack.Azure.csproj" /> -->
+    <ProjectReference Include="..\..\..\..\ServiceStack.Azure\src\ServiceStack.Azure\ServiceStack.Azure.csproj" />
 
   </ItemGroup>
 

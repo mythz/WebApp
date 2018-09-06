@@ -16,7 +16,10 @@ namespace WebCef
         {
             try
             {
-                var host = Startup.CreateWebHost(args);
+                var host = Startup.CreateWebHost("cef",args);
+                if (host == null)
+                    return 0;
+
                 host.Build().StartAsync();
                 
                 var config = new CefConfig
@@ -46,8 +49,8 @@ namespace WebCef
             } 
             catch (Exception ex)
             {
-                //Console.WriteLine(ex.ToString());
                 Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.ToString());
                 return -1;
             }
         }
