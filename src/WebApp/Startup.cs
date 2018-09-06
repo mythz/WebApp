@@ -1,6 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
+using System.Linq;
+using System.Text;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -36,15 +39,23 @@ namespace WebApp
 
     public class Startup
     {
-        public static WebAppContext CreateWebHost(string[] args)
+        public static WebAppContext CreateWebHost(string tool, string[] args)
         {
             var dotnetArgs = args;
+
+            if (HandledCommand(tool, args))
+                return null;
 
             var webSettingPaths = new []{ "web.settings", "../app/web.settings", "app/web.settings" };
             if (args.Length == 1 && args[0].EndsWith(".settings"))
             {
                 webSettingPaths = new[]{ args[0] };
                 dotnetArgs = dotnetArgs.Skip(1).ToArray();
+            }
+            else if (args.Length > 0) // Unknown command
+            {
+                PrintUsage(tool);
+                return null;
             }
 
             string webSettingsPath = null;
@@ -98,6 +109,132 @@ namespace WebApp
                 AppSettings = WebTemplateUtils.AppSettings,
                 AppDir = appDir,
             };
+        }
+
+        public static string GetVersion() => Assembly.GetEntryAssembly()?
+            .GetCustomAttribute<AssemblyFileVersionAttribute>()?
+            .Version.LastLeftPart('.') ?? "0.0.0";
+
+        public static void PrintUsage(string tool)
+        {
+            string USAGE = $@"Version:  {GetVersion()}
+Syntax:   
+  Run App:
+    {tool}                       In App folder with web.settings
+    {tool} path/to/web.settings  Run App at folder with web.settings
+
+  View available Apps:
+    {tool} list
+
+  Install App:
+    {tool} install <name>
+
+  Update to latest version:
+    dotnet tool update -g {tool}
+
+Options:
+    -h, --help                   Print this message
+    -v, --version                Print this version
+
+This tool collects anonymous usage to determine the most used commands to improve your experience.
+To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using your favorite shell.";
+            Console.WriteLine(USAGE);
+        }
+
+        public static bool HandledCommand(string tool, string[] args)
+        {
+            if (args.Length == 0) 
+                return false;
+
+            var cmd = System.Text.RegularExpressions.Regex.Replace(args[0], "/^-+/", "/");
+
+            void RegisterStat(string name, string type="tool")
+            {
+                if (Environment.GetEnvironmentVariable("SERVICESTACK_TELEMETRY_OPTOUT") == "1")
+                    return;
+                try {
+                    $"https://servicestack.net/stats/{type}/record?name=${name}&source={tool}&version=${GetVersion()}".GetBytesFromUrlAsync();
+                } catch {}
+            }
+
+            var checkUpdatesAndQuit = false;
+            var arg = args[0];
+            if (args.Length == 1)
+            {
+                if (arg == "list" || arg == "l")
+                {
+                    RegisterStat("list");
+                    var repos = new GithubGateway().GetNetCoreWebAppsRepos();
+                    var padName = repos.OrderByDescending(x => x.Name.Length).First().Name.Length + 1;
+
+                    "".Print();
+                    var i = 1;
+                    foreach (var repo in repos)
+                    {
+                        $" {i++.ToString().PadLeft(3,' ')}. {repo.Name.PadRight(padName,' ')} {repo.Description}".Print();
+                    }
+
+                    "".Print();
+                    $"Usage: {tool} install <name>".Print();
+                    checkUpdatesAndQuit = true;
+                }
+                else if (new[] { "/h", "/?", "/help" }.Contains(cmd))
+                {
+                    PrintUsage(tool);
+                    return true;
+                }
+                else if (new[] { "/v", "/version" }.Contains(cmd))
+                {
+                    $"Version: {GetVersion()}".Print();
+                    checkUpdatesAndQuit = true;
+                }
+            }
+            else if (args.Length == 2)
+            {
+                if (arg == "install" || arg == "i")
+                {
+                    var repo = args[1];
+                    var downloadUrl = new GithubGateway().GetNetCoreWebAppsZipUrl(repo);
+                    RegisterStat("install", repo);
+                    $"Installing {repo}...".Print();
+
+                    var tmpFile = Path.GetTempFileName();
+                    new WebClient().DownloadFile(downloadUrl, tmpFile);
+                    var tmpDir = Path.Combine(Path.GetTempPath(), "servicestack", repo);
+                    if (Directory.Exists(tmpDir))
+                        Directory.Delete(tmpDir,recursive:true);
+
+                    ZipFile.ExtractToDirectory(tmpFile, tmpDir);
+                    Directory.Move(new DirectoryInfo(tmpDir).GetDirectories().First().FullName, Path.GetFullPath(repo));
+
+                    "".Print();
+                    $"Installation successful, run with:".Print();
+                    "".Print();
+                    $"  cd {repo} && {tool}".Print();
+                    return true;
+                }
+            }
+
+            if (checkUpdatesAndQuit)
+            {
+                var json = $"https://api.nuget.org/v3/registration3/{tool}/index.json".GetJsonFromUrl();
+                var response = JSON.parse(json);
+                if (response is Dictionary<string, object> r &&
+                    r.TryGetValue("items", out var oItems) && oItems is List<object> items &&
+                    items.Count > 0 && items[0] is Dictionary<string, object> item &&
+                    item.TryGetValue("upper", out var oUpper) && oUpper is string upper)
+                {
+                    if (GetVersion() != upper) {
+                        "".Print();
+                        "".Print();
+                        $"new version available, update with:".Print();
+                        "".Print();
+                        $"  dotnet tool update -g {tool}".Print();
+                    }
+                }
+                return true;
+            }            
+            return false;
         }
 
         IHostingEnvironment env;
@@ -590,5 +727,158 @@ namespace WebApp
 
             return authProvider;
         }
+
+        public static void CopyAllTo(this string src, string dst)
+        {
+            foreach (string dirPath in Directory.GetDirectories(src, "*.*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(dirPath.Replace(src, dst));
+            }
+            foreach (string newPath in Directory.GetFiles(src, "*.*", SearchOption.AllDirectories))
+            {
+                File.Copy(newPath, newPath.Replace(src, dst));
+            }
+        }
     }
+
+    public class GithubRepo
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Homepage { get; set; }
+        public int Watchers_Count { get; set; }
+        public int Stargazes_Count { get; set; }
+        public int Size { get; set; }
+        public string Full_Name { get; set; }
+        public DateTime Created_at { get; set; }
+        public DateTime? Updated_At { get; set; }
+
+        public bool Has_Downloads { get; set; }
+        public bool Fork { get; set; }
+
+        public string Url { get; set; }          // https://api.github.com/repos/NetCoreWebApps/bare
+        public string Html_Url { get; set; }
+        public bool Private { get; set; }
+
+        public GithubRepo Parent { get; set; }   // only on single result, e.g: /repos/NetCoreWebApps/bare
+    }    
+
+    public partial class GithubGateway
+    {
+        public const string GithubApiBaseUrl = "https://api.github.com/";
+        public static string UserAgent = typeof(GithubGateway).Namespace.LeftPart('.');
+
+        public string UnwrapRepoFullName(string name)
+        {
+            try
+            {
+                var repo = GetJson<GithubRepo>($"/repos/NetCoreWebApps/{name}");
+                return repo.Fork
+                    ? $"NetCoreWebApps/{repo.Name}"
+                    : repo.Full_Name;
+            } 
+            catch (WebException ex)
+            {
+                if (ex.IsNotFound())
+                    throw new Exception($"App '{name}' was not found.");
+                throw;
+            }
+        }
+
+        public string GetNetCoreWebAppsZipUrl(string name)
+        {
+            var repoFullName = UnwrapRepoFullName(name);
+            var json = GetJson($"repos/{repoFullName}/releases");
+            var response = JSON.parse(json);
+
+            if (response is List<object> releases && releases.Count > 0 &&
+                releases[0] is Dictionary<string,object> release &&
+                release.TryGetValue("zipball_url", out var zipUrl))
+            {
+                return (string)zipUrl;
+            }
+
+            return $"https://github.com/{repoFullName}/archive/master.zip";
+        }
+
+        public List<GithubRepo> GetNetCoreWebAppsRepos()
+        {
+            var repos = GetOrgRepos("NetCoreWebApps")
+                .Where(x => !x.Name.StartsWith("Web") && x.Name != "LiveDemos")
+                .OrderByDescending(x => x.Stargazes_Count)
+                .ToList();
+            return repos;
+        }
+
+        public List<GithubRepo> GetOrgRepos(string githubOrgName)
+        {
+            return StreamJsonCollection<List<GithubRepo>>($"orgs/{githubOrgName}/repos").SelectMany(x => x).ToList();
+        }
+
+        public string GetJson(string route) => GithubApiBaseUrl.CombineWith(route).GetJsonFromUrl(req => req.UserAgent = UserAgent);
+
+        public T GetJson<T>(string route) => GetJson(route).FromJson<T>();
+
+        public IEnumerable<T> StreamJsonCollection<T>(string route)
+        {
+            List<T> results;
+            var nextUrl = GithubApiBaseUrl.CombineWith(route);
+
+            do
+            {
+                results = nextUrl.GetJsonFromUrl(req => req.UserAgent = UserAgent,
+                        responseFilter: res => {
+                            var links = ParseLinkUrls(res.Headers["Link"]);
+                            links.TryGetValue("next", out nextUrl);
+                        })
+                    .FromJson<List<T>>();
+
+                foreach (var result in results)
+                {
+                    yield return result;
+                }
+
+            } while (results.Count > 0 && nextUrl != null);
+        }
+
+        public static Dictionary<string, string> ParseLinkUrls(string linkHeader)
+        {
+            var map = new Dictionary<string, string>();
+            var links = linkHeader;
+
+            while (!string.IsNullOrEmpty(links))
+            {
+                var urlStartPos = links.IndexOf('<');
+                var urlEndPos = links.IndexOf('>');
+
+                if (urlStartPos == -1 || urlEndPos == -1)
+                    break;
+
+                var url = links.Substring(urlStartPos + 1, urlEndPos - urlStartPos - 1);
+                var parts = links.Substring(urlEndPos).SplitOnFirst(',');
+
+                var relParts = parts[0].Split(';');
+                foreach (var relPart in relParts)
+                {
+                    var keyValueParts = relPart.SplitOnFirst('=');
+                    if (keyValueParts.Length < 2)
+                        continue;
+
+                    var name = keyValueParts[0].Trim();
+                    var value = keyValueParts[1].Trim().Trim('"');
+
+                    if (name == "rel")
+                    {
+                        map[value] = url;
+                    }
+                }
+
+                links = parts.Length > 1 ? parts[1] : null;
+            }
+
+            return map;
+        }
+    }
+
 }

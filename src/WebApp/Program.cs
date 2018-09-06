@@ -11,12 +11,13 @@ namespace WebApp
         {
             try
             {
-                var host = Startup.CreateWebHost(args).Build();
-                host.Run();
+                var host = Startup.CreateWebHost("app", args)?.Build();
+                host?.Run();
             } 
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.ToString());
             }
         }
     }
