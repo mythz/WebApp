@@ -254,7 +254,7 @@ namespace WebApp
         public static void PrintUsage(string tool)
         {
             var runProcess = "";
-            if (Events.RunNetCoreProcess != null)
+            if (Events?.RunNetCoreProcess != null)
             {
                 runProcess =  $"  {tool} <name>.dll              Run external .NET Core App{Environment.NewLine}";
                 runProcess += $"  {tool} <name>.exe              Run external self-contained .NET Core App{Environment.NewLine}";
