@@ -1,10 +1,9 @@
 using System;
+using System.IO;
+using System.Reflection;
 using System.Collections.Generic;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using System.Diagnostics;
 using ServiceStack;
-using ServiceStack.Text;
 using ServiceStack.CefGlue;
 using WebApp;
 
@@ -16,7 +15,57 @@ namespace WebCef
         {
             try
             {
-                var host = Startup.CreateWebHost("cef",args);
+                var host = Startup.CreateWebHost("cef", args, new WebAppEvents
+                    {
+                        CreateShortcut = Shortcut.Create,
+                        HandleUnknownCommand = ctx => Startup.PrintUsage("cef"),
+                        OpenBrowser = url => CefPlatformWindows.Start(new CefConfig { StartUrl = url, Width = 1040, DevTools = false }),
+                        RunNetCoreProcess = ctx =>
+                        {
+                            var url = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?.LeftPart(';') ?? "http://localhost:5000";
+                            var target = ctx.RunProcess;
+
+                            var fileName = ctx.RunProcess;
+                            var arguments = "";
+                            if (target.EndsWith(".dll"))
+                            {
+                                fileName = "dotnet";
+                                arguments = ctx.RunProcess;
+                            }
+
+                            using (var process = new Process
+                            {
+                                StartInfo =
+                                {
+                                    FileName = fileName,
+                                    Arguments = arguments,
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true,
+                                    RedirectStandardOutput = true,
+                                }
+                            })
+                            {
+                                process.OutputDataReceived += (sender, data) => {
+                                    Console.WriteLine(data.Data);
+                                };
+                                process.StartInfo.RedirectStandardError = true;
+                                process.ErrorDataReceived += (sender, data) => {
+                                    Console.WriteLine(data.Data);
+                                };
+                                process.Start();
+
+                                process.BeginOutputReadLine();
+                                process.BeginErrorReadLine();
+
+                                var icon = File.Exists("favicon.ico") ? "favicon.ico" : Startup.ToolFavIcon;
+
+                                CefPlatformWindows.Start(new CefConfig { StartUrl = url, Icon = icon });
+
+                                process.Kill();
+                                process.Close();
+                            }
+                        }
+                });
                 if (host == null)
                     return 0;
 
@@ -49,8 +98,7 @@ namespace WebCef
             } 
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                //Console.WriteLine(ex.ToString());
+                Console.WriteLine(Startup.Verbose ? ex.ToString() : ex.Message);
                 return -1;
             }
         }

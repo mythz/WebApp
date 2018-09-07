@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -29,34 +31,118 @@ namespace WebApp
 {
     public class WebAppContext
     {
+        public string[] Arguments { get; set; }
+        public string WebSettingsPath { get; set; }
         public string StartUrl { get; set; }
         public string IconPath { get; set; }
         public string AppDir { get; set; }
+        public string RunProcess { get; set; }
+
         public IWebHostBuilder Builder { get; set; }
         public IAppSettings AppSettings { get; set; }
         public IWebHost Build() => Builder.Build();
     }
 
+    public delegate void CreateShortcutDelegate(string fileName, string targetPath, string arguments, string workingDirectory, string iconPath);
+
+    public class WebAppEvents
+    {
+        public CreateShortcutDelegate CreateShortcut { get; set; }
+        public Action<string> OpenBrowser { get; set; }
+        public Action<WebAppContext> HandleUnknownCommand { get; set; }
+        public Action<WebAppContext> RunNetCoreProcess { get; set; }
+    }
+
     public class Startup
     {
-        public static WebAppContext CreateWebHost(string tool, string[] args)
+        public static WebAppEvents Events { get; set; }
+
+        public static string GalleryUrl { get; set; } = "https://github.com/NetCoreWebApps/LiveDemos#readme";
+
+        public static string GitHubSource { get; set; } = "NetCoreWebApps";
+        static string[] SourceArgs = { "/s", "-s", "/source", "--source" };
+
+        public static bool Verbose { get; set; }
+        static string[] VerboseArgs = { "/verbose", "--verbose" };
+
+        public static bool? DebugMode { get; set; }
+        static string[] DebugArgs = { "/d", "-d", "/debug", "--debug" };
+        static string[] ReleaseArgs = { "/r", "-r", "/release", "--release" };
+
+        public static string ToolFavIcon = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath), "favicon.ico");
+
+        public static WebAppContext CreateWebHost(string tool, string[] args, WebAppEvents events = null)
         {
-            var dotnetArgs = args;
+            Events = events;
+            var dotnetArgs = new List<string>();
 
-            if (HandledCommand(tool, args))
-                return null;
+            var createShortcut = false;
+            string createShortcutFor = null;
+            string runProcess = null;
+            var webSettingPaths = new[] { "web.settings", "../app/web.settings", "app/web.settings" };
+            for (var i = 0; i < args.Length; i++)
+            {
+                var arg = args[i];
+                if (args[0].EndsWith(".settings"))
+                {
+                    webSettingPaths = new[] { args[0] };
+                    continue;
+                }
+                if (args[0].EndsWith(".dll") || args[0].EndsWith(".exe"))
+                {
+                    runProcess = args[0];
+                    continue;
+                }
+                if (VerboseArgs.Contains(arg))
+                {
+                    Verbose = true;
+                    continue;
+                }
+                if (SourceArgs.Contains(arg))
+                {
+                    GitHubSource = args[++i];
+                    continue;
+                }
+                if (arg == "shortcut")
+                {
+                    createShortcut = true;
+                    if (i + 1 < args.Length && (args[i + 1].EndsWith(".dll") || args[i + 1].EndsWith(".exe")))
+                        createShortcutFor = args[++i];
+                    continue;
+                }
+                if (DebugArgs.Contains(arg))
+                {
+                    DebugMode = true;
+                    continue;
+                }
+                if (ReleaseArgs.Contains(arg))
+                {
+                    DebugMode = false;
+                    continue;
+                }
+                dotnetArgs.Add(arg);
+            }
 
-            var webSettingPaths = new []{ "web.settings", "../app/web.settings", "app/web.settings" };
-            if (args.Length == 1 && args[0].EndsWith(".settings"))
+            if (Verbose)
             {
-                webSettingPaths = new[]{ args[0] };
-                dotnetArgs = dotnetArgs.Skip(1).ToArray();
+                if (runProcess != null)
+                    $"Run Process: {runProcess}".Print();
+                if (createShortcut)
+                    $"Create Shortcut {createShortcutFor}".Print();
             }
-            else if (args.Length > 0) // Unknown command
+
+            if (runProcess != null && Events?.RunNetCoreProcess != null)
             {
-                PrintUsage(tool);
+                Events.RunNetCoreProcess(new WebAppContext { 
+                    Arguments = dotnetArgs.ToArray(), 
+                    RunProcess = runProcess,
+                });
+            
                 return null;
             }
+
+            if (HandledCommand(tool, dotnetArgs.ToArray()))
+                return null;
 
             string webSettingsPath = null;
             foreach (var path in webSettingPaths)
@@ -69,11 +155,11 @@ namespace WebApp
                 }
             }
 
-            if (webSettingsPath == null)
-                throw new Exception($"'{webSettingPaths[0]}' does not exist");
+            if (webSettingsPath == null && createShortcutFor == null)
+                throw new Exception($"'{webSettingPaths[0]}' does not exist.\n\nView Help: {tool} --help");
 
             var usingWebSettings = File.Exists(webSettingsPath);
-            if (usingWebSettings)
+            if (usingWebSettings && !createShortcut)
                 Console.WriteLine($"Using '{webSettingsPath}'");
 
             var appDir = Path.GetDirectoryName(webSettingsPath);
@@ -82,6 +168,54 @@ namespace WebApp
                     ? new TextFileSettings(webSettingsPath)
                     : new DictionarySettings(),
                 new EnvironmentVariableSettings());
+
+            var argContext = new WebAppContext
+            {
+                Arguments = dotnetArgs.ToArray(),
+                RunProcess = runProcess,
+                WebSettingsPath = webSettingsPath,
+                AppSettings = WebTemplateUtils.AppSettings,
+                AppDir = appDir,
+            };
+
+            if (createShortcut && Events?.CreateShortcut != null)
+            {
+                var shortcutPath = createShortcutFor == null
+                    ? Path.Combine(appDir, "name".GetAppSetting(defaultValue: "WebApp") + ".lnk")
+                    : Path.GetFullPath(createShortcutFor.LastLeftPart('.') + ".lnk");
+
+                var toolPath = Assembly.GetExecutingAssembly().Location;
+                var arguments = createShortcutFor == null
+                    ? $"\"{webSettingsPath}\""
+                    : $"\"{createShortcutFor}\"";
+
+                var targetPath = toolPath;
+                if (toolPath.EndsWith(".dll"))
+                {
+                    targetPath = "dotnet";
+                    arguments = $"{toolPath} {arguments}";
+                }
+                var icon = createShortcutFor == null
+                    ? "icon".GetAppSettingPath(appDir) ?? "favicon.ico"
+                    : File.Exists("favicon.ico")
+                        ? Path.GetFullPath("favicon.ico")
+                        : ToolFavIcon;
+
+                if (Verbose)
+                    $"CreateShortcut: {shortcutPath}, {targetPath}, {arguments}, {appDir}, {icon}".Print();
+
+                Events.CreateShortcut(shortcutPath, targetPath, arguments, appDir, icon);
+                return null;
+            }
+            else if (args.Length > 1) // Unknown command - 
+            {
+                if (Events?.HandleUnknownCommand != null)
+                    Events.HandleUnknownCommand(argContext);
+                else
+                    PrintUsage(tool);
+                return null;
+            }
+
 
             var port = "port".GetAppSetting(defaultValue:"5000");
             var contentRoot = "contentRoot".GetAppSettingPath(appDir) ?? appDir;
@@ -94,7 +228,7 @@ namespace WebApp
             var useWebRoot = "webRoot".GetAppSettingPath(appDir) ?? webRoot;
 
             var bind = "bind".GetAppSetting("localhost");
-            var builder = WebHost.CreateDefaultBuilder(dotnetArgs)
+            var builder = WebHost.CreateDefaultBuilder(dotnetArgs.ToArray())
                 .UseContentRoot(contentRoot)
                 .UseWebRoot(useWebRoot)
                 .UseStartup<Startup>();
@@ -103,7 +237,9 @@ namespace WebApp
             if (startUrl == null)
                 builder.UseUrls(startUrl = $"http://{bind}:{port}/");
 
-            return new WebAppContext { 
+            return new WebAppContext {
+                Arguments = dotnetArgs.ToArray(),
+                WebSettingsPath = webSettingsPath,
                 Builder = builder, 
                 StartUrl = startUrl.Replace("://*","://localhost"),
                 AppSettings = WebTemplateUtils.AppSettings,
@@ -117,28 +253,72 @@ namespace WebApp
 
         public static void PrintUsage(string tool)
         {
+            var runProcess = "";
+            if (Events.RunNetCoreProcess != null)
+            {
+                runProcess =  $"  {tool} <name>.dll              Run external .NET Core App{Environment.NewLine}";
+                runProcess += $"  {tool} <name>.exe              Run external self-contained .NET Core App{Environment.NewLine}";
+            }
+
+            var additional = new StringBuilder();
+            if (Events?.CreateShortcut != null)
+            {
+                additional.AppendLine($"  {tool} shortcut".PadRight(30, ' ') + "Create Shortcut for App");
+                additional.AppendLine($"  {tool} shortcut <name>.dll".PadRight(30, ' ') + "Create Shortcut for .NET Core App");
+            }
+
             string USAGE = $@"Version:  {GetVersion()}
-Syntax:   
-  Run App:
-    {tool}                       In App folder with web.settings
-    {tool} path/to/web.settings  Run App at folder with web.settings
 
-  View available Apps:
-    {tool} list
-
-  Install App:
-    {tool} install <name>
-
-  Update to latest version:
-    dotnet tool update -g {tool}
+Usage:   
+  
+  {tool}                         Run App in App folder using local web.settings
+  {tool} path/to/web.settings    Run App at folder containing specified web.settings
+{runProcess}
+  {tool} list                    List available Apps
+  {tool} gallery                 Open App Gallery in a Browser
+  {tool} install <name>          Install App
+{additional}
+  dotnet tool update -g {tool}   Update to latest version
 
 Options:
-    -h, --help                   Print this message
-    -v, --version                Print this version
+    -h, --help                Print this message
+    -v, --version             Print this version
+    -d, --debug               Run in Debug mode for Development
+    -r, --release             Run in Release mode for Production
+    -s, --source              Change GitHub Source for App Directory
 
 This tool collects anonymous usage to determine the most used commands to improve your experience.
 To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using your favorite shell.";
             Console.WriteLine(USAGE);
+        }
+
+        public static void OpenBrowser(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                // hack because of this: https://github.com/dotnet/corefx/issues/10361
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    url = url.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public static bool HandledCommand(string tool, string[] args)
@@ -146,7 +326,7 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             if (args.Length == 0) 
                 return false;
 
-            var cmd = System.Text.RegularExpressions.Regex.Replace(args[0], "/^-+/", "/");
+            var cmd = System.Text.RegularExpressions.Regex.Replace(args[0], "^-+", "/");
 
             void RegisterStat(string name, string type="tool")
             {
@@ -164,7 +344,7 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                 if (arg == "list" || arg == "l")
                 {
                     RegisterStat("list");
-                    var repos = new GithubGateway().GetNetCoreWebAppsRepos();
+                    var repos = new GithubGateway().GetSourceRepos(GitHubSource);
                     var padName = repos.OrderByDescending(x => x.Name.Length).First().Name.Length + 1;
 
                     "".Print();
@@ -176,6 +356,12 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
 
                     "".Print();
                     $"Usage: {tool} install <name>".Print();
+                    checkUpdatesAndQuit = true;
+                }
+                else if (arg == "gallery")
+                {
+                    var openUrl = Events?.OpenBrowser ?? OpenBrowser;
+                    openUrl(GalleryUrl);
                     checkUpdatesAndQuit = true;
                 }
                 else if (new[] { "/h", "/?", "/help" }.Contains(cmd))
@@ -194,17 +380,23 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                 if (arg == "install" || arg == "i")
                 {
                     var repo = args[1];
-                    var downloadUrl = new GithubGateway().GetNetCoreWebAppsZipUrl(repo);
+                    var downloadUrl = new GithubGateway().GetSourceZipUrl(GitHubSource, repo);
                     RegisterStat("install", repo);
                     $"Installing {repo}...".Print();
 
                     var tmpFile = Path.GetTempFileName();
-                    new WebClient().DownloadFile(downloadUrl, tmpFile);
+                    if (Verbose)
+                        $"Downloading: {downloadUrl}".Print();
+                    new GithubGateway().DownloadFile(downloadUrl, tmpFile);
                     var tmpDir = Path.Combine(Path.GetTempPath(), "servicestack", repo);
                     if (Directory.Exists(tmpDir))
                         Directory.Delete(tmpDir,recursive:true);
 
+                    if (Verbose)
+                        $"ExtractToDirectory: {tmpFile} => {tmpDir}".Print();
                     ZipFile.ExtractToDirectory(tmpFile, tmpDir);
+                    if (Verbose)
+                        $"Directory Move: {new DirectoryInfo(tmpDir).GetDirectories().First().FullName} => {Path.GetFullPath(repo)}".Print();
                     Directory.Move(new DirectoryInfo(tmpDir).GetDirectories().First().FullName, Path.GetFullPath(repo));
 
                     "".Print();
@@ -389,7 +581,7 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
 
         public void ConfigureAppHost(ServiceStackHost appHost)
         {
-            appHost.Config.DebugMode = "debug".GetAppSetting(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production");
+            appHost.Config.DebugMode = DebugMode ?? "debug".GetAppSetting(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production");
             appHost.Config.ForbiddenPaths.Add("/plugins");
 
             var feature = appHost.GetPlugin<TemplatePagesFeature>();
@@ -769,13 +961,13 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
         public const string GithubApiBaseUrl = "https://api.github.com/";
         public static string UserAgent = typeof(GithubGateway).Namespace.LeftPart('.');
 
-        public string UnwrapRepoFullName(string name)
+        public string UnwrapRepoFullName(string orgName, string name)
         {
             try
             {
-                var repo = GetJson<GithubRepo>($"/repos/NetCoreWebApps/{name}");
+                var repo = GetJson<GithubRepo>($"/repos/{orgName}/{name}");
                 return repo.Fork
-                    ? $"NetCoreWebApps/{repo.Name}"
+                    ? $"{orgName}/{repo.Name}"
                     : repo.Full_Name;
             } 
             catch (WebException ex)
@@ -786,9 +978,9 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             }
         }
 
-        public string GetNetCoreWebAppsZipUrl(string name)
+        public string GetSourceZipUrl(string orgName, string name)
         {
-            var repoFullName = UnwrapRepoFullName(name);
+            var repoFullName = UnwrapRepoFullName(orgName, name);
             var json = GetJson($"repos/{repoFullName}/releases");
             var response = JSON.parse(json);
 
@@ -802,9 +994,9 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             return $"https://github.com/{repoFullName}/archive/master.zip";
         }
 
-        public List<GithubRepo> GetNetCoreWebAppsRepos()
+        public List<GithubRepo> GetSourceRepos(string orgName)
         {
-            var repos = GetOrgRepos("NetCoreWebApps")
+            var repos = GetOrgRepos(orgName)
                 .Where(x => !x.Name.StartsWith("Web") && x.Name != "LiveDemos")
                 .OrderByDescending(x => x.Stargazes_Count)
                 .ToList();
@@ -816,7 +1008,14 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             return StreamJsonCollection<List<GithubRepo>>($"orgs/{githubOrgName}/repos").SelectMany(x => x).ToList();
         }
 
-        public string GetJson(string route) => GithubApiBaseUrl.CombineWith(route).GetJsonFromUrl(req => req.UserAgent = UserAgent);
+        public string GetJson(string route)
+        {
+            var apiUrl = GithubApiBaseUrl.CombineWith(route);
+            if (Startup.Verbose)
+                $"API: {apiUrl}".Print();
+
+            return apiUrl.GetJsonFromUrl(req => req.UserAgent = UserAgent);
+        }
 
         public T GetJson<T>(string route) => GetJson(route).FromJson<T>();
 
@@ -878,6 +1077,13 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             }
 
             return map;
+        }
+
+        public void DownloadFile(string downloadUrl, string fileName)
+        {
+            var webclient = new WebClient();
+            webclient.Headers.Add(HttpHeaders.UserAgent, UserAgent);
+            webclient.DownloadFile(downloadUrl, fileName);
         }
     }
 

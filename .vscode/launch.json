@@ -6,9 +6,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}/src/WebApp/bin/Debug/netcoreapp2.1/app.dll",
-            "args": ["..\\apps\\plugins2\\web.settings"],
-            "cwd": "${workspaceRoot}/src/WebApp",
+            "program": "${workspaceRoot}/src/WebCef/bin/Debug/netcoreapp2.1/cef.dll",
+            "args": ["bin\\vue-nuxt\\MyApp\\bin\\Release\\netcoreapp2.1\\publish\\MyApp.dll"],
+            "cwd": "${workspaceRoot}/src/WebCef",
             "stopAtEntry": false,
             "console": "internalConsole"
         },
