@@ -7,7 +7,8 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceRoot}/src/WebCef/bin/Debug/netcoreapp2.1/cef.dll",
-            "args": ["bin\\vue-nuxt\\MyApp\\bin\\Release\\netcoreapp2.1\\publish\\MyApp.dll"],
+            "args": ["publish"],
+            //"args": ["bin\\vue-nuxt\\MyApp\\bin\\Release\\netcoreapp2.1\\publish\\MyApp.dll"],
             "cwd": "${workspaceRoot}/src/WebCef",
             "stopAtEntry": false,
             "console": "internalConsole"

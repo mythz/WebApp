@@ -16,8 +16,7 @@ namespace WebApp
             } 
             catch (Exception ex)
             {
-                //Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(Startup.Verbose ? ex.ToString() : ex.Message);
             }
         }
     }
