@@ -36,6 +36,7 @@ namespace WebApp
         public string StartUrl { get; set; }
         public string IconPath { get; set; }
         public string AppDir { get; set; }
+        public string ToolPath { get; set; }
         public string RunProcess { get; set; }
 
         public IWebHostBuilder Builder { get; set; }
@@ -57,7 +58,7 @@ namespace WebApp
     {
         public static WebAppEvents Events { get; set; }
 
-        public static string GalleryUrl { get; set; } = "https://github.com/NetCoreWebApps/LiveDemos#readme";
+        public static string GalleryUrl { get; set; } = "https://servicestack.net/apps/gallery";
 
         public static string GitHubSource { get; set; } = "NetCoreWebApps";
         static string[] SourceArgs = { "/s", "-s", "/source", "--source" };
@@ -77,19 +78,27 @@ namespace WebApp
             var dotnetArgs = new List<string>();
 
             var createShortcut = false;
+            var publish = false;
             string createShortcutFor = null;
             string runProcess = null;
-            var webSettingPaths = new[] { "web.settings", "../app/web.settings", "app/web.settings" };
+            var appSettingPaths = new[]
+            {
+                "app.settings", "../app/app.settings", "app/app.settings",
+                "web.settings", "../app/web.settings", "app/web.settings",
+            };
             for (var i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
                 if (args[0].EndsWith(".settings"))
                 {
-                    webSettingPaths = new[] { args[0] };
+                    appSettingPaths = new[] { args[0] };
                     continue;
                 }
                 if (args[0].EndsWith(".dll") || args[0].EndsWith(".exe"))
                 {
+                    if (Events.RunNetCoreProcess == null)
+                        throw new NotSupportedException($"This {tool} tool does not suppport running processes");
+
                     runProcess = args[0];
                     continue;
                 }
@@ -105,9 +114,17 @@ namespace WebApp
                 }
                 if (arg == "shortcut")
                 {
+                    if (Events.CreateShortcut == null)
+                        throw new NotSupportedException($"This {tool} tool does not suppport shortcuts");
+
                     createShortcut = true;
                     if (i + 1 < args.Length && (args[i + 1].EndsWith(".dll") || args[i + 1].EndsWith(".exe")))
                         createShortcutFor = args[++i];
+                    continue;
+                }
+                if (arg == "publish")
+                {
+                    publish = true;
                     continue;
                 }
                 if (DebugArgs.Contains(arg))
@@ -125,14 +142,20 @@ namespace WebApp
 
             if (Verbose)
             {
+                $"args: '{dotnetArgs.Join(" ")}'".Print();
+
                 if (runProcess != null)
                     $"Run Process: {runProcess}".Print();
                 if (createShortcut)
                     $"Create Shortcut {createShortcutFor}".Print();
+                if (publish)
+                    $"Command: publish".Print();
             }
 
-            if (runProcess != null && Events?.RunNetCoreProcess != null)
+            if (runProcess != null)
             {
+                RegisterStat(tool, "run", runProcess);
+
                 Events.RunNetCoreProcess(new WebAppContext { 
                     Arguments = dotnetArgs.ToArray(), 
                     RunProcess = runProcess,
@@ -145,7 +168,7 @@ namespace WebApp
                 return null;
 
             string webSettingsPath = null;
-            foreach (var path in webSettingPaths)
+            foreach (var path in appSettingPaths)
             {
                 var fullPath = Path.GetFullPath(path);
                 if (File.Exists(fullPath))
@@ -155,36 +178,52 @@ namespace WebApp
                 }
             }
 
-            if (webSettingsPath == null && createShortcutFor == null)
-                throw new Exception($"'{webSettingPaths[0]}' does not exist.\n\nView Help: {tool} --help");
-
-            var usingWebSettings = File.Exists(webSettingsPath);
-            if (usingWebSettings && !createShortcut)
-                Console.WriteLine($"Using '{webSettingsPath}'");
-
-            var appDir = Path.GetDirectoryName(webSettingsPath);
-
-            WebTemplateUtils.AppSettings = new MultiAppSettings(usingWebSettings
-                    ? new TextFileSettings(webSettingsPath)
-                    : new DictionarySettings(),
-                new EnvironmentVariableSettings());
-
-            var argContext = new WebAppContext
+            var appDir = webSettingsPath != null ? Path.GetDirectoryName(webSettingsPath) : null;
+            var ctx = new WebAppContext
             {
                 Arguments = dotnetArgs.ToArray(),
                 RunProcess = runProcess,
                 WebSettingsPath = webSettingsPath,
                 AppSettings = WebTemplateUtils.AppSettings,
                 AppDir = appDir,
+                ToolPath = Assembly.GetExecutingAssembly().Location,
             };
 
-            if (createShortcut && Events?.CreateShortcut != null)
+            if (dotnetArgs.Count > 0)
             {
+                if (Events?.HandleUnknownCommand != null)
+                {
+                    Events.HandleUnknownCommand(ctx);
+                }
+                else
+                {
+                    $"Unknown command '{dotnetArgs.Join(" ")}'".Print();
+                    PrintUsage(tool);
+                }
+                return null;
+            }
+
+            if (webSettingsPath == null && createShortcutFor == null)
+                throw new Exception($"'{appSettingPaths[0]}' does not exist.\n\nView Help: {tool} --help");
+
+            var usingWebSettings = File.Exists(webSettingsPath);
+            if (usingWebSettings && !createShortcut)
+                Console.WriteLine($"Using '{webSettingsPath}'");
+
+            WebTemplateUtils.AppSettings = new MultiAppSettings(usingWebSettings
+                    ? new TextFileSettings(webSettingsPath)
+                    : new DictionarySettings(),
+                new EnvironmentVariableSettings());
+
+            if (createShortcut)
+            {
+                RegisterStat(tool, "shortcut", createShortcutFor);
+
                 var shortcutPath = createShortcutFor == null
                     ? Path.Combine(appDir, "name".GetAppSetting(defaultValue: "WebApp") + ".lnk")
                     : Path.GetFullPath(createShortcutFor.LastLeftPart('.') + ".lnk");
 
-                var toolPath = Assembly.GetExecutingAssembly().Location;
+                var toolPath = ctx.ToolPath;
                 var arguments = createShortcutFor == null
                     ? $"\"{webSettingsPath}\""
                     : $"\"{createShortcutFor}\"";
@@ -207,17 +246,39 @@ namespace WebApp
                 Events.CreateShortcut(shortcutPath, targetPath, arguments, appDir, icon);
                 return null;
             }
-            else if (args.Length > 1) // Unknown command - 
+            else if (publish)
             {
-                if (Events?.HandleUnknownCommand != null)
-                    Events.HandleUnknownCommand(argContext);
-                else
-                    PrintUsage(tool);
+                RegisterStat(tool, "publish");
+
+                var publishDir = Path.Combine(appDir, "publish");
+                var publishAppDir = Path.Combine(publishDir, "app");
+                var publishToolDir = Path.Combine(publishDir, tool == "app" ? "web" : tool);
+
+                if (!Directory.Exists(publishAppDir))
+                    Directory.CreateDirectory(publishAppDir);
+                if (!Directory.Exists(publishToolDir))
+                    Directory.CreateDirectory(publishToolDir);
+
+                var toolDir = Path.GetDirectoryName(ctx.ToolPath);
+
+                appDir.CopyAllTo(publishAppDir, excludePath:publishDir);
+                toolDir.CopyAllTo(publishToolDir);
+
+                if (Verbose)
+                {
+                    $"Publish: {appDir} -> {publishAppDir}".Print();
+                    $"Publish: {toolDir} -> {publishToolDir}".Print();
+                }
                 return null;
             }
 
+            return CreateWebAppContext(ctx);
+        }
 
-            var port = "port".GetAppSetting(defaultValue:"5000");
+        private static WebAppContext CreateWebAppContext(WebAppContext ctx)
+        {
+            var appDir = ctx.AppDir;
+            var port = "port".GetAppSetting(defaultValue: "5000");
             var contentRoot = "contentRoot".GetAppSettingPath(appDir) ?? appDir;
 
             var wwwrootPath = Path.Combine(appDir, "wwwroot");
@@ -228,7 +289,7 @@ namespace WebApp
             var useWebRoot = "webRoot".GetAppSettingPath(appDir) ?? webRoot;
 
             var bind = "bind".GetAppSetting("localhost");
-            var builder = WebHost.CreateDefaultBuilder(dotnetArgs.ToArray())
+            var builder = WebHost.CreateDefaultBuilder(ctx.Arguments)
                 .UseContentRoot(contentRoot)
                 .UseWebRoot(useWebRoot)
                 .UseStartup<Startup>();
@@ -237,14 +298,9 @@ namespace WebApp
             if (startUrl == null)
                 builder.UseUrls(startUrl = $"http://{bind}:{port}/");
 
-            return new WebAppContext {
-                Arguments = dotnetArgs.ToArray(),
-                WebSettingsPath = webSettingsPath,
-                Builder = builder, 
-                StartUrl = startUrl.Replace("://*","://localhost"),
-                AppSettings = WebTemplateUtils.AppSettings,
-                AppDir = appDir,
-            };
+            ctx.Builder = builder;
+            ctx.StartUrl = startUrl.Replace("://*", "://localhost");
+            return ctx;
         }
 
         public static string GetVersion() => Assembly.GetEntryAssembly()?
@@ -267,12 +323,13 @@ namespace WebApp
                 additional.AppendLine($"  {tool} shortcut <name>.dll".PadRight(30, ' ') + "Create Shortcut for .NET Core App");
             }
 
-            string USAGE = $@"Version:  {GetVersion()}
+            string USAGE = $@"
+Version:  {GetVersion()}
 
 Usage:   
   
-  {tool}                         Run App in App folder using local web.settings
-  {tool} path/to/web.settings    Run App at folder containing specified web.settings
+  {tool}                         Run App in App folder using local app.settings
+  {tool} path/to/app.settings    Run App at folder containing specified app.settings
 {runProcess}
   {tool} list                    List available Apps
   {tool} gallery                 Open App Gallery in a Browser
@@ -321,6 +378,14 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             }
         }
 
+        internal static void RegisterStat(string tool, string name, string type = "tool")
+        {
+            if (Environment.GetEnvironmentVariable("SERVICESTACK_TELEMETRY_OPTOUT") == "1") return;
+            try {
+                $"https://servicestack.net/stats/{type}/record?name=${name}&source={tool}&version=${GetVersion()}".GetBytesFromUrlAsync();
+            } catch { }
+        }
+
         public static bool HandledCommand(string tool, string[] args)
         {
             if (args.Length == 0) 
@@ -328,22 +393,12 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
 
             var cmd = System.Text.RegularExpressions.Regex.Replace(args[0], "^-+", "/");
 
-            void RegisterStat(string name, string type="tool")
-            {
-                if (Environment.GetEnvironmentVariable("SERVICESTACK_TELEMETRY_OPTOUT") == "1")
-                    return;
-                try {
-                    $"https://servicestack.net/stats/{type}/record?name=${name}&source={tool}&version=${GetVersion()}".GetBytesFromUrlAsync();
-                } catch {}
-            }
-
             var checkUpdatesAndQuit = false;
             var arg = args[0];
             if (args.Length == 1)
             {
                 if (arg == "list" || arg == "l")
                 {
-                    RegisterStat("list");
                     var repos = new GithubGateway().GetSourceRepos(GitHubSource);
                     var padName = repos.OrderByDescending(x => x.Name.Length).First().Name.Length + 1;
 
@@ -364,7 +419,7 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                     openUrl(GalleryUrl);
                     checkUpdatesAndQuit = true;
                 }
-                else if (new[] { "/h", "/?", "/help" }.Contains(cmd))
+                else if (new[] { "/h", "?", "/?", "/help" }.Contains(cmd))
                 {
                     PrintUsage(tool);
                     return true;
@@ -380,8 +435,9 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                 if (arg == "install" || arg == "i")
                 {
                     var repo = args[1];
+                    RegisterStat(tool, "install", repo);
+
                     var downloadUrl = new GithubGateway().GetSourceZipUrl(GitHubSource, repo);
-                    RegisterStat("install", repo);
                     $"Installing {repo}...".Print();
 
                     var tmpFile = Path.GetTempFileName();
@@ -409,6 +465,8 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
 
             if (checkUpdatesAndQuit)
             {
+                RegisterStat(tool, cmd.TrimStart('/'));
+
                 var json = $"https://api.nuget.org/v3/registration3/{tool}/index.json".GetJsonFromUrl();
                 var response = JSON.parse(json);
                 if (response is Dictionary<string, object> r &&
@@ -920,15 +978,23 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             return authProvider;
         }
 
-        public static void CopyAllTo(this string src, string dst)
+        public static void CopyAllTo(this string src, string dst, string excludePath=null)
         {
             foreach (string dirPath in Directory.GetDirectories(src, "*.*", SearchOption.AllDirectories))
             {
-                Directory.CreateDirectory(dirPath.Replace(src, dst));
+                if (excludePath != null && dirPath.StartsWith(excludePath))
+                    continue;
+
+                try {
+                    Directory.CreateDirectory(dirPath.Replace(src, dst));
+                } catch { }
             }
             foreach (string newPath in Directory.GetFiles(src, "*.*", SearchOption.AllDirectories))
             {
-                File.Copy(newPath, newPath.Replace(src, dst));
+                if (excludePath != null && newPath.StartsWith(excludePath))
+                    continue;
+
+                File.Copy(newPath, newPath.Replace(src, dst), overwrite:true);
             }
         }
     }
