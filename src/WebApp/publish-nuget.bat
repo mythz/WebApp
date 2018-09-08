@@ -1,1 +1,0 @@
-nuget push nupkg\app.0.0.3.nupkg -Source https://www.nuget.org/api/v2/package

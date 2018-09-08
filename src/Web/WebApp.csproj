@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Version>0.0.3</Version>
-    <AssemblyName>app</AssemblyName>
+    <AssemblyName>web</AssemblyName>
     <IsPackable>true</IsPackable>
-    <PackageId>app</PackageId>
+    <PackageId>web</PackageId>
     <PackAsTool>true</PackAsTool>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
