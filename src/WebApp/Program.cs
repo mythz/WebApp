@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ServiceStack;
 using ServiceStack.CefGlue;
-using WebApp;
 
-namespace WebCef
+namespace WebApp
 {
     public class Program
     {

@@ -1,1 +1,1 @@
-dotnet pack WebCef.csproj -c release -o nupkg
+dotnet pack WebApp.csproj -c release -o nupkg

@@ -23,9 +23,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\WebCef\Program.cs" Link="Program.cs" />
-    <Compile Include="..\WebCef\Shortcut.cs" Link="Shortcut.cs" />
-    <Compile Include="..\WebApp\Startup.cs" Link="Startup.cs" />
+    <Compile Include="..\WebApp\Program.cs" Link="Program.cs" />
+    <Compile Include="..\WebApp\Shortcut.cs" Link="Shortcut.cs" />
+    <Compile Include="..\Web\Startup.cs" Link="Startup.cs" />
   </ItemGroup>
 
   <ItemGroup>

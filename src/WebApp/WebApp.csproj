@@ -7,9 +7,9 @@
     <RuntimeIdentifiers>win-x64;win-x32;ubuntu.16.10-x64</RuntimeIdentifiers>
     <Platforms>x64;x86</Platforms>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
-    <AssemblyName>cef</AssemblyName>
+    <AssemblyName>app</AssemblyName>
     <IsPackable>true</IsPackable>
-    <PackageId>cef</PackageId>
+    <PackageId>app</PackageId>
     <PackAsTool>true</PackAsTool>
     <TrimUnusedDependencies>true</TrimUnusedDependencies>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\WebApp\Startup.cs" Link="Startup.cs" />
+    <Compile Include="..\Web\Startup.cs" Link="Startup.cs" />
   </ItemGroup>
 
   <ItemGroup>
