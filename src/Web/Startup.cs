@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,10 +19,8 @@ using ServiceStack.Auth;
 using ServiceStack.Text;
 using ServiceStack.Data;
 using ServiceStack.Redis;
-using ServiceStack.Aws.S3;
 using ServiceStack.OrmLite;
 using ServiceStack.Templates;
-using ServiceStack.VirtualPath;
 using ServiceStack.Configuration;
 using ServiceStack.Azure.Storage;
 
@@ -31,9 +28,11 @@ namespace WebApp
 {
     public class WebAppContext
     {
+        public string Tool { get; set; }
         public string[] Arguments { get; set; }
         public string WebSettingsPath { get; set; }
         public string StartUrl { get; set; }
+        public string UseUrls { get; set; }
         public string IconPath { get; set; }
         public string AppDir { get; set; }
         public string ToolPath { get; set; }
@@ -79,6 +78,7 @@ namespace WebApp
 
             var createShortcut = false;
             var publish = false;
+            var publishExe = false;
             string createShortcutFor = null;
             string runProcess = null;
             var appSettingPaths = new[]
@@ -114,9 +114,6 @@ namespace WebApp
                 }
                 if (arg == "shortcut")
                 {
-                    if (Events.CreateShortcut == null)
-                        throw new NotSupportedException($"This {tool} tool does not suppport shortcuts");
-
                     createShortcut = true;
                     if (i + 1 < args.Length && (args[i + 1].EndsWith(".dll") || args[i + 1].EndsWith(".exe")))
                         createShortcutFor = args[++i];
@@ -125,6 +122,11 @@ namespace WebApp
                 if (arg == "publish")
                 {
                     publish = true;
+                    continue;
+                }
+                if (arg == "publish-exe")
+                {
+                    publishExe = true;
                     continue;
                 }
                 if (DebugArgs.Contains(arg))
@@ -150,6 +152,8 @@ namespace WebApp
                     $"Create Shortcut {createShortcutFor}".Print();
                 if (publish)
                     $"Command: publish".Print();
+                if (publishExe)
+                    $"Command: publish-exe".Print();
             }
 
             if (runProcess != null)
@@ -181,6 +185,7 @@ namespace WebApp
             var appDir = webSettingsPath != null ? Path.GetDirectoryName(webSettingsPath) : null;
             var ctx = new WebAppContext
             {
+                Tool = tool,
                 Arguments = dotnetArgs.ToArray(),
                 RunProcess = runProcess,
                 WebSettingsPath = webSettingsPath,
@@ -207,25 +212,31 @@ namespace WebApp
                 throw new Exception($"'{appSettingPaths[0]}' does not exist.\n\nView Help: {tool} --help");
 
             var usingWebSettings = File.Exists(webSettingsPath);
-            if (usingWebSettings && !createShortcut)
-                Console.WriteLine($"Using '{webSettingsPath}'");
+            if (Verbose || (usingWebSettings && !createShortcut && tool == "web"))
+                $"Using '{webSettingsPath}'".Print();
 
             WebTemplateUtils.AppSettings = new MultiAppSettings(usingWebSettings
                     ? new TextFileSettings(webSettingsPath)
                     : new DictionarySettings(),
                 new EnvironmentVariableSettings());
 
+            var bind = "bind".GetAppSetting("localhost");
+            var port = "port".GetAppSetting(defaultValue: "5000");
+            var useUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? $"http://{bind}:{port}/";
+            ctx.UseUrls = useUrls;
+            ctx.StartUrl = useUrls.Replace("://*", "://localhost");
+
             if (createShortcut)
             {
                 RegisterStat(tool, "shortcut", createShortcutFor);
 
                 var shortcutPath = createShortcutFor == null
-                    ? Path.Combine(appDir, "name".GetAppSetting(defaultValue: "WebApp") + ".lnk")
-                    : Path.GetFullPath(createShortcutFor.LastLeftPart('.') + ".lnk");
+                    ? Path.Combine(appDir, "name".GetAppSetting(defaultValue: "WebApp"))
+                    : Path.GetFullPath(createShortcutFor.LastLeftPart('.'));
 
                 var toolPath = ctx.ToolPath;
                 var arguments = createShortcutFor == null
-                    ? $"\"{webSettingsPath}\""
+                    ? $"\"{ctx.WebSettingsPath}\""
                     : $"\"{createShortcutFor}\"";
 
                 var targetPath = toolPath;
@@ -234,51 +245,140 @@ namespace WebApp
                     targetPath = "dotnet";
                     arguments = $"{toolPath} {arguments}";
                 }
-                var icon = createShortcutFor == null
-                    ? "icon".GetAppSettingPath(appDir) ?? "favicon.ico"
-                    : File.Exists("favicon.ico")
-                        ? Path.GetFullPath("favicon.ico")
-                        : ToolFavIcon;
+                var icon = GetIconPath(appDir, createShortcutFor);
 
-                if (Verbose)
-                    $"CreateShortcut: {shortcutPath}, {targetPath}, {arguments}, {appDir}, {icon}".Print();
+                if (Verbose) $"CreateShortcut: {shortcutPath}, {targetPath}, {arguments}, {appDir}, {icon}".Print();
 
-                Events.CreateShortcut(shortcutPath, targetPath, arguments, appDir, icon);
+                CreateShortcut(shortcutPath, targetPath, arguments, appDir, icon, ctx);
                 return null;
             }
-            else if (publish)
+            if (publish)
             {
                 RegisterStat(tool, "publish");
 
-                var publishDir = Path.Combine(appDir, "publish");
-                var publishAppDir = Path.Combine(publishDir, "app");
-                var publishToolDir = Path.Combine(publishDir, tool == "app" ? "web" : tool);
-
-                if (!Directory.Exists(publishAppDir))
-                    Directory.CreateDirectory(publishAppDir);
-                if (!Directory.Exists(publishToolDir))
-                    Directory.CreateDirectory(publishToolDir);
-
                 var toolDir = Path.GetDirectoryName(ctx.ToolPath);
 
-                appDir.CopyAllTo(publishAppDir, excludePath:publishDir);
+                var (publishDir, publishAppDir, publishToolDir) = GetPublishDirs(tool == "app" ? "cef" : tool, appDir);
+                CreatePublishShortcut(ctx, publishDir, publishToolDir, Path.GetFileName(ctx.ToolPath));
+
+                appDir.CopyAllTo(publishAppDir, excludePath: publishDir);
                 toolDir.CopyAllTo(publishToolDir);
 
                 if (Verbose)
                 {
-                    $"Publish: {appDir} -> {publishAppDir}".Print();
-                    $"Publish: {toolDir} -> {publishToolDir}".Print();
+                    $"publish: {appDir} -> {publishAppDir}".Print();
+                    $"publish: {toolDir} -> {publishToolDir}".Print();
                 }
+
+                return null;
+            }
+            if (publishExe)
+            {
+                RegisterStat(tool, "publish-exe");
+                
+                var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+                var zipUrl = new GithubGateway().GetSourceZipUrl("NetCoreWebApps", "WebWin");
+
+                var invalidFileNameChars = Path.GetInvalidFileNameChars();
+                var safeFileName = new string(zipUrl.Where(c => !invalidFileNameChars.Contains(c)).ToArray());
+                var cachedVersionPath = Path.Combine(homeDir, ".servicestack", "cache", safeFileName);
+
+                var isCached = File.Exists(cachedVersionPath);
+                if (Verbose)
+                    Console.WriteLine((isCached ? "Using cached release: " : "Using new release: ") + cachedVersionPath);
+
+                if (!isCached)
+                {
+                    if (Verbose) $"Downloading {zipUrl}".Print();
+                    new GithubGateway().DownloadFile(zipUrl, cachedVersionPath);
+                }
+
+                var tmpDir = Path.Combine(Path.GetTempPath(), "servicestack", "WebWin");
+                try { Directory.Delete(tmpDir, recursive: true); } catch { }
+                
+                if (Verbose) $"Extract to Directory: {cachedVersionPath} -> {tmpDir}".Print();
+
+                ZipFile.ExtractToDirectory(cachedVersionPath, tmpDir);
+
+                var (publishDir, publishAppDir, publishToolDir) = GetPublishDirs("win", appDir);
+                var toolDir = new DirectoryInfo(tmpDir).GetDirectories().First().FullName;
+                if (Verbose) $"Directory Move: {toolDir} -> {publishToolDir}".Print();
+                try { Directory.Delete(publishToolDir, recursive: true); } catch { }
+                try { Directory.Delete(publishToolDir); } catch { }
+
+                Directory.Move(toolDir, publishToolDir);
+
+                CreatePublishShortcut(ctx, publishDir, publishToolDir, "win.exe");
+                appDir.CopyAllTo(publishAppDir, excludePath: publishDir);
+
+                if (Verbose)
+                {
+                    $"publish-exe: {appDir} -> {publishAppDir}".Print();
+                    $"publish-exe: {toolDir} -> {publishToolDir}".Print();
+                }
+
                 return null;
             }
 
             return CreateWebAppContext(ctx);
         }
 
+        public static void CreateShortcut(string filePath, string targetPath, string arguments, string workingDirectory, string iconPath, WebAppContext ctx)
+        {
+            if (Events?.CreateShortcut != null)
+            {
+                Events.CreateShortcut(filePath, targetPath, arguments, workingDirectory, iconPath);
+            }
+            else
+            {
+                filePath = Path.Combine(Path.GetDirectoryName(filePath), new TemplateDefaultFilters().generateSlug(Path.GetFileName(filePath)));
+                var cmd = filePath + (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".bat" : ".sh");
+
+                var openBrowserCmd = string.IsNullOrEmpty(ctx?.StartUrl) || targetPath.EndsWith(".exe") ? "" : 
+                    (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                        ? $"start {ctx.StartUrl}"
+                        : RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                            ? $"open {ctx.StartUrl}"
+                            : $"xdg-open {ctx.StartUrl}") + Environment.NewLine;
+
+                File.WriteAllText(cmd, $"{openBrowserCmd}{targetPath} {arguments}");
+            }
+        }
+
+        private static void CreatePublishShortcut(WebAppContext ctx, string publishDir, string publishToolDir, string toolName)
+        {
+            var appDir = ctx.AppDir;
+            var toolFilePath = Path.Combine(publishToolDir, toolName);
+            var targetPath = toolFilePath.EndsWith(".dll") ? "dotnet" : toolFilePath;
+            var arguments = toolFilePath.EndsWith(".dll") ? $"\"{toolFilePath}\"" : "";
+            var icon = GetIconPath(appDir);
+            var shortcutPath = Path.Combine(publishDir, "name".GetAppSetting(defaultValue: "WebApp"));
+            if (Verbose) $"CreateShortcut: {shortcutPath}, {targetPath}, {arguments}, {appDir}, {icon}".Print();
+            CreateShortcut(shortcutPath, targetPath, arguments, appDir, icon, ctx);
+        }
+
+        private static string GetIconPath(string appDir, string createShortcutFor=null) => createShortcutFor == null
+            ? "icon".GetAppSettingPath(appDir) ?? "favicon.ico"
+            : File.Exists("favicon.ico")
+                ? Path.GetFullPath("favicon.ico")
+                : ToolFavIcon;
+
+        private static (string publishDir, string publishAppDir, string publishToolDir) GetPublishDirs(string toolName, string appDir)
+        {
+            var publishDir = Path.Combine(appDir, "publish");
+            var publishAppDir = Path.Combine(publishDir, "app");
+            var publishToolDir = Path.Combine(publishDir, toolName);
+
+            try { Directory.CreateDirectory(publishAppDir); } catch { }
+            try { Directory.CreateDirectory(publishToolDir); } catch { }
+
+            return (publishDir, publishAppDir, publishToolDir);
+        }
+
         private static WebAppContext CreateWebAppContext(WebAppContext ctx)
         {
             var appDir = ctx.AppDir;
-            var port = "port".GetAppSetting(defaultValue: "5000");
             var contentRoot = "contentRoot".GetAppSettingPath(appDir) ?? appDir;
 
             var wwwrootPath = Path.Combine(appDir, "wwwroot");
@@ -288,18 +388,13 @@ namespace WebApp
 
             var useWebRoot = "webRoot".GetAppSettingPath(appDir) ?? webRoot;
 
-            var bind = "bind".GetAppSetting("localhost");
             var builder = WebHost.CreateDefaultBuilder(ctx.Arguments)
                 .UseContentRoot(contentRoot)
                 .UseWebRoot(useWebRoot)
-                .UseStartup<Startup>();
-
-            var startUrl = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
-            if (startUrl == null)
-                builder.UseUrls(startUrl = $"http://{bind}:{port}/");
+                .UseStartup<Startup>()
+                .UseUrls(ctx.UseUrls);
 
             ctx.Builder = builder;
-            ctx.StartUrl = startUrl.Replace("://*", "://localhost");
             return ctx;
         }
 
@@ -317,11 +412,6 @@ namespace WebApp
             }
 
             var additional = new StringBuilder();
-            if (Events?.CreateShortcut != null)
-            {
-                additional.AppendLine($"  {tool} shortcut".PadRight(30, ' ') + "Create Shortcut for App");
-                additional.AppendLine($"  {tool} shortcut <name>.dll".PadRight(30, ' ') + "Create Shortcut for .NET Core App");
-            }
 
             string USAGE = $@"
 Version:  {GetVersion()}
@@ -334,6 +424,12 @@ Usage:
   {tool} list                    List available Apps
   {tool} gallery                 Open App Gallery in a Browser
   {tool} install <name>          Install App
+
+  {tool} publish                 Package App to /publish ready for deployment (.NET Core Required)
+  {tool} publish-exe             Package self-contained .exe App to /publish  (.NET Core Embedded)
+
+  {tool} shortcut                Create Shortcut for App
+  {tool} shortcut <name>.dll     Create Shortcut for .NET Core App
 {additional}
   dotnet tool update -g {tool}   Update to latest version
 
@@ -450,10 +546,10 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                         Directory.Delete(tmpDir,recursive:true);
 
                     if (Verbose)
-                        $"ExtractToDirectory: {tmpFile} => {tmpDir}".Print();
+                        $"ExtractToDirectory: {tmpFile} -> {tmpDir}".Print();
                     ZipFile.ExtractToDirectory(tmpFile, tmpDir);
                     if (Verbose)
-                        $"Directory Move: {new DirectoryInfo(tmpDir).GetDirectories().First().FullName} => {Path.GetFullPath(repo)}".Print();
+                        $"Directory Move: {new DirectoryInfo(tmpDir).GetDirectories().First().FullName} -> {Path.GetFullPath(repo)}".Print();
                     Directory.Move(new DirectoryInfo(tmpDir).GetDirectories().First().FullName, Path.GetFullPath(repo));
 
                     "".Print();
@@ -986,9 +1082,7 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                 if (excludePath != null && dirPath.StartsWith(excludePath))
                     continue;
 
-                try {
-                    Directory.CreateDirectory(dirPath.Replace(src, dst));
-                } catch { }
+                try { Directory.CreateDirectory(dirPath.Replace(src, dst)); } catch { }
             }
             foreach (string newPath in Directory.GetFiles(src, "*.*", SearchOption.AllDirectories))
             {

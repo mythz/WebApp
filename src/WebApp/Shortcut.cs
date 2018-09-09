@@ -39,6 +39,9 @@ namespace WebApp
 
         public static void Create(string fileName, string targetPath, string arguments, string workingDirectory, string iconPath)
         {
+            if (!fileName.EndsWith(".lnk"))
+                fileName = fileName + ".lnk";
+
             var shortcut = (IWshShortcut)type.InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, shell, new object[] { fileName });
             //shortcut.Description = description;
             //shortcut.Hotkey = hotkey;
