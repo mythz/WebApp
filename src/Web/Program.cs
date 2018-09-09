@@ -11,7 +11,7 @@ namespace WebApp
         {
             try
             {
-                var host = Startup.CreateWebHost("app", args)?.Build();
+                var host = Startup.CreateWebHost("web", args)?.Build();
                 host?.Run();
             } 
             catch (Exception ex)

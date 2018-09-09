@@ -14,10 +14,10 @@ namespace WebApp
         {
             try
             {
-                var host = Startup.CreateWebHost("app", args, new WebAppEvents
+                var host = Startup.CreateWebHost("win", args, new WebAppEvents
                     {
                         CreateShortcut = Shortcut.Create,
-                        HandleUnknownCommand = ctx => Startup.PrintUsage("app"),
+                        HandleUnknownCommand = ctx => Startup.PrintUsage("win"),
                         OpenBrowser = url => CefPlatformWindows.Start(new CefConfig { StartUrl = url, Width = 1040, DevTools = false }),
                         RunNetCoreProcess = ctx =>
                         {

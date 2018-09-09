@@ -338,11 +338,12 @@ Usage:
   dotnet tool update -g {tool}   Update to latest version
 
 Options:
-    -h, --help                Print this message
+    -h, --help, ?             Print this message
     -v, --version             Print this version
     -d, --debug               Run in Debug mode for Development
     -r, --release             Run in Release mode for Production
     -s, --source              Change GitHub Source for App Directory
+        --verbose             Display verbose logging
 
 This tool collects anonymous usage to determine the most used commands to improve your experience.
 To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using your favorite shell.";
