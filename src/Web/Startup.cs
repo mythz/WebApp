@@ -36,11 +36,28 @@ namespace WebApp
         public string IconPath { get; set; }
         public string AppDir { get; set; }
         public string ToolPath { get; set; }
+        public string FavIcon { get; set; }
         public string RunProcess { get; set; }
+        public bool DebugMode { get; set; }
 
         public IWebHostBuilder Builder { get; set; }
         public IAppSettings AppSettings { get; set; }
         public IWebHost Build() => Builder.Build();
+
+        public string GetDebugString() => new Dictionary<string, object>
+        {
+            [nameof(Tool)] = Tool,
+            [nameof(Arguments)] = Arguments,
+            [nameof(WebSettingsPath)] = WebSettingsPath,
+            [nameof(StartUrl)] = StartUrl,
+            [nameof(UseUrls)] = UseUrls,
+            [nameof(IconPath)] = IconPath,
+            [nameof(AppDir)] = AppDir,
+            [nameof(ToolPath)] = ToolPath,
+            [nameof(FavIcon)] = FavIcon,
+            [nameof(RunProcess)] = RunProcess,
+            [nameof(DebugMode)] = DebugMode,
+        }.Dump();
     }
 
     public delegate void CreateShortcutDelegate(string fileName, string targetPath, string arguments, string workingDirectory, string iconPath);
@@ -69,7 +86,12 @@ namespace WebApp
         static string[] DebugArgs = { "/d", "-d", "/debug", "--debug" };
         static string[] ReleaseArgs = { "/r", "-r", "/release", "--release" };
 
-        public static string ToolFavIcon = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath), "favicon.ico");
+        public static string InitDefaultGist { get; set; } = "5c9ee9031e53cd8f85bd0e14881ddaa8";
+        public static string InitNginxGist { get; set; } = "38a125eede8228ddf40651e2529a5c70";
+        public static string InitSupervisorGist { get; set; } = "2db295508517a4eed59906320e95d98a";
+        public static string InitDockerGist { get; set; } = "54fbb66fa39740ad1c865a59b5ed2e31";
+
+        public static string ToolFavIcon = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "favicon.ico");
 
         public static WebAppContext CreateWebHost(string tool, string[] args, WebAppEvents events = null)
         {
@@ -163,6 +185,7 @@ namespace WebApp
                 Events.RunNetCoreProcess(new WebAppContext { 
                     Arguments = dotnetArgs.ToArray(), 
                     RunProcess = runProcess,
+                    FavIcon = ToolFavIcon,
                 });
             
                 return null;
@@ -192,6 +215,7 @@ namespace WebApp
                 AppSettings = WebTemplateUtils.AppSettings,
                 AppDir = appDir,
                 ToolPath = Assembly.GetExecutingAssembly().Location,
+                DebugMode =  DebugMode ?? false,
             };
 
             if (dotnetArgs.Count > 0)
@@ -225,6 +249,8 @@ namespace WebApp
             var useUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? $"http://{bind}:{port}/";
             ctx.UseUrls = useUrls;
             ctx.StartUrl = useUrls.Replace("://*", "://localhost");
+            ctx.DebugMode = GetDebugMode();
+            ctx.FavIcon = GetFavIcon();
 
             if (createShortcut)
             {
@@ -259,9 +285,9 @@ namespace WebApp
                 var toolDir = Path.GetDirectoryName(ctx.ToolPath);
 
                 var (publishDir, publishAppDir, publishToolDir) = GetPublishDirs(tool == "app" ? "cef" : tool, appDir);
-                CreatePublishShortcut(ctx, publishDir, publishToolDir, Path.GetFileName(ctx.ToolPath));
+                CreatePublishShortcut(ctx, publishDir, publishDir, publishToolDir, Path.GetFileName(ctx.ToolPath));
 
-                appDir.CopyAllTo(publishAppDir, excludePath: publishDir);
+                appDir.CopyAllTo(publishAppDir, excludePaths: new []{ publishToolDir });
                 toolDir.CopyAllTo(publishToolDir);
 
                 if (Verbose)
@@ -303,14 +329,13 @@ namespace WebApp
 
                 var (publishDir, publishAppDir, publishToolDir) = GetPublishDirs("win", appDir);
                 var toolDir = new DirectoryInfo(tmpDir).GetDirectories().First().FullName;
-                if (Verbose) $"Directory Move: {toolDir} -> {publishToolDir}".Print();
-                try { Directory.Delete(publishToolDir, recursive: true); } catch { }
-                try { Directory.Delete(publishToolDir); } catch { }
 
+                if (Verbose) $"Directory Move: {toolDir} -> {publishToolDir}".Print();
+                DeleteDirectory(publishToolDir);
                 Directory.Move(toolDir, publishToolDir);
 
-                CreatePublishShortcut(ctx, publishDir, publishToolDir, "win.exe");
-                appDir.CopyAllTo(publishAppDir, excludePath: publishDir);
+                CreatePublishShortcut(ctx, publishDir, publishAppDir, publishToolDir, "win.exe");
+                appDir.CopyAllTo(publishAppDir, excludePaths: new[] { publishToolDir });
 
                 if (Verbose)
                 {
@@ -323,6 +348,16 @@ namespace WebApp
 
             return CreateWebAppContext(ctx);
         }
+
+        public static void DeleteDirectory(string dirPath)
+        {
+            if (!Directory.Exists(dirPath)) return;
+            if (Verbose) $"RMDIR: {dirPath}".Print();
+            try { Directory.Delete(dirPath, recursive: true); } catch { }
+            try { Directory.Delete(dirPath); } catch { }
+        }
+
+        private static bool GetDebugMode() => DebugMode ?? "debug".GetAppSetting(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production");
 
         public static void CreateShortcut(string filePath, string targetPath, string arguments, string workingDirectory, string iconPath, WebAppContext ctx)
         {
@@ -346,9 +381,9 @@ namespace WebApp
             }
         }
 
-        private static void CreatePublishShortcut(WebAppContext ctx, string publishDir, string publishToolDir, string toolName)
+        private static void CreatePublishShortcut(WebAppContext ctx, string publishDir, string publishAppDir, string publishToolDir, string toolName)
         {
-            var appDir = ctx.AppDir;
+            var appDir = publishAppDir;
             var toolFilePath = Path.Combine(publishToolDir, toolName);
             var targetPath = toolFilePath.EndsWith(".dll") ? "dotnet" : toolFilePath;
             var arguments = toolFilePath.EndsWith(".dll") ? $"\"{toolFilePath}\"" : "";
@@ -359,10 +394,10 @@ namespace WebApp
         }
 
         private static string GetIconPath(string appDir, string createShortcutFor=null) => createShortcutFor == null
-            ? "icon".GetAppSettingPath(appDir) ?? "favicon.ico"
-            : File.Exists("favicon.ico")
-                ? Path.GetFullPath("favicon.ico")
-                : ToolFavIcon;
+            ? "icon".GetAppSettingPath(appDir) ?? GetFavIcon()
+            : GetFavIcon();
+
+        private static string GetFavIcon() => File.Exists("favicon.ico") ? Path.GetFullPath("favicon.ico") : ToolFavIcon;
 
         private static (string publishDir, string publishAppDir, string publishToolDir) GetPublishDirs(string toolName, string appDir)
         {
@@ -395,6 +430,9 @@ namespace WebApp
                 .UseUrls(ctx.UseUrls);
 
             ctx.Builder = builder;
+
+            if (Verbose) ctx.GetDebugString().Print();
+
             return ctx;
         }
 
@@ -430,6 +468,12 @@ Usage:
 
   {tool} shortcut                Create Shortcut for App
   {tool} shortcut <name>.dll     Create Shortcut for .NET Core App
+
+  {tool} init                    Create basic .NET Core Web App
+  {tool} init nginx              Create nginx example config
+  {tool} init supervisor         Create supervisor example config
+  {tool} init docker             Create Docker example config
+  {tool} gist <gist-id>          Write all Gist text files to current directory
 {additional}
   dotnet tool update -g {tool}   Update to latest version
 
@@ -479,7 +523,7 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
         {
             if (Environment.GetEnvironmentVariable("SERVICESTACK_TELEMETRY_OPTOUT") == "1") return;
             try {
-                $"https://servicestack.net/stats/{type}/record?name=${name}&source={tool}&version=${GetVersion()}".GetBytesFromUrlAsync();
+                $"https://servicestack.net/stats/{type}/record?name={name}&source={tool}&version={GetVersion()}".GetBytesFromUrlAsync();
             } catch { }
         }
 
@@ -496,6 +540,8 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             {
                 if (arg == "list" || arg == "l")
                 {
+                    RegisterStat(tool, "list");
+
                     var repos = new GithubGateway().GetSourceRepos(GitHubSource);
                     var padName = repos.OrderByDescending(x => x.Name.Length).First().Name.Length + 1;
 
@@ -512,9 +558,17 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                 }
                 else if (arg == "gallery")
                 {
+                    RegisterStat(tool, "gallery");
+
                     var openUrl = Events?.OpenBrowser ?? OpenBrowser;
                     openUrl(GalleryUrl);
                     checkUpdatesAndQuit = true;
+                }
+                else if (arg == "init")
+                {
+                    RegisterStat(tool, "init");
+                    WriteGistFile(InitDefaultGist);
+                    return true;
                 }
                 else if (new[] { "/h", "?", "/?", "/help" }.Contains(cmd))
                 {
@@ -548,14 +602,37 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                     if (Verbose)
                         $"ExtractToDirectory: {tmpFile} -> {tmpDir}".Print();
                     ZipFile.ExtractToDirectory(tmpFile, tmpDir);
-                    if (Verbose)
-                        $"Directory Move: {new DirectoryInfo(tmpDir).GetDirectories().First().FullName} -> {Path.GetFullPath(repo)}".Print();
-                    Directory.Move(new DirectoryInfo(tmpDir).GetDirectories().First().FullName, Path.GetFullPath(repo));
+                    var installDir = Path.GetFullPath(repo);
+
+                    if (Verbose) $"Directory Move: {new DirectoryInfo(tmpDir).GetDirectories().First().FullName} -> {installDir}".Print();
+                    DeleteDirectory(installDir);
+                    Directory.Move(new DirectoryInfo(tmpDir).GetDirectories().First().FullName, installDir);
 
                     "".Print();
                     $"Installation successful, run with:".Print();
                     "".Print();
                     $"  cd {repo} && {tool}".Print();
+                    return true;
+                }
+                else if (arg == "init")
+                {
+                    var gist = args[1];
+                    RegisterStat(tool, "init", gist);
+                    var id = gist == "nginx"
+                        ? InitNginxGist
+                        : (gist.StartsWith("supervisor"))
+                            ? InitSupervisorGist
+                            : gist == "docker"
+                                ? InitDockerGist
+                                : throw new Exception($"Unknown init name '{gist}'");
+                    WriteGistFile(id);
+                    return true;
+                }
+                else if (arg == "gist")
+                {
+                    var gist = args[1];
+                    RegisterStat(tool, "gist", gist);
+                    WriteGistFile(gist);
                     return true;
                 }
             }
@@ -582,6 +659,16 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                 return true;
             }            
             return false;
+        }
+
+        public static void WriteGistFile(string gistId)
+        {
+            var gistFiles = new GithubGateway().GetGistFiles(gistId);
+            foreach (var entry in gistFiles)
+            {
+                if (Verbose) $"Writing {entry.Key}...".Print();
+                File.WriteAllText(entry.Key, entry.Value);
+            }
         }
 
         IHostingEnvironment env;
@@ -736,7 +823,7 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
 
         public void ConfigureAppHost(ServiceStackHost appHost)
         {
-            appHost.Config.DebugMode = DebugMode ?? "debug".GetAppSetting(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production");
+            appHost.Config.DebugMode = GetDebugMode();
             appHost.Config.ForbiddenPaths.Add("/plugins");
 
             var feature = appHost.GetPlugin<TemplatePagesFeature>();
@@ -1075,21 +1162,56 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             return authProvider;
         }
 
-        public static void CopyAllTo(this string src, string dst, string excludePath=null)
+        public static List<string> ExcludeFoldersNamed = new List<string>
         {
+            ".git"
+        };
+
+        public static void CopyAllTo(this string src, string dst, string[] excludePaths=null)
+        {
+            var d = Path.DirectorySeparatorChar;
+
             foreach (string dirPath in Directory.GetDirectories(src, "*.*", SearchOption.AllDirectories))
             {
-                if (excludePath != null && dirPath.StartsWith(excludePath))
+                if (!excludePaths.IsEmpty() && excludePaths.Any(x => dirPath.StartsWith(x)))
+                    continue;
+                if (ExcludeFoldersNamed.Any(x => dirPath.Contains($"{d}{x}{d}", StringComparison.OrdinalIgnoreCase)
+                    || dirPath.EndsWithIgnoreCase($"{d}{x}")))
                     continue;
 
+                if (Startup.Verbose) $"MAKEDIR {dirPath.Replace(src, dst)}".Print();
                 try { Directory.CreateDirectory(dirPath.Replace(src, dst)); } catch { }
             }
+
             foreach (string newPath in Directory.GetFiles(src, "*.*", SearchOption.AllDirectories))
             {
-                if (excludePath != null && newPath.StartsWith(excludePath))
+                if (!excludePaths.IsEmpty() && excludePaths.Any(x => newPath.StartsWith(x)))
                     continue;
 
-                File.Copy(newPath, newPath.Replace(src, dst), overwrite:true);
+                if (ExcludeFoldersNamed.Any(x => newPath.Contains($"{d}{x}{d}", StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                try
+                {
+                    if (Startup.Verbose) $"COPY {newPath.Replace(src, dst)}".Print();
+
+                    if (newPath.EndsWith(".settings"))
+                    {
+                        var text = File.ReadAllText(newPath);
+                        if (text.Contains("debug true"))
+                        {
+                            text = text.Replace("debug true", "debug false");
+                            File.WriteAllText(newPath.Replace(src, dst), text);
+                            continue;
+                        }
+                    }
+
+                    File.Copy(newPath, newPath.Replace(src, dst), overwrite: true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(Startup.Verbose ? ex.ToString() : ex.Message);
+                }
             }
         }
     }
@@ -1127,9 +1249,18 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             try
             {
                 var repo = GetJson<GithubRepo>($"/repos/{orgName}/{name}");
-                return repo.Fork
-                    ? $"{orgName}/{repo.Name}"
-                    : repo.Full_Name;
+                if (repo.Fork)
+                {
+                    if (Startup.Verbose)
+                    {
+                        $"'{orgName}/{repo.Name}' is a fork.".Print();
+                        if (repo.Parent == null)
+                            $"Could not find parent fork for '{orgName}/{repo.Name}', using '{repo.Full_Name}'".Print();
+                        else
+                            return repo.Parent.Full_Name;
+                    }
+                }
+                return repo.Full_Name;
             } 
             catch (WebException ex)
             {
@@ -1152,6 +1283,7 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                 return (string)zipUrl;
             }
 
+            if (Startup.Verbose) $"No releases found for '{repoFullName}', installing from master...".Print();
             return $"https://github.com/{repoFullName}/archive/master.zip";
         }
 
@@ -1245,6 +1377,28 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             var webclient = new WebClient();
             webclient.Headers.Add(HttpHeaders.UserAgent, UserAgent);
             webclient.DownloadFile(downloadUrl, fileName);
+        }
+
+        public Dictionary<string, string> GetGistFiles(string gistId)
+        {
+            var json = GetJson($"/gists/{gistId}");
+            var response = JSON.parse(json);
+            if (response is Dictionary<string, object> obj &&
+                obj.TryGetValue("files", out var oFiles) && 
+                oFiles is Dictionary<string, object> files)
+            {
+                var to = new Dictionary<string,string>();
+
+                foreach (var entry in files)
+                {
+                    var meta = (Dictionary<string,object>)entry.Value;
+                    to[entry.Key] = (string) meta["content"];
+                }
+
+                return to;
+            }
+
+            throw new NotSupportedException($"Invalid gist response returned for '{gistId}'");
         }
     }
 

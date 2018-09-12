@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Version>0.0.4</Version>
+    <Version>0.0.5</Version>
     <RuntimeIdentifiers>win-x64;win-x32;ubuntu.16.10-x64</RuntimeIdentifiers>
     <Platforms>x64;x86</Platforms>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
@@ -41,24 +41,11 @@
     <PackageReference Include="Npgsql" Version="4.0.2" />
     <PackageReference Include="Markdig" Version="0.15.1" />
 
-    <!-- <PackageReference Include="ServiceStack.Interfaces" Version="5.*" />
-    <PackageReference Include="ServiceStack.Text" Version="5.*" />
-    <PackageReference Include="ServiceStack.Client" Version="5.*" />
-    <PackageReference Include="ServiceStack.Common" Version="5.*" />
-    <PackageReference Include="ServiceStack" Version="5.*" />
-    <PackageReference Include="ServiceStack.Server" Version="5.*" />
-    <PackageReference Include="ServiceStack.OrmLite" Version="5.*" />
-    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="5.*" />
-    <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="5.*" />
-    <PackageReference Include="ServiceStack.OrmLite.MySql" Version="5.*" />
-    <PackageReference Include="ServiceStack.OrmLite.PostgreSQL" Version="5.*" />
-    <PackageReference Include="ServiceStack.Redis" Version="5.*" />
-    <PackageReference Include="ServiceStack.Aws" Version="5.*" />
-    <PackageReference Include="ServiceStack.Azure" Version="5.*" />
-    <PackageReference Include="ServiceStack.Api.OpenApi" Version="5.*" /> -->
+    <PackageReference Include="ServiceStack.CefGlue.Win64" Version="5.*" />
+    <!-- <ProjectReference Include="..\..\..\..\ServiceStack.CefGlue\src\ServiceStack.CefGlue.Win64\ServiceStack.CefGlue.Win64.csproj" />
+    <PackageReference Include="WinApi" Version="4.*" /> -->
 
-    <ProjectReference Include="..\..\..\..\ServiceStack.CefGlue\src\ServiceStack.CefGlue.Win64\ServiceStack.CefGlue.Win64.csproj" />
-    <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <!-- <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -72,7 +59,7 @@
     <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
-    <ProjectReference Include="..\..\..\..\ServiceStack.Azure\src\ServiceStack.Azure\ServiceStack.Azure.csproj" />
+    <ProjectReference Include="..\..\..\..\ServiceStack.Azure\src\ServiceStack.Azure\ServiceStack.Azure.csproj" /> -->
 
   </ItemGroup>
 

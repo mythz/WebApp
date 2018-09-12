@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Version>0.0.4</Version>
+    <Version>0.0.7</Version>
     <RuntimeIdentifiers>win-x64;win-x32;ubuntu.16.10-x64</RuntimeIdentifiers>
     <Platforms>x64;x86</Platforms>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
@@ -36,14 +36,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\ServiceStack.CefGlue\src\ServiceStack.CefGlue.Win64\ServiceStack.CefGlue.Win64.csproj" />
+    <None Include="locales\*.*" CopyToOutputDirectory="Always" />
+    <None Include="swiftshader\*.*" CopyToOutputDirectory="Always" />
+    <None Include="*.pak" CopyToOutputDirectory="Always" />
+    <None Include="*.lib" CopyToOutputDirectory="Always" />
+    <None Include="*.dat" CopyToOutputDirectory="Always" />
+    <None Include="*.dll" CopyToOutputDirectory="Always" />
+    <None Include="*.bin" CopyToOutputDirectory="Always" />
+    <None Include="*.exe" CopyToOutputDirectory="Always" />
+  </ItemGroup>
 
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.2" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <PackageReference Include="Mysql.Data" Version="8.0.12" />
     <PackageReference Include="Npgsql" Version="4.0.2" />
     <PackageReference Include="Markdig" Version="0.15.1" />
+
+    <PackageReference Include="ServiceStack.CefGlue.Win64" Version="5.*" />
+
+
+    <!-- <ProjectReference Include="..\..\..\..\ServiceStack.CefGlue\src\ServiceStack.CefGlue.Win64\ServiceStack.CefGlue.Win64.csproj" />
+    <PackageReference Include="WinApi" Version="4.*" /> -->
 
     <!-- <PackageReference Include="ServiceStack.Interfaces" Version="5.*" />
     <PackageReference Include="ServiceStack.Text" Version="5.*" />
@@ -61,7 +76,7 @@
     <PackageReference Include="ServiceStack.Azure" Version="5.*" />
     <PackageReference Include="ServiceStack.Api.OpenApi" Version="5.*" /> -->
 
-    <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+    <!-- <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -75,7 +90,7 @@
     <ProjectReference Include="..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
     <ProjectReference Include="..\..\..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.csproj" />
-    <ProjectReference Include="..\..\..\..\ServiceStack.Azure\src\ServiceStack.Azure\ServiceStack.Azure.csproj" />
+    <ProjectReference Include="..\..\..\..\ServiceStack.Azure\src\ServiceStack.Azure\ServiceStack.Azure.csproj" /> -->
 
   </ItemGroup>
 

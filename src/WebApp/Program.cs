@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ServiceStack;
 using ServiceStack.CefGlue;
+using ServiceStack.Text;
 
 namespace WebApp
 {
@@ -18,7 +19,8 @@ namespace WebApp
                     {
                         CreateShortcut = Shortcut.Create,
                         HandleUnknownCommand = ctx => Startup.PrintUsage("app"),
-                        OpenBrowser = url => CefPlatformWindows.Start(new CefConfig { StartUrl = url, Width = 1040, DevTools = false }),
+                        OpenBrowser = url => CefPlatformWindows.Start(new CefConfig { 
+                            StartUrl = url, Width = 1040, DevTools = false, Icon = Startup.ToolFavIcon, HideConsoleWindow = false }),
                         RunNetCoreProcess = ctx =>
                         {
                             var url = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?.LeftPart(';') ?? "http://localhost:5000";
@@ -56,9 +58,7 @@ namespace WebApp
                                 process.BeginOutputReadLine();
                                 process.BeginErrorReadLine();
 
-                                var icon = File.Exists("favicon.ico") ? "favicon.ico" : Startup.ToolFavIcon;
-
-                                CefPlatformWindows.Start(new CefConfig { StartUrl = url, Icon = icon });
+                                CefPlatformWindows.Start(new CefConfig { StartUrl = url, Icon = ctx.FavIcon });
 
                                 process.Kill();
                                 process.Close();
@@ -70,11 +70,11 @@ namespace WebApp
 
                 host.Build().StartAsync();
                 
-                var config = new CefConfig
+                var config = new CefConfig(host.DebugMode)
                 {
                     Args = args,
                     StartUrl = host.StartUrl,
-                    Icon = "icon".GetAppSettingPath(host.AppDir) ?? "favicon.ico",
+                    Icon = host.FavIcon,
                 };
 
                 if ("name".TryGetAppSetting(out var name))
