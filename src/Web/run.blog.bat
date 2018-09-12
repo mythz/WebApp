@@ -1,1 +1,1 @@
-dotnet run ..\apps\blog\web.settings
+web ..\apps\blog\app.settings

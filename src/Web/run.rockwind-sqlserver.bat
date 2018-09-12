@@ -1,1 +1,1 @@
-dotnet run ..\apps\rockwind\web.sqlserver.settings
+dotnet run ..\apps\rockwind\app.sqlserver.settings

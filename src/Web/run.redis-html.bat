@@ -1,1 +1,1 @@
-dotnet run ..\apps\redis-html\web.settings
+dotnet run ..\apps\redis-html\app.settings

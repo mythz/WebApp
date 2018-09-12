@@ -13,7 +13,7 @@
             },
             "problemMatcher": "$msCompile",
             "options": {
-                "cwd": "${workspaceRoot}/src/WebApp"
+                "cwd": "${workspaceRoot}/src/Web"
             }
         }
     ]

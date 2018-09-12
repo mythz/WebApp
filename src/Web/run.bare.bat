@@ -1,1 +1,1 @@
-dotnet run ..\apps\bare\web.settings
+dotnet run ..\apps\bare\app.settings

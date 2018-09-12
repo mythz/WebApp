@@ -111,17 +111,17 @@ namespace WebApp
             for (var i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
-                if (args[0].EndsWith(".settings"))
+                if (arg.EndsWith(".settings"))
                 {
-                    appSettingPaths = new[] { args[0] };
+                    appSettingPaths = new[] { arg };
                     continue;
                 }
-                if (args[0].EndsWith(".dll") || args[0].EndsWith(".exe"))
+                if (arg.EndsWith(".dll") || arg.EndsWith(".exe"))
                 {
                     if (Events.RunNetCoreProcess == null)
                         throw new NotSupportedException($"This {tool} tool does not suppport running processes");
 
-                    runProcess = args[0];
+                    runProcess = arg;
                     continue;
                 }
                 if (VerboseArgs.Contains(arg))
@@ -990,6 +990,10 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
                         if (dir != null)
                             config = dir.RealPath;
                     }
+                    else
+                    {
+                        config = Path.Combine(VirtualFiles.RootDirectory.RealPath, config);
+                    }
                     return new FileSystemVirtualFiles(config);
                 case "s3":
                 case "s3virtualfiles":
@@ -1019,23 +1023,32 @@ To disable set SERVICESTACK_TELEMETRY_OPTOUT=1 environment variable to 1 using y
             switch (dbProvider.ToLower())
             {
                 case "sqlite":
-                    if (connectionString.StartsWith("~/"))
+                    var customConnection = connectionString.StartsWith(":") || connectionString.Contains("Data Source=");
+                    if (!customConnection)
                     {
-                        var file = VirtualFiles.GetFile(connectionString.Substring(2));
-                        if (file != null)
+                        if (connectionString.StartsWith("~/"))
                         {
-                            connectionString = file.RealPath;
+                            var file = VirtualFiles.GetFile(connectionString.Substring(2));
+                            if (file != null)
+                            {
+                                connectionString = file.RealPath;
+                            }
+                            else
+                            {
+                                connectionString = AppHost.MapProjectPath(connectionString);
+                            }
                         }
                         else
                         {
-                            connectionString = AppHost.MapProjectPath(connectionString);
-                            if (!File.Exists(connectionString))
-                            {
-                                var fs = File.Create(connectionString);
-                                fs.Close();
-                            }
+                            connectionString = Path.Combine(VirtualFiles.RootDirectory.RealPath, connectionString);
+                        }
+                        if (!File.Exists(connectionString))
+                        {
+                            var fs = File.Create(connectionString);
+                            fs.Close();
                         }
                     }
+                    if (Startup.Verbose) $"SQLite connectionString: {connectionString}".Print();
                     return new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
                 case "mssql":
                 case "sqlserver":

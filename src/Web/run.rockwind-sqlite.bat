@@ -1,1 +1,1 @@
-dotnet run ..\apps\rockwind\web.sqlite.settings
+dotnet run ..\apps\rockwind\app.sqlite.settings

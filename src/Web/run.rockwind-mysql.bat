@@ -1,1 +1,1 @@
-dotnet run ..\apps\rockwind\web.mysql.settings
+dotnet run ..\apps\rockwind\app.mysql.settings

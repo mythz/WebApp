@@ -1,1 +1,1 @@
-dotnet run ..\apps\rockwind-vfs\web.aws.settings
+dotnet run ..\apps\rockwind-vfs\app.aws.settings

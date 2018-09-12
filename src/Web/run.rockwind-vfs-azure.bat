@@ -1,1 +1,1 @@
-dotnet run ..\apps\rockwind-vfs\web.azure.settings
+dotnet run ..\apps\rockwind-vfs\app.azure.settings

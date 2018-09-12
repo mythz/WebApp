@@ -1,1 +1,1 @@
-dotnet run ..\apps\rockwind-vfs\web.postgres.settings
+dotnet run ..\apps\rockwind-vfs\app.postgres.settings
